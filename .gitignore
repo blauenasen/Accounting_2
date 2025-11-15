@@ -1,0 +1,46 @@
+# Dependencies
+node_modules
+
+# Build output
+.svelte-kit
+build
+dist
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Database
+db.sqlite
+db.sqlite.backup
+*.db
+*.sqlite
+
+# Testing
+coverage
+.nyc_output
+test-results
+playwright-report
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Temp files
+*.tmp
+.cache
