@@ -12,10 +12,10 @@
   } from '$lib/types/ui.js';
 
   // Sub-components
-  import PrimanotaTableHeader from './primanota/PrimanotaTableHeader.svelte';
-  import PrimanotaFilters from './primanota/PrimanotaFilters.svelte';
-  import PrimanotaTableBody from './primanota/PrimanotaTableBody.svelte';
-  import PrimanotaContextMenu from './primanota/PrimanotaContextMenu.svelte';
+  import PrimanotaTableHeader from './PrimanotaTableHeader.svelte';
+  import PrimanotaFilters from './PrimanotaFilters.svelte';
+  import PrimanotaTableBody from './PrimanotaTableBody.svelte';
+  import PrimanotaContextMenu from './PrimanotaContextMenu.svelte';
   import PrimanotaTableDialogs from './PrimanotaTableDialogs.svelte';
   import PrimanotaTableState from './PrimanotaTableState.svelte';
 

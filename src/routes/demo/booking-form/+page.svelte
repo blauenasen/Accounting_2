@@ -14,7 +14,7 @@
    * Handle booking submit event
    */
   function handleBookingSubmit(event: CustomEvent): void {
-    console.log('Booking submitted:', event.detail);
+    // Booking submitted - event.detail contains the booking data
   }
 
   /**

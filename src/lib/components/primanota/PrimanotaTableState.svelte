@@ -7,8 +7,8 @@
     PrimanotaSortState,
     ViewMode
   } from '$lib/types/ui.js';
-  import type { TableColumn } from '../config/tableColumns.js';
-  import { TABLE_CONSTANTS } from '../config/tableColumns.js';
+  import type { TableColumn } from './config/tableColumns.js';
+  import { TABLE_CONSTANTS } from './config/tableColumns.js';
 
   // Import logic modules
   import {

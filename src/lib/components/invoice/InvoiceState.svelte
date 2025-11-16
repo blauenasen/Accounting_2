@@ -14,8 +14,8 @@
     recalculatePositions
   } from '$lib/logic/invoice/invoiceCalculations.js';
   import {
-    validateHeaderNew,
-    validateHeaderExisting,
+    validateHeaderNew as _validateHeaderNew,
+    validateHeaderExisting as _validateHeaderExisting,
     canSave,
     canUpdate,
     canSend,
@@ -226,14 +226,14 @@
    * Validate header (new invoice)
    */
   export function validateHeaderNew(): { valid: boolean; errors: string[] } {
-    return validateHeaderNew(invoiceData);
+    return _validateHeaderNew(invoiceData);
   }
 
   /**
    * Validate header (existing invoice)
    */
   export function validateHeaderExisting(): { valid: boolean; errors: string[] } {
-    return validateHeaderExisting(invoiceData);
+    return _validateHeaderExisting(invoiceData);
   }
 
   /**

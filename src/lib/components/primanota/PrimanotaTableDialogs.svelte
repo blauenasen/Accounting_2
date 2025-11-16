@@ -9,11 +9,11 @@
   export let viewMode: 'primanota' | 'account' | 'op' = 'primanota';
 
   // Dialog components (these already exist in the old project, will be migrated to TypeScript later)
-  import CancelBookingDialog from '../booking/CancelBookingDialog.svelte';
-  import SplitKreditorDialog from '../booking/dialogs/SplitKreditorDialog.svelte';
-  import SplitDebitorDialog from '../booking/dialogs/SplitDebitorDialog.svelte';
-  import ReconcileDialog from '../booking/dialogs/ReconcileDialog.svelte';
-  import AccountSelectionDialog from '../booking/dialogs/AccountSelectionDialog.svelte';
+  import CancelBookingDialog from '$lib/components/booking/CancelBookingDialog.svelte';
+  import SplitKreditorDialog from '$lib/components/booking/dialogs/SplitKreditorDialog.svelte';
+  import SplitDebitorDialog from '$lib/components/booking/dialogs/SplitDebitorDialog.svelte';
+  import ReconcileDialog from '$lib/components/booking/dialogs/ReconcileDialog.svelte';
+  import AccountSelectionDialog from '$lib/components/booking/dialogs/AccountSelectionDialog.svelte';
 
   /**
    * Handle dialog close events

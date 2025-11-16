@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 import { db } from '$lib/server/index.js';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import Decimal from 'decimal.js';
 
 interface Position {
@@ -72,7 +72,7 @@ export async function POST({ request }: RequestEvent): Promise<Response> {
       }, { status: 404 });
     }
 
-    const splitGroupId = uuidv4();
+    const splitGroupId = nanoid();
 
     const sum = positions.reduce((acc, p) => {
       return new Decimal(acc).plus(new Decimal(p.amount)).toNumber();
