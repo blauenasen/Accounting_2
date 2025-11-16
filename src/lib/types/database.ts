@@ -147,6 +147,16 @@ export interface AccountRecord {
 }
 
 /**
+ * Account for account selection dialog (legacy format)
+ */
+export interface Account {
+  account: number;
+  designation: string;
+  type?: string | null;
+  debit_credit?: string | null;
+}
+
+/**
  * Debtor record from database
  */
 export interface DebtorRecord {

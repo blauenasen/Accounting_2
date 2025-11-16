@@ -198,9 +198,42 @@ export interface ErrorState {
 }
 
 /**
- * Booking form data
+ * Booking form data (comprehensive with all UI fields)
  */
 export interface BookingFormData {
+  // Basic UI fields
+  bookCircle: string;
+  gu: string;
+  turnover: string;
+  sh: string;
+  contra: string;
+  reference: string;
+  date: string;
+  account: string;
+  tax: string;
+  due: string;
+  disc: string;
+  desc: string;
+
+  // Database fields (populated on edit)
+  idNr: number | null;
+  jahr: number | null;
+  monat: number | null;
+  tag: number | null;
+  lfdNr: number | null;
+  id_invoice: string | null;
+
+  // Calculated fields
+  nettoGes: number | null;
+  steuer: number | null;
+  vStUSt: number | null;
+  bu: number | null;
+}
+
+/**
+ * Legacy booking form data (for API compatibility)
+ */
+export interface LegacyBookingFormData {
   jahr: number;
   monat: number;
   bookCircle: string;
@@ -477,4 +510,53 @@ export interface ChartConfig {
   type: 'line' | 'bar' | 'pie' | 'doughnut';
   data: ChartDataPoint[];
   options?: Record<string, unknown>;
+}
+
+/**
+ * Booking form dialog state
+ */
+export interface BookingFormDialogState {
+  accountSelection: {
+    visible: boolean;
+    field: string;
+    accounts: unknown[];
+    filter: string;
+  };
+  duplicateWarning: {
+    visible: boolean;
+    duplicateInfo: Record<string, unknown>;
+  };
+  yearMismatch: {
+    visible: boolean;
+    confirmationStage: number;
+    bookingYear: number | null;
+    pendingPayload: unknown | null;
+  };
+  dateMonthMismatch: {
+    visible: boolean;
+    dateMonth: number | null;
+    selectedMonth: number | null;
+    currentDate: string;
+  };
+  validation: {
+    visible: boolean;
+    errors: string[];
+  };
+  pdfOverwrite: {
+    visible: boolean;
+  };
+  pdfDelete: {
+    visible: boolean;
+  };
+}
+
+/**
+ * Booking form keep flags
+ */
+export interface BookingFormKeepFlags {
+  contra: boolean;
+  date: boolean;
+  account: boolean;
+  tax: boolean;
+  desc: boolean;
 }
