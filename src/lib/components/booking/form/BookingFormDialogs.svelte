@@ -8,14 +8,14 @@
   export let selectedBookCircle: { no: number; textcode?: string } | null = null;
   export let currentYear: string | null = null;
 
-  // Dialog components will be imported as they are migrated
-  // import AccountSelectionDialog from '../dialogs/AccountSelectionDialog.svelte';
-  // import DuplicateWarningDialog from '../dialogs/DuplicateWarningDialog.svelte';
-  // import DateMonthMismatchDialog from '../dialogs/DateMonthMismatchDialog.svelte';
-  // import YearMismatchDialog from '../dialogs/YearMismatchDialog.svelte';
-  // import PdfOverwriteDialog from '../dialogs/PdfOverwriteDialog.svelte';
-  // import PdfDeleteDialog from '../dialogs/PdfDeleteDialog.svelte';
-  // import ValidationErrorDialog from '../dialogs/ValidationErrorDialog.svelte';
+  // Dialog components
+  import AccountSelectionDialog from '../dialogs/AccountSelectionDialog.svelte';
+  import DuplicateWarningDialog from '../dialogs/DuplicateWarningDialog.svelte';
+  import DateMonthMismatchDialog from '../dialogs/DateMonthMismatchDialog.svelte';
+  import YearMismatchDialog from '../dialogs/YearMismatchDialog.svelte';
+  import PdfOverwriteDialog from '../dialogs/PdfOverwriteDialog.svelte';
+  import PdfDeleteDialog from '../dialogs/PdfDeleteDialog.svelte';
+  import ValidationErrorDialog from '../dialogs/ValidationErrorDialog.svelte';
 
   /**
    * Handle dialog close events
@@ -49,12 +49,9 @@
   }
 </script>
 
-<!-- Dialog components will be rendered here as they are migrated -->
-
-<!-- Placeholder for future dialog components:
-
 {#if dialogState.accountSelection.visible}
   <AccountSelectionDialog
+    visible={dialogState.accountSelection.visible}
     field={dialogState.accountSelection.field}
     bookCircle={selectedBookCircle?.no}
     accounts={dialogState.accountSelection.accounts}
@@ -66,26 +63,27 @@
 
 {#if dialogState.duplicateWarning.visible}
   <DuplicateWarningDialog
+    visible={dialogState.duplicateWarning.visible}
     duplicateInfo={dialogState.duplicateWarning.duplicateInfo}
-    on:close={handleDuplicateWarningClose}
+    on:cancel={handleDuplicateWarningClose}
     on:confirm
-    on:cancel
   />
 {/if}
 
 {#if dialogState.yearMismatch.visible}
   <YearMismatchDialog
+    visible={dialogState.yearMismatch.visible}
     selectedYear={currentYear}
     bookingYear={dialogState.yearMismatch.bookingYear}
     confirmationStage={dialogState.yearMismatch.confirmationStage}
-    on:close={handleYearMismatchClose}
+    on:no={handleYearMismatchClose}
     on:yes
-    on:no
   />
 {/if}
 
 {#if dialogState.dateMonthMismatch.visible}
   <DateMonthMismatchDialog
+    visible={dialogState.dateMonthMismatch.visible}
     dateMonth={dialogState.dateMonthMismatch.dateMonth}
     selectedMonth={dialogState.dateMonthMismatch.selectedMonth}
     currentDate={dialogState.dateMonthMismatch.currentDate}
@@ -97,6 +95,7 @@
 
 {#if dialogState.validation.visible}
   <ValidationErrorDialog
+    visible={dialogState.validation.visible}
     errors={dialogState.validation.errors}
     on:close={handleValidationClose}
   />
@@ -104,21 +103,19 @@
 
 {#if dialogState.pdfOverwrite.visible}
   <PdfOverwriteDialog
-    on:close={handlePdfOverwriteClose}
+    visible={dialogState.pdfOverwrite.visible}
+    on:cancel={handlePdfOverwriteClose}
     on:confirm
-    on:cancel
   />
 {/if}
 
 {#if dialogState.pdfDelete.visible}
   <PdfDeleteDialog
-    on:close={handlePdfDeleteClose}
+    visible={dialogState.pdfDelete.visible}
+    on:cancel={handlePdfDeleteClose}
     on:confirm
-    on:cancel
   />
 {/if}
-
--->
 
 <style>
   /* Dialog styles will be component-specific */

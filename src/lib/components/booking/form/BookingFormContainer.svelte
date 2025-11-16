@@ -8,6 +8,7 @@
   // Sub-components
   import BookingFormFields from './BookingFormFields.svelte';
   import BookingFormDialogs from './BookingFormDialogs.svelte';
+  import BookingFormValidation from './BookingFormValidation.svelte';
 
   // Props
   export let selectedBookCircle: { no: number; textcode?: string } | null = null;
@@ -16,6 +17,7 @@
 
   // Component refs for external access
   let formFieldsRef: BookingFormFields;
+  let validationRef: BookingFormValidation;
 
   // Form state
   let formData: BookingFormData = {
@@ -158,15 +160,31 @@
    * Handle form submission
    */
   async function handleSubmit(event: CustomEvent): Promise<void> {
-    const payload = event.detail;
-
     try {
-      // Validation will be handled in BookingFormValidation component
-      // This is just the orchestration layer
+      // Validate and build payload
+      if (!validationRef) {
+        throw new Error('Validation component not initialized');
+      }
 
-      // Dispatch event to parent
+      const result = validationRef.validateAndBuild();
+
+      if (!result.valid || !result.payload) {
+        // Show validation errors
+        dialogState.validation.visible = true;
+        dialogState.validation.errors = result.errors;
+        return;
+      }
+
+      // TODO: Save to database via API
+      // const response = await fetch('/api/booking/save', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(result.payload)
+      // });
+
+      // Dispatch event to parent for now
       window.dispatchEvent(new CustomEvent('booking:submit', {
-        detail: payload
+        detail: result.payload
       }));
 
       toastStore.success('Booking saved successfully');
@@ -231,6 +249,14 @@
     on:submit={handleSubmit}
     on:reset={handleReset}
     on:pdfUpload={handlePdfUpload}
+  />
+
+  <BookingFormValidation
+    bind:this={validationRef}
+    {formData}
+    {selectedBookCircle}
+    {currentMonth}
+    {currentYear}
   />
 
   <BookingFormDialogs
