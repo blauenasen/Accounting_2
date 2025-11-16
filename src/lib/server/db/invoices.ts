@@ -264,7 +264,7 @@ export function getInvoicePdf(db: Database.Database, id_invoice: number): Buffer
 }
 
 export function setInvoiceBooked(db: Database.Database, id_invoice: number, booked = 1): void {
-  _db.prepare(`UPDATE invoice SET booked=? WHERE id_invoice=?`).run(toInt(booked), toInt(id_invoice));
+  db.prepare(`UPDATE invoice SET booked=? WHERE id_invoice=?`).run(toInt(booked), toInt(id_invoice));
 }
 
 export function setInvoiceBlocked(db: Database.Database, id_invoice: number, blocked = 1): Database.RunResult {

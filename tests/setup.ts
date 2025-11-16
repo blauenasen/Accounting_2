@@ -11,6 +11,8 @@ export function cleanupTestData(): void {
 	try {
 		// Use WAL mode to avoid locks
 		db.pragma('journal_mode = WAL');
+		// Set busy timeout to 30 seconds
+		db.pragma('busy_timeout = 30000');
 
 		// Delete in correct order to avoid foreign key issues
 		db.prepare('DELETE FROM invoice_db WHERE id_invoice IN (SELECT id_invoice FROM invoice WHERE year = 9999)').run();
