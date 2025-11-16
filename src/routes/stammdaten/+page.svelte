@@ -1,3 +1,5 @@
+<!-- routes/stammdaten/+page.svelte -->
+
 <script lang="ts">
   import { onMount } from 'svelte';
   import '$lib/all.css';
@@ -7,7 +9,7 @@
     adress1: string;
     adress2: string;
     email: string;
-    tax: string;
+    tax: string | number;
     registration: string;
   }
 
@@ -22,22 +24,21 @@
 
   let showOfferPreview = true;
 
-  async function laden(): Promise<void> {
+  async function laden() {
     const res = await fetch('/stammdaten');
     const data = await res.json();
     stammdaten = data;
   }
 
-  function ladeStammdaten(): void {
+  function ladeStammdaten() {
     laden();
   }
 
   onMount(() => {
     ladeStammdaten();
   });
-</script>
 
-<h1>Welcome to Apelt Accounting</h1>
+</script>
 
 <h3>Master data</h3>
 
@@ -48,6 +49,7 @@
   <p><span class="label">E-Mail</span> <span class="value">{stammdaten.email}</span></p>
   <p><span class="label">Tax ID:</span> <span class="value">{Number(stammdaten.tax).toFixed(2)} %</span></p>
   <p><span class="label">Commercial Register</span> <span class="value">{stammdaten.registration}</span></p>
+
 {:else}
   <p>No data loaded.</p>
 {/if}
