@@ -673,3 +673,84 @@ export interface ContextMenuState {
   y: number;
   rowIndex: number | null;
 }
+
+/**
+ * Invoice position (line item)
+ */
+export interface InvoicePosition {
+  id: number | null;
+  id_invoice: number | null;
+  pos: number;
+  quantity: number;
+  description: string;
+  unit_price: number;
+  gst_rate: number;
+  subtotal: number;
+  gst: number;
+  total: number;
+}
+
+/**
+ * Invoice data
+ */
+export interface InvoiceData {
+  id_invoice: number | null;
+  year: string;
+  num: string;
+  date: string;
+  dateISO: string;
+  account: number | null;
+  estimateNr1: string;
+  estimateNr2: string;
+  blocked: boolean;
+  booked: boolean;
+  // Computed fields
+  isNew: boolean;
+  dirty: boolean;
+  headerDirty: boolean;
+  linesDirty: boolean;
+  linesCount: number;
+}
+
+/**
+ * Debtor information
+ */
+export interface DebtorInfo {
+  account: number | null;
+  name: string;
+  salutation?: string;
+  adress1?: string;
+  adress2?: string;
+  adress3?: string;
+  email?: string;
+}
+
+/**
+ * Invoice totals
+ */
+export interface InvoiceTotals {
+  subtotal: number;
+  gstSum: number;
+  gstPct: number;
+  total: number;
+}
+
+/**
+ * Invoice dialog state
+ */
+export interface InvoiceDialogState {
+  sendModal: {
+    visible: boolean;
+    invoiceRow: unknown | null;
+    mailDefaults: {
+      to: string;
+      subject: string;
+      body: string;
+    };
+  };
+}
+
+/**
+ * Invoice view mode
+ */
+export type InvoiceViewMode = 'list' | 'form';
