@@ -2,8 +2,8 @@
 <script lang="ts">
   // Booking form orchestrator component - coordinates all sub-components
   import { onMount, onDestroy } from 'svelte';
-  import { showToast } from '$lib/utils/toast.js';
-  import type { BookingFormData, BookingFormDialogState } from '$lib/types/booking.js';
+  import { toastStore } from '$lib/utils/toast.js';
+  import type { BookingFormData, BookingFormDialogState } from '$lib/types/ui.js';
 
   // Sub-components
   import BookingFormFields from './BookingFormFields.svelte';
@@ -169,19 +169,13 @@
         detail: payload
       }));
 
-      showToast({
-        message: 'Booking saved successfully',
-        type: 'success'
-      });
+      toastStore.success('Booking saved successfully');
 
       // Reset form after successful submission
       resetForm();
 
     } catch (error) {
-      showToast({
-        message: error instanceof Error ? error.message : 'Failed to save booking',
-        type: 'error'
-      });
+      toastStore.error(error instanceof Error ? error.message : 'Failed to save booking');
     }
   }
 

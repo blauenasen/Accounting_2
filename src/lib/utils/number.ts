@@ -246,7 +246,7 @@ export function isValidNumber(value: unknown): boolean {
     return false;
   }
 
-  const num = parseToNumber(value);
+  const num = parseToNumber(value as string | number | null | undefined);
   return num !== null;
 }
 
@@ -256,7 +256,7 @@ export function isValidNumber(value: unknown): boolean {
  * @returns true if positive number
  */
 export function isPositiveNumber(value: unknown): boolean {
-  const num = parseToNumber(value);
+  const num = parseToNumber(value as string | number | null | undefined);
   return num !== null && num > 0;
 }
 
@@ -266,7 +266,7 @@ export function isPositiveNumber(value: unknown): boolean {
  * @returns true if non-negative number
  */
 export function isNonNegativeNumber(value: unknown): boolean {
-  const num = parseToNumber(value);
+  const num = parseToNumber(value as string | number | null | undefined);
   return num !== null && num >= 0;
 }
 

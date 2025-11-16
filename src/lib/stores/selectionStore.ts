@@ -7,7 +7,7 @@ import type { SelectionState } from '../types/ui.js';
 /**
  * Internal selection state
  */
-interface InternalSelectionState {
+export interface InternalSelectionState {
   selectedIds: Set<number>;
   lastSelectedIndex: number;
   anchorIndex: number;
