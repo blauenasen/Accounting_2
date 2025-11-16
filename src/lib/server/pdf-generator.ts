@@ -1,9 +1,12 @@
-// src/lib/server/pdf-generator.ts
+/**
+ * File: src/lib/server/pdf-generator.ts
+ * Generate PDF for invoices using Puppeteer and Svelte SSR
+ */
+
 import puppeteer from 'puppeteer';
-import { render } from 'svelte/server';
+import type { Browser } from 'puppeteer';
 import Invoice from '$lib/components/invoice.svelte';
 import { db } from './index.js';
-import type { Browser, Page } from 'puppeteer';
 
 /**
  * Invoice sender information
@@ -206,28 +209,29 @@ function wrapHtml(origin: string, htmlBody: string): string {
 export async function generateInvoicePdfBuffer(id_invoice: number, origin: string = 'http://localhost:5173'): Promise<Buffer> {
   const data = await buildInvoiceData(id_invoice);
 
-  const { html } = render(Invoice, {
-    props: {
-      sender: data.sender,
-      receiver: data.receiver,
-      offerNumber: data.invoiceNumber,
-      offerDate: data.invoiceDate,
-      estimateNumber: data.estimateNumber,
-      positions: data.positions,
-      subtotal: data.subtotal,
-      gst: data.gst,
-      total: data.total
-    }
+  // Render Svelte component to HTML (Svelte 4 server-side rendering)
+  // Note: TypeScript doesn't recognize .render() on the constructor, but it exists at runtime
+  const rendered = (Invoice as any).render({
+    sender: data.sender,
+    receiver: data.receiver,
+    offerNumber: data.invoiceNumber,
+    offerDate: data.invoiceDate,
+    estimateNumber: data.estimateNumber,
+    positions: data.positions,
+    subtotal: data.subtotal,
+    gst: data.gst,
+    total: data.total
   });
 
-  const browser = await puppeteer.launch({
-    headless: 'new',
+  // Generate PDF with Puppeteer
+  const browser: Browser = await puppeteer.launch({
+    headless: true,
     args: ['--no-sandbox', '--font-render-hinting=none']
   });
 
   try {
     const page = await browser.newPage();
-    await page.setContent(wrapHtml(origin, html), { waitUntil: 'networkidle0' });
+    await page.setContent(wrapHtml(origin, rendered.html), { waitUntil: 'networkidle0' });
 
     await page.addStyleTag({
       content: `
