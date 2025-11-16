@@ -10,6 +10,7 @@
   import InvoiceTotalsBox from '$lib/components/invoice/invoiceTotalsBox.svelte';
   import InvoiceStatusBar from '$lib/components/invoice/invoiceStatusBar.svelte';
   import InvoiceEstimateNumbers from '$lib/components/invoice/invoiceEstimateNumbers.svelte';
+  import InvoicePositions from './InvoicePositions.svelte';
 
   const dispatch = createEventDispatcher<{
     save: void;
@@ -27,6 +28,7 @@
   export let invoiceData: InvoiceData;
   export let debtor: DebtorInfo;
   export let debtors: DebtorInfo[] = [];
+  export let positions: any[] = [];
   export let totals: { subtotal: number; gstSum: number; gstPct: number; total: number };
   export let loading: boolean = false;
   export let saving: boolean = false;
@@ -41,8 +43,24 @@
   export let canSend: boolean = false;
   export let canHandover: boolean = false;
 
-  // Positions component ref (will be integrated later)
+  // Positions component ref
   let positionsRef: any;
+
+  /**
+   * Handle positions change
+   */
+  function handlePositionsChange(event: CustomEvent): void {
+    const { positions: newPositions } = event.detail;
+    dispatch('lines-change', { positions: newPositions });
+  }
+
+  /**
+   * Handle recalculate
+   */
+  function handleRecalculate(): void {
+    // Trigger recalculation in parent
+    dispatch('lines-change', { positions });
+  }
 
   /**
    * Handle header field changes
@@ -132,12 +150,15 @@
     {/if}
   </div>
 
-  <!-- Positions Table (placeholder - will integrate InvoicePositions component later) -->
+  <!-- Positions Table -->
   <div class="form-positions">
-    <div class="positions-placeholder">
-      <p>Invoice Positions Component</p>
-      <p class="note">Will be integrated with InvoicePositions.svelte</p>
-    </div>
+    <InvoicePositions
+      bind:this={positionsRef}
+      bind:positions
+      disabled={invoiceData.blocked || invoiceData.booked || saving}
+      on:change={handlePositionsChange}
+      on:recalculate={handleRecalculate}
+    />
   </div>
 
   <!-- Totals Box -->

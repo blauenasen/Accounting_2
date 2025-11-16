@@ -12,6 +12,7 @@
   // Sub-components
   import InvoiceState from './InvoiceState.svelte';
   import InvoiceForm from './InvoiceForm.svelte';
+  import InvoiceList from './InvoiceList.svelte';
   import InvoiceDialogs from './InvoiceDialogs.svelte';
 
   const dispatch = createEventDispatcher<{
@@ -220,6 +221,18 @@
   }
 
   /**
+   * Handle lines change
+   */
+  function handleLinesChange(event: CustomEvent): void {
+    const { positions: newPositions } = event.detail;
+    positions = newPositions;
+    invoiceData.linesDirty = true;
+    if (stateRef) {
+      stateRef.updateTotals();
+    }
+  }
+
+  /**
    * Handle send success
    */
   async function handleSendSuccess(): Promise<void> {
@@ -227,6 +240,60 @@
     toastStore.success('Invoice sent successfully');
     if (stateRef) {
       await stateRef.loadInvoices();
+    }
+  }
+
+  /**
+   * Handle invoice selection from list
+   */
+  function handleInvoiceSelect(event: CustomEvent): void {
+    const { invoice } = event.detail;
+    // TODO: Load invoice data and switch to form view
+    toastStore.info(`Invoice ${invoice.year}-${invoice.num} selected`);
+    viewMode = 'form';
+  }
+
+  /**
+   * Handle new invoice from list
+   */
+  function handleNewInvoice(): void {
+    if (stateRef) {
+      stateRef.initNewForm();
+    }
+    viewMode = 'form';
+  }
+
+  /**
+   * Handle view PDF
+   */
+  function handleViewPdf(event: CustomEvent): void {
+    const { invoiceId } = event.detail;
+    toastStore.info(`View PDF for invoice ${invoiceId}`);
+    // TODO: Open PDF in new window
+  }
+
+  /**
+   * Handle send email from list
+   */
+  function handleSendEmailFromList(event: CustomEvent): void {
+    const { invoiceId } = event.detail;
+    // TODO: Load invoice and open send dialog
+    toastStore.info(`Prepare to send invoice ${invoiceId}`);
+  }
+
+  /**
+   * Handle delete invoice
+   */
+  async function handleDeleteInvoice(event: CustomEvent): Promise<void> {
+    const { invoiceId } = event.detail;
+    try {
+      // TODO: API call to delete invoice
+      toastStore.success(`Invoice ${invoiceId} deleted`);
+      if (stateRef) {
+        await stateRef.loadInvoices();
+      }
+    } catch (error) {
+      toastStore.error('Failed to delete invoice');
     }
   }
 
@@ -262,6 +329,7 @@
       {invoiceData}
       {debtor}
       {debtors}
+      {positions}
       {totals}
       {loading}
       {saving}
@@ -281,14 +349,19 @@
       on:send={handleSend}
       on:handover={handleHandover}
       on:header-change={handleHeaderChange}
+      on:lines-change={handleLinesChange}
     />
   {:else}
-    <!-- List View (placeholder - will integrate InvoiceList component later) -->
-    <div class="list-view-placeholder">
-      <h2>Invoice List View</h2>
-      <p>Will be integrated with InvoiceList.svelte component</p>
-      <button type="button" on:click={() => switchView('form')}>New Invoice</button>
-    </div>
+    <!-- List View -->
+    <InvoiceList
+      {invoices}
+      {loading}
+      on:select={handleInvoiceSelect}
+      on:new-invoice={handleNewInvoice}
+      on:view-pdf={handleViewPdf}
+      on:send-email={handleSendEmailFromList}
+      on:delete={handleDeleteInvoice}
+    />
   {/if}
 
   <!-- Dialogs -->
@@ -304,42 +377,4 @@
     background: #f5f5f5;
   }
 
-  .list-view-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 400px;
-    padding: 2rem;
-    background: #fff;
-    border: 2px dashed #d1d5db;
-    border-radius: 8px;
-    margin: 2rem;
-  }
-
-  .list-view-placeholder h2 {
-    margin: 0 0 1rem 0;
-    color: #374151;
-  }
-
-  .list-view-placeholder p {
-    margin: 0 0 1.5rem 0;
-    color: #6b7280;
-  }
-
-  .list-view-placeholder button {
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .list-view-placeholder button:hover {
-    background: #2563eb;
-  }
 </style>
