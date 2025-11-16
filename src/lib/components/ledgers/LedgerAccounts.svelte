@@ -1,6 +1,7 @@
 <!-- Module: src/lib/components/ledgers/LedgerAccounts.svelte -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
+  import './ledgers.css';
   import { tip } from '$lib/actions/tip';
 
   const ENDPOINT = '/api/ledgers/accounts';
@@ -432,56 +433,15 @@
 
 <style>
   .ledger-section {
-    border: 1px solid #d1d5db;
-    background: #fff;
-    border-radius: 8px;
-    padding: 18px;
     margin-bottom: 24px;
   }
 
   .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
     position: sticky;
     top: 0;
     z-index: 4;
     background: #fff;
     padding-bottom: 4px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  .section-header h2 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-  }
-
-  .header-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .toggle-btn {
-    background: transparent;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px 8px;
-    color: #4b5563;
-    transition: color 0.15s ease-in-out;
-  }
-
-  .toggle-btn:hover {
-    color: #111827;
-  }
-
-  .section-subtitle {
-    margin: 2px 0 0;
-    font-size: 12px;
-    color: #6b7280;
   }
 
   .accounts-layout {
