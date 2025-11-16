@@ -560,3 +560,116 @@ export interface BookingFormKeepFlags {
   tax: boolean;
   desc: boolean;
 }
+
+/**
+ * Journal row from database
+ */
+export interface JournalRow {
+  IdNr?: number | null;
+  Jahr?: number | null;
+  Monat?: number | null;
+  Tag?: number | null;
+  LfdNr?: number | null;
+  BookCircle?: number | null;
+  Kto?: number | null;
+  GegKto?: number | null;
+  UE?: number | null;
+  Brutto?: number | null;
+  NettoGes?: number | null;
+  VStUSt?: number | null;
+  Steuer?: number | null;
+  BU?: number | null;
+  SH?: string | null;
+  GU?: string | null;
+  BelNr?: string | null;
+  Datum?: string | null;
+  Buchungstext?: string | null;
+  FaDatum?: string | null;
+  Skonto?: number | null;
+  HK?: string | null;
+  BL?: string | null;
+  Warnung?: string | null;
+  Gesperrt?: boolean | null;
+  pdf_blob?: unknown | null;
+  id_invoice?: number | null;
+  AusziffNr?: number | null;
+  AusziffArt?: string | null;
+  Faelligkeit?: string | null;
+  // Computed fields for display
+  ContraAccDynamic?: number | null;
+  SumSoll?: number | null;
+  SumHaben?: number | null;
+  Balance?: number | null;
+  BuNr?: number | null;
+  // Allow lowercase variants for compatibility
+  [key: string]: unknown;
+}
+
+/**
+ * Primanota table dialog state
+ */
+export interface PrimanotaDialogState {
+  cancelBooking: {
+    visible: boolean;
+    bookingData: JournalRow | null;
+  };
+  splitKreditor: {
+    visible: boolean;
+    invoiceData: {
+      creditorName: string;
+      invoiceNr: string;
+      date: string;
+      amount: number;
+      idNr: number;
+    } | null;
+  };
+  splitDebitor: {
+    visible: boolean;
+    invoiceData: {
+      debitorName: string;
+      invoiceNr: string;
+      date: string;
+      amount: number;
+      idNr: number;
+    } | null;
+  };
+  reconcile: {
+    visible: boolean;
+    selectedEntries: JournalRow[];
+  };
+  accountSelection: {
+    visible: boolean;
+    field: string;
+    bookCircle: number | null;
+    accounts: unknown[];
+  };
+}
+
+/**
+ * Primanota table sort state
+ */
+export interface PrimanotaSortState {
+  key: string;
+  direction: 'asc' | 'desc';
+  userSelected: boolean;
+}
+
+/**
+ * Primanota table filter state (per column)
+ */
+export interface PrimanotaFilterState {
+  mode: string;
+  valueKey: string;
+  inputValue: string;
+  comparableValue: string | number | null;
+}
+
+/**
+ * Context menu state
+ */
+export interface ContextMenuState {
+  visible: boolean;
+  x: number;
+  y: number;
+  rowIndex: number | null;
+}
