@@ -65,7 +65,8 @@
       </div>
 
       <div class="rightcol">
-        <img class="logo" src="/img/logo.png" alt="Company logo" />
+        <!-- TODO: Add company logo in Phase 4 (Styling Alignment) -->
+        <!-- <img class="logo" src="/img/logo.png" alt="Company logo" /> -->
         <div class="meta">
           <div class="title">INVOICE</div>
           <div class="meta-row"><span class="lbl">INVOICE No.:</span><span class="val">{numberText}</span></div>

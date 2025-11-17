@@ -1,8 +1,4 @@
 <!-- Modul: src/routes/debtors/+page.svelte -->
-<svelte:head>
-  <link rel="stylesheet" href="/css/debtors.css">
-  <script src="/js/global-input.js"></script>
-</svelte:head>
 
 <script lang="ts">
   import { onMount } from 'svelte';

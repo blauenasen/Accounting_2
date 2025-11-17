@@ -1,7 +1,4 @@
 <!-- Modul: src/routes/ledgers/+page.svelte -->
-<svelte:head>
-  <script src="/js/global-input.js"></script>
-</svelte:head>
 
 <script lang="ts">
   import '$lib/all.css';

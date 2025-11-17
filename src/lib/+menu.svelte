@@ -7,7 +7,9 @@
 <header class="menu-bar">
   <div class="menu-logo">
     <a href="/">
-      <img src="/img/logo.png" alt="Company Logo" class="logo" />
+      <!-- TODO: Add company logo in Phase 4 (Styling Alignment) -->
+      <!-- <img src="/img/logo.png" alt="Company Logo" class="logo" /> -->
+      <span class="logo-placeholder">ACCOUNTING</span>
     </a>
   </div>
   <nav class="menu-nav">
