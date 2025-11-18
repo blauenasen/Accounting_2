@@ -1,0 +1,155 @@
+/* ==================================================================
+   BOOKING FORM COMPONENT STYLES
+   Date: 2025-11-18
+   ================================================================== */
+
+/* ==================================================================
+   FORM CONTAINER
+   ================================================================== */
+
+.booking-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* ==================================================================
+   FORM FIELDS LAYOUT
+   ================================================================== */
+
+.booking-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns:
+    37px 80px 35px 100px 150px 120px 100px 50px 120px 60px 350px 120px;
+  gap: 12px;
+  align-items: end;
+}
+
+.form-row.locked {
+  opacity: 0.6;
+}
+
+/* ==================================================================
+   FORM FIELD
+   ================================================================== */
+
+.form-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.form-field label {
+  font-weight: var(--font-weight-bold);
+  font-size: 11px;
+  text-align: center;
+  display: block;
+  width: 100%;
+}
+
+.form-field input,
+.form-field select {
+  width: 100%;
+  padding: 4px 6px;
+  font-size: 0.9rem;
+  height: 28px;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border-table);
+  border-radius: 4px;
+  font-family: var(--font-family-base);
+}
+
+.form-field input:focus,
+.form-field select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.form-field input:disabled,
+.form-field select:disabled {
+  background-color: #e5e7eb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* ==================================================================
+   READONLY & SPECIAL STATES
+   ================================================================== */
+
+.readonly-field {
+  background-color: #f3f4f6;
+  color: #374151;
+  pointer-events: none;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* SH Field - Haben (Credit) State */
+.sh-haben {
+  background-color: #fee2e2;
+  color: #dc2626;
+  font-weight: var(--font-weight-bold);
+}
+
+/* ==================================================================
+   KEEP TOGGLE
+   ================================================================== */
+
+.keep-toggle {
+  position: absolute;
+  bottom: -17px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 9px;
+}
+
+.keep-toggle input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.keep-label {
+  font-size: 9px;
+  color: #6b7280;
+}
+
+/* ==================================================================
+   FORM ACTIONS
+   ================================================================== */
+
+.form-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ==================================================================
+   DESCRIPTION FIELD (WIDER)
+   ================================================================== */
+
+.description-field {
+  grid-column: span 2;
+}

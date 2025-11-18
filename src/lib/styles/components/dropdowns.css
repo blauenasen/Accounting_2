@@ -1,0 +1,183 @@
+/* ==================================================================
+   DROPDOWN COMPONENT STYLES
+   Date: 2025-11-18
+   ================================================================== */
+
+/* ==================================================================
+   BASE DROPDOWN / SELECT
+   ================================================================== */
+
+.dropdown,
+select {
+  padding: var(--padding-input);
+  border: 1px solid var(--color-border-table);
+  border-radius: 4px;
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-base);
+  background-color: white;
+  cursor: pointer;
+  width: var(--select-width-default);
+}
+
+.dropdown:focus,
+select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.dropdown:disabled,
+select:disabled {
+  background-color: #e5e7eb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* ==================================================================
+   CUSTOM DROPDOWN CONTAINER
+   ================================================================== */
+
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--padding-input) 8px;
+  border: 1px solid var(--color-border-table);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.dropdown-trigger:hover {
+  border-color: #9ca3af;
+}
+
+.dropdown-trigger:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.dropdown-arrow {
+  margin-left: 8px;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* ==================================================================
+   DROPDOWN MENU
+   ================================================================== */
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid var(--color-border-table);
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+}
+
+.dropdown-item:hover {
+  background: #f3f4f6;
+}
+
+.dropdown-item.selected {
+  background: #dbeafe;
+  font-weight: 500;
+}
+
+.dropdown-item:focus {
+  outline: none;
+  background: #e5e7eb;
+}
+
+/* ==================================================================
+   ACCOUNT DROPDOWN SPECIFIC
+   ================================================================== */
+
+.account-dropdown {
+  width: var(--input-width-account);
+}
+
+.account-dropdown .dropdown-menu {
+  width: 300px;
+}
+
+.account-dropdown-item {
+  display: flex;
+  gap: 12px;
+}
+
+.account-dropdown-item .account-number {
+  flex: 0 0 60px;
+  font-weight: 600;
+}
+
+.account-dropdown-item .account-name {
+  flex: 1;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==================================================================
+   COMPANY CODE DROPDOWN SPECIFIC
+   ================================================================== */
+
+.company-code-dropdown {
+  width: 200px;
+}
+
+.company-code-dropdown .dropdown-trigger {
+  font-weight: var(--font-weight-bold);
+}
+
+/* ==================================================================
+   TAX DROPDOWN SPECIFIC
+   ================================================================== */
+
+.tax-dropdown {
+  width: 50px;
+  text-align: center;
+}
+
+/* ==================================================================
+   BOOK CIRCLE DROPDOWN
+   ================================================================== */
+
+.book-circle-dropdown {
+  width: 100px;
+}
+
+.book-circle-dropdown-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.book-circle-dropdown-item .circle-number {
+  font-weight: 600;
+}
+
+.book-circle-dropdown-item .circle-code {
+  color: #666;
+  font-size: 12px;
+}

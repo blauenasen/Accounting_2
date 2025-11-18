@@ -1,0 +1,300 @@
+/* ==================================================================
+   DIALOG COMPONENT STYLES
+   Date: 2025-11-18
+   ================================================================== */
+
+/* ==================================================================
+   DIALOG OVERLAY
+   ================================================================== */
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* ==================================================================
+   DIALOG BOX
+   ================================================================== */
+
+.dialog {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dialog-small {
+  width: 400px;
+}
+
+.dialog-large {
+  width: 800px;
+}
+
+/* ==================================================================
+   DIALOG HEADER
+   ================================================================== */
+
+.dialog h2,
+.dialog-title {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* ==================================================================
+   DIALOG CONTENT
+   ================================================================== */
+
+.dialog-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+/* Info row (e.g., "Book Circle: X", "Available: Y") */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: var(--font-size-base);
+  color: #666;
+}
+
+/* ==================================================================
+   FILTER INPUT
+   ================================================================== */
+
+.filter-row {
+  margin-bottom: 12px;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border-table);
+  border-radius: 4px;
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-base);
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ==================================================================
+   LIST CONTAINER (for account selection, etc.)
+   ================================================================== */
+
+.dialog-list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--color-border-table);
+  border-radius: 4px;
+  max-height: 400px;
+}
+
+/* Alias for backward compatibility */
+.accounts-list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--color-border-table);
+  border-radius: 4px;
+}
+
+/* ==================================================================
+   LIST ROW
+   ================================================================== */
+
+.dialog-row,
+.account-row {
+  display: flex;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dialog-row:hover,
+.account-row:hover {
+  background: #f9fafb;
+}
+
+.dialog-row.selected,
+.account-row.selected {
+  background: #dbeafe;
+}
+
+.dialog-row:focus,
+.account-row:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+/* Account row specific */
+.account-number {
+  flex: 0 0 100px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.account-designation {
+  flex: 1;
+  color: #666;
+}
+
+/* ==================================================================
+   DIALOG BUTTONS
+   ================================================================== */
+
+.dialog-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-ok {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-base);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.btn-cancel {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #4b5563;
+}
+
+.btn-ok {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-ok:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn-ok:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ==================================================================
+   DIALOG VARIANTS
+   ================================================================== */
+
+/* Warning Dialog */
+.dialog-warning .dialog-title {
+  color: #d97706;
+}
+
+/* Error Dialog */
+.dialog-error .dialog-title {
+  color: #dc2626;
+}
+
+/* Success Dialog */
+.dialog-success .dialog-title {
+  color: #059669;
+}
+
+/* ==================================================================
+   DIALOG MESSAGE
+   ================================================================== */
+
+.dialog-message {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* ==================================================================
+   VALIDATION ERROR LIST
+   ================================================================== */
+
+.validation-errors {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+
+.validation-errors li {
+  padding: 8px 12px;
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+  margin-bottom: 8px;
+  font-size: var(--font-size-base);
+  color: #dc2626;
+}
+
+/* ==================================================================
+   SPLIT DIALOG SPECIFIC
+   ================================================================== */
+
+.split-dialog {
+  width: 700px;
+}
+
+.split-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.split-table th,
+.split-table td {
+  padding: var(--padding-table-cell);
+  border: 1px solid var(--color-border-table);
+  text-align: left;
+}
+
+.split-table th {
+  background: var(--color-bg-table-header);
+  font-weight: var(--font-weight-bold);
+}
+
+.split-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  font-weight: var(--font-weight-bold);
+}
+
+.split-total.balanced {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.split-total.unbalanced {
+  background: #fef2f2;
+  color: #dc2626;
+}

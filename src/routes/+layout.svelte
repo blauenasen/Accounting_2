@@ -11,6 +11,9 @@
   import '$lib/styles/components/buttons.css';
   import '$lib/styles/components/forms.css';
   import '$lib/styles/components/tables.css';
+  import '$lib/styles/components/booking-form.css';
+  import '$lib/styles/components/dialogs.css';
+  import '$lib/styles/components/dropdowns.css';
 </script>
 
 <svelte:head>
