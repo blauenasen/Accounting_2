@@ -4,33 +4,14 @@
    ================================================================== */
 
 /* ==================================================================
-   RESET & BASE STYLES
+   BASE STYLES (matching Original - no aggressive reset)
    ================================================================== */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  height: 100%;
-}
-
 body {
-  min-height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-normal);
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-body);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background-color: #f7f4ef;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #989493;
 }
 
 
@@ -48,8 +29,33 @@ h6 {
   line-height: 1.2;
 }
 
+/* h1 with green background (from Original) */
 h1 {
   font-size: var(--font-size-header);
+  color: black;
+  background-color: #c8e78d;
+  text-align: left;
+  margin-left: 10px;
+  margin-bottom: 5px;
+  padding: 5px 10px;
+}
+
+h2 {
+  color: #666666;
+}
+
+h3 {
+  color: #333333;
+}
+
+/* h4 also with green background (from Original) */
+h4 {
+  color: black;
+  background-color: #c8e78d;
+  text-align: left;
+  margin-left: 0px;
+  margin-bottom: 5px;
+  padding: 5px 10px;
 }
 
 

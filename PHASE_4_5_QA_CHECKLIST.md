@@ -1,14 +1,14 @@
-# Phase 4-5 QA Checklist
-**Date:** 2025-11-18
-**Status:** Ready for manual testing
+# Phase 4-5 QA Checkliste
+**Datum:** 2025-11-18
+**Status:** Bereit für manuelle Tests
 
 ---
 
-## CSS Statistics
+## CSS-Statistik
 
-### File Line Counts (All under 500 ✅)
-| File | Lines | Status |
-|------|-------|--------|
+### Zeilenanzahl pro Datei (Alle unter 500 ✅)
+| Datei | Zeilen | Status |
+|-------|--------|--------|
 | variables.css | 134 | 🟢 |
 | global.css | 128 | 🟢 |
 | buttons.css | 124 | 🟢 |
@@ -21,146 +21,146 @@
 | debtors.css | 173 | 🟢 |
 | creditors.css | 173 | 🟢 |
 | booking.css | 115 | 🟢 |
-| **Total** | **2242** | ✅ |
+| **Gesamt** | **2242** | ✅ |
 
-### Bundle Sizes (Production Build)
+### Bundle-Größen (Production Build)
 - Layout/Global CSS: ~20KB
 - BookingFormContainer: ~16KB
 - InvoiceContainer: ~11KB
-- Most components: <3KB
-- **Total CSS footprint: ~70KB** (acceptable)
+- Meiste Komponenten: <3KB
+- **Gesamt CSS: ~70KB** (akzeptabel)
 
 ---
 
-## Manual QA Checklist
+## Manuelle QA Checkliste
 
-### Pages to Test
+### Zu testende Seiten
 
-#### 1. Booking Page (`/booking`)
-- [ ] Page header displays correctly
-- [ ] Form fields aligned in grid layout
-- [ ] Keep toggles positioned correctly below fields
-- [ ] Buttons (OK, Cancel, PDF) styled correctly
-- [ ] Primanota table shows with sticky header
-- [ ] Table row hover effect (smooth transition)
-- [ ] Selected row highlighting
-- [ ] Scrollbar visible and styled
+#### 1. Buchungsseite (`/booking`)
+- [ ] Seitentitel wird korrekt angezeigt
+- [ ] Formularfelder im Grid-Layout ausgerichtet
+- [ ] Keep-Toggles korrekt unter Feldern positioniert
+- [ ] Buttons (OK, Cancel, PDF) korrekt gestylt
+- [ ] Primanota-Tabelle mit Sticky-Header angezeigt
+- [ ] Tabellen-Zeilen Hover-Effekt (sanfter Übergang)
+- [ ] Ausgewählte Zeile hervorgehoben
+- [ ] Scrollbar sichtbar und gestylt
 
-#### 2. Rates Page (`/rates`)
-- [ ] Header at correct position (50px from top)
-- [ ] Input fields styled with design system
-- [ ] Button group positioned correctly
-- [ ] Table container at 225px from top
-- [ ] Table width: 790px
-- [ ] Sticky headers work when scrolling
-- [ ] Row hover effects
+#### 2. Sätze-Seite (`/rates`)
+- [ ] Header an korrekter Position (50px von oben)
+- [ ] Eingabefelder mit Design-System gestylt
+- [ ] Button-Gruppe korrekt positioniert
+- [ ] Tabellen-Container bei 225px von oben
+- [ ] Tabellenbreite: 790px
+- [ ] Sticky-Headers funktionieren beim Scrollen
+- [ ] Zeilen-Hover-Effekte
 
-#### 3. Debtors Page (`/debtors`)
-- [ ] Similar layout to Rates
-- [ ] Table width: 1365px
-- [ ] Top offset: 265px
-- [ ] All input fields styled
+#### 3. Debitoren-Seite (`/debtors`)
+- [ ] Ähnliches Layout wie Sätze
+- [ ] Tabellenbreite: 1365px
+- [ ] Top-Offset: 265px
+- [ ] Alle Eingabefelder gestylt
 
-#### 4. Creditors Page (`/creditors`)
-- [ ] Similar layout to Rates
-- [ ] Table width: 1140px
-- [ ] Top offset: 265px
-- [ ] All input fields styled
+#### 4. Kreditoren-Seite (`/creditors`)
+- [ ] Ähnliches Layout wie Sätze
+- [ ] Tabellenbreite: 1140px
+- [ ] Top-Offset: 265px
+- [ ] Alle Eingabefelder gestylt
 
-#### 5. Ledgers Page (`/ledgers`)
-- [ ] Page loads without CSS errors
-- [ ] Forms and tables styled
+#### 5. Konten-Seite (`/ledgers`)
+- [ ] Seite lädt ohne CSS-Fehler
+- [ ] Formulare und Tabellen gestylt
 
-#### 6. Estimate Page (`/estimate`)
-- [ ] Page loads without CSS errors
-- [ ] Forms styled correctly
+#### 6. Angebote-Seite (`/estimate`)
+- [ ] Seite lädt ohne CSS-Fehler
+- [ ] Formulare korrekt gestylt
 
 ---
 
-## Component Tests
+## Komponenten-Tests
 
 ### Buttons
-- [ ] `.btn-success` - Green background, white text
-- [ ] `.btn-danger` - Red background, white text
-- [ ] `.btn-secondary` - Gray background
-- [ ] `.btn-primary` - Blue background
-- [ ] Hover effects (brightness change)
-- [ ] Disabled state (opacity 0.7)
+- [ ] `.btn-success` - Grüner Hintergrund, weißer Text
+- [ ] `.btn-danger` - Roter Hintergrund, weißer Text
+- [ ] `.btn-secondary` - Grauer Hintergrund
+- [ ] `.btn-primary` - Blauer Hintergrund
+- [ ] Hover-Effekte (Helligkeitsänderung)
+- [ ] Deaktivierter Zustand (Opacity 0.7)
 
-### Forms
-- [ ] Input fields have consistent padding
-- [ ] Focus states with blue border/shadow
-- [ ] Disabled fields grayed out
-- [ ] Labels bold and centered (booking form)
+### Formulare
+- [ ] Eingabefelder haben einheitliches Padding
+- [ ] Focus-Zustände mit blauem Rahmen/Schatten
+- [ ] Deaktivierte Felder ausgegraut
+- [ ] Labels fett und zentriert (Buchungsformular)
 
-### Tables
-- [ ] Sticky headers stay fixed when scrolling
-- [ ] Row hover: background #f0f0f0
-- [ ] Selected row: background #e3f2fd
-- [ ] Highlighted row: background #fff9c4
-- [ ] Blocked row: red tint
-- [ ] Smooth transitions (0.15s)
+### Tabellen
+- [ ] Sticky-Headers bleiben beim Scrollen fixiert
+- [ ] Zeilen-Hover: Hintergrund #f0f0f0
+- [ ] Ausgewählte Zeile: Hintergrund #e3f2fd
+- [ ] Hervorgehobene Zeile: Hintergrund #fff9c4
+- [ ] Blockierte Zeile: Roter Ton
+- [ ] Sanfte Übergänge (0.15s)
 
-### Dialogs
-- [ ] Overlay covers full screen
-- [ ] Dialog centered on screen
-- [ ] Close on overlay click
-- [ ] Close on Escape key
-- [ ] Button styling (Cancel gray, OK blue)
+### Dialoge
+- [ ] Overlay bedeckt gesamten Bildschirm
+- [ ] Dialog zentriert auf Bildschirm
+- [ ] Schließen bei Klick auf Overlay
+- [ ] Schließen mit Escape-Taste
+- [ ] Button-Styling (Cancel grau, OK blau)
 
 ### Dropdowns
-- [ ] Consistent border and padding
-- [ ] Focus state with blue border
-- [ ] Menu positioned below trigger
+- [ ] Einheitlicher Rahmen und Padding
+- [ ] Focus-Zustand mit blauem Rahmen
+- [ ] Menü unter Trigger positioniert
 
 ---
 
-## Browser Compatibility
+## Browser-Kompatibilität
 
-### Chrome (Primary)
-- [ ] All styles render correctly
-- [ ] Scrollbars styled (webkit)
-- [ ] Transitions smooth
+### Chrome (Primär)
+- [ ] Alle Styles werden korrekt gerendert
+- [ ] Scrollbars gestylt (Webkit)
+- [ ] Übergänge sanft
 
 ### Firefox
-- [ ] Scrollbars styled (scrollbar-width)
-- [ ] All CSS custom properties work
-- [ ] Transitions work
+- [ ] Scrollbars gestylt (scrollbar-width)
+- [ ] Alle CSS Custom Properties funktionieren
+- [ ] Übergänge funktionieren
 
 ### Edge
-- [ ] Same as Chrome (Chromium-based)
+- [ ] Wie Chrome (Chromium-basiert)
 
 ---
 
-## Accessibility
+## Barrierefreiheit
 
-- [ ] Focus states visible on all interactive elements
-- [ ] Keyboard navigation works in tables
-- [ ] Sufficient color contrast
-- [ ] Screen reader friendly (semantic HTML)
+- [ ] Focus-Zustände auf allen interaktiven Elementen sichtbar
+- [ ] Tastaturnavigation in Tabellen funktioniert
+- [ ] Ausreichender Farbkontrast
+- [ ] Screenreader-freundlich (semantisches HTML)
 
 ---
 
 ## Performance
 
-- [ ] First paint < 200ms
-- [ ] No layout shifts after load
-- [ ] Scrolling smooth (60fps)
-- [ ] No unnecessary CSS repaints
+- [ ] First Paint < 200ms
+- [ ] Keine Layout-Verschiebungen nach Laden
+- [ ] Scrollen flüssig (60fps)
+- [ ] Keine unnötigen CSS-Repaints
 
 ---
 
-## Known Issues
+## Bekannte Probleme
 
-None reported.
+Keine gemeldet.
 
 ---
 
-## Sign-off
+## Abnahme
 
-- [ ] All critical paths tested
-- [ ] No blocking issues found
-- [ ] Ready for Phase 5 completion
+- [ ] Alle kritischen Pfade getestet
+- [ ] Keine blockierenden Probleme gefunden
+- [ ] Bereit für Phase 5 Abschluss
 
-**Tested by:** ________________
-**Date:** ________________
+**Getestet von:** ________________
+**Datum:** ________________

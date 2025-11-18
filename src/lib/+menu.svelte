@@ -1,15 +1,13 @@
 <!-- File: src/lib/+menu.svelte -->
 <script lang="ts">
   import { page } from '$app/stores';
-  import '$lib/all.css'; // CSS imported as module
+  // Menu styles now imported via +layout.svelte (styles/components/menu.css)
 </script>
 
 <header class="menu-bar">
   <div class="menu-logo">
     <a href="/">
-      <!-- TODO: Add company logo in Phase 4 (Styling Alignment) -->
-      <!-- <img src="/img/logo.png" alt="Company Logo" class="logo" /> -->
-      <span class="logo-placeholder">ACCOUNTING</span>
+      <img src="/img/logo.png" alt="Company Logo" class="logo" />
     </a>
   </div>
   <nav class="menu-nav">

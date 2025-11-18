@@ -19,7 +19,8 @@
   --color-border-table: #ddd;          /* Table cell borders (lighter gray) */
 
   /* Text Colors */
-  --color-text-primary: #000;          /* Black - All text */
+  --color-text-primary: #989493;       /* Gray - Body text (from Original) */
+  --color-text-black: #000;            /* Black - Headers, emphasis */
 
 
   /* ================================================================

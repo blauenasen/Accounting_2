@@ -1,0 +1,53 @@
+/* ==================================================================
+   MENU COMPONENT STYLES
+   Exact copy from: Accounting/src/lib/all.css (lines 48-94)
+   Date: 2025-11-18
+   ================================================================== */
+
+.menu-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: gray;
+  background-color: #f7f4ef;
+  border-bottom: 1px solid #ccc;
+}
+
+.menu-logo img.logo {
+  height: 50px !important;
+  width: auto !important;
+  display: block !important;
+  margin-left: 0 !important;
+}
+
+.menu-nav {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  display: flex;
+  gap: 1rem;
+  margin-left: 15px;
+}
+
+.menu-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: normal;
+  transition: color 0.3s ease;
+}
+
+.menu-nav a:hover {
+  border: 1px solid #666666;
+  padding: 0px 5px;
+  border-radius: 4px;
+  color: red;
+  font-weight: normal;
+  font-size: 16px;
+}
+
+.menu-nav a.active {
+  border: 1px solid black;
+  padding: 0px 5px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: red;
+}
