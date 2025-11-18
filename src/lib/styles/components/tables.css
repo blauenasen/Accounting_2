@@ -108,6 +108,10 @@ td.left {
    ROW STATES
    ================================================================== */
 
+tbody tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
 tbody tr:hover {
   background-color: #f0f0f0;
 }
@@ -116,8 +120,36 @@ tbody tr.selected {
   background-color: #e3f2fd;
 }
 
+tbody tr.selected:hover {
+  background-color: #bbdefb;
+}
+
 tbody tr.highlighted {
   background-color: #fff9c4;
+}
+
+tbody tr.highlighted:hover {
+  background-color: #fff59d;
+}
+
+tbody tr.blocked-row {
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+tbody tr.blocked-row:hover {
+  background-color: #fee2e2;
+}
+
+/* Focus state for keyboard navigation */
+tbody tr:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+tbody tr:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
 }
 
 
@@ -187,22 +219,125 @@ tbody tr.highlighted {
 
 
 /* ==================================================================
-   TABLE SCROLLBAR STYLING (Optional - for consistency)
+   TABLE COLUMN WIDTHS - PRIMANOTA TABLE
+   ================================================================== */
+
+.primanota-table th.col-date,
+.primanota-table td.col-date {
+  width: 90px;
+  text-align: center;
+}
+
+.primanota-table th.col-account,
+.primanota-table td.col-account {
+  width: 70px;
+  text-align: center;
+}
+
+.primanota-table th.col-contra,
+.primanota-table td.col-contra {
+  width: 70px;
+  text-align: center;
+}
+
+.primanota-table th.col-amount,
+.primanota-table td.col-amount {
+  width: 100px;
+  text-align: right;
+}
+
+.primanota-table th.col-sh,
+.primanota-table td.col-sh {
+  width: 35px;
+  text-align: center;
+}
+
+.primanota-table th.col-tax,
+.primanota-table td.col-tax {
+  width: 40px;
+  text-align: center;
+}
+
+.primanota-table th.col-description,
+.primanota-table td.col-description {
+  width: auto;
+  min-width: 200px;
+}
+
+.primanota-table th.col-reference,
+.primanota-table td.col-reference {
+  width: 120px;
+}
+
+
+/* ==================================================================
+   TABLE SCROLLBAR STYLING - WEBKIT (Chrome, Edge, Safari)
    ================================================================== */
 
 .table-container::-webkit-scrollbar {
   width: 12px;
+  height: 12px;
 }
 
 .table-container::-webkit-scrollbar-track {
   background: #f1f1f1;
+  border-radius: 6px;
 }
 
 .table-container::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 6px;
+  border: 2px solid #f1f1f1;
 }
 
 .table-container::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.table-container::-webkit-scrollbar-corner {
+  background: #f1f1f1;
+}
+
+
+/* ==================================================================
+   TABLE SCROLLBAR STYLING - FIREFOX
+   ================================================================== */
+
+.table-container {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+
+/* ==================================================================
+   SORTABLE COLUMNS
+   ================================================================== */
+
+th.sortable {
+  cursor: pointer;
+}
+
+th.sortable:hover {
+  background-color: #e5e7eb;
+}
+
+th.sortable::after {
+  content: '';
+  display: inline-block;
+  margin-left: 6px;
+  width: 0;
+  height: 0;
+  vertical-align: middle;
+}
+
+th.sortable.asc::after {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 6px solid var(--color-text-primary);
+}
+
+th.sortable.desc::after {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid var(--color-text-primary);
 }
