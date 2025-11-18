@@ -6,6 +6,9 @@
    */
   import BookingFormContainer from '$lib/components/booking/form/BookingFormContainer.svelte';
   import PrimanotaTableContainer from '$lib/components/primanota/PrimanotaTableContainer.svelte';
+
+  // Import page-specific styles
+  import '$lib/styles/pages/booking.css';
 </script>
 
 <div class="booking-page">

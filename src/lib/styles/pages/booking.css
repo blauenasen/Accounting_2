@@ -1,0 +1,115 @@
+/* ==================================================================
+   ACCOUNTING_2 - BOOKING PAGE SPECIFIC STYLES
+   Main booking interface with form and journal table
+   ================================================================== */
+
+/* ==================================================================
+   PAGE LAYOUT
+   ================================================================== */
+
+.booking-page {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-bg-body);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+
+/* ==================================================================
+   BOOKING FORM CONTAINER
+   ================================================================== */
+
+.booking-form-container {
+  position: relative;
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+
+/* ==================================================================
+   PRIMANOTA TABLE CONTAINER
+   ================================================================== */
+
+.primanota-table-container {
+  position: absolute;
+  top: 265px;
+  left: var(--margin-table-left);
+  right: var(--margin-table-left);
+  bottom: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--color-border-container);
+  background-color: var(--color-bg-table-container);
+}
+
+
+/* ==================================================================
+   PRIMANOTA TABLE
+   ================================================================== */
+
+.primanota-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+}
+
+.primanota-table thead {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky-header);
+}
+
+.primanota-table th {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky-header);
+  padding: var(--padding-table-cell);
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+  background-color: var(--color-bg-table-header);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-table);
+  user-select: none;
+}
+
+.primanota-table td {
+  padding: var(--padding-table-cell);
+  border: 1px solid var(--color-border-table);
+  background-color: white;
+}
+
+/* Row States */
+.primanota-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.primanota-table tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+.primanota-table tbody tr.selected {
+  background-color: #e3f2fd;
+}
+
+.primanota-table tbody tr.highlighted {
+  background-color: #fff9c4;
+}
+
+/* Column Alignment */
+.primanota-table th.center,
+.primanota-table td.center {
+  text-align: center;
+}
+
+.primanota-table th.right,
+.primanota-table td.right {
+  text-align: right;
+}
