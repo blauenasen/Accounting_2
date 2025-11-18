@@ -9,7 +9,7 @@
 </script>
 
 {#if visible}
-  <div class="dialog-overlay" on:click={close} role="presentation">
+  <div class="dialog-overlay" on:click={close} on:keydown={(e) => e.key === 'Escape' && close()} role="button" tabindex="-1">
     <div class="dialog" on:click|stopPropagation role="dialog">
       <h2>Split Kreditor</h2>
       <p>Split kreditor dialog - To be implemented</p>

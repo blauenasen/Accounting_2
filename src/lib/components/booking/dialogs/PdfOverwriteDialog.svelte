@@ -39,7 +39,7 @@
 </script>
 
 {#if visible}
-  <div class="dialog-overlay" on:click={handleCancel} on:keydown={handleKeydown} role="presentation">
+  <div class="dialog-overlay" on:click={handleCancel} on:keydown={handleKeydown} role="button" tabindex="-1">
     <div class="dialog" on:click|stopPropagation role="dialog" aria-labelledby="dialog-title" tabindex="-1">
       <h2 id="dialog-title">⚠️ PDF already exists</h2>
 

@@ -14,7 +14,7 @@
 </script>
 
 {#if visible}
-  <div class="dialog-overlay" on:click={handleCancel} role="presentation">
+  <div class="dialog-overlay" on:click={handleCancel} on:keydown={(e) => e.key === 'Escape' && handleCancel()} role="button" tabindex="-1">
     <div class="dialog" on:click|stopPropagation role="dialog">
       <h2>Cancel Booking</h2>
       <p>Booking cancellation - To be implemented</p>

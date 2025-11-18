@@ -36,7 +36,7 @@
 </script>
 
 {#if visible}
-  <div class="modal-overlay" on:click={handleNo} role="presentation">
+  <div class="modal-overlay" on:click={handleNo} on:keydown={(e) => e.key === 'Escape' && handleNo()} role="button" tabindex="-1">
     <div class="modal-content" on:click|stopPropagation role="dialog" aria-labelledby="dialog-title">
       <div class="modal-header">
         <h2 id="dialog-title">⚠️ Duplicate Booking Warning</h2>

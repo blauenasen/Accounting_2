@@ -42,7 +42,7 @@
 </script>
 
 {#if visible}
-  <div class="dialog-overlay" on:click={handleNo} on:keydown={handleKeydown} role="presentation">
+  <div class="dialog-overlay" on:click={handleNo} on:keydown={handleKeydown} role="button" tabindex="-1">
     <div class="dialog" on:click|stopPropagation role="dialog" aria-labelledby="dialog-title" tabindex="-1">
       {#if confirmationStage === 1}
         <h2 id="dialog-title">⚠️ Year Mismatch Warning</h2>

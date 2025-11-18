@@ -25,7 +25,7 @@
     class="validation-overlay"
     on:click={close}
     on:keydown={(e) => e.key === 'Escape' && close()}
-    role="presentation"
+    role="button"
     tabindex="-1"
   >
     <div
