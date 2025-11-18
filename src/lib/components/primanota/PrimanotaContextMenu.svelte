@@ -3,6 +3,9 @@
   export let visible: boolean = false;
   export let x: number = 0;
   export let y: number = 0;
+  export let row: any = null;
+  export let rowIndex: number = -1;
+  export let viewMode: string = 'primanota';
 </script>
 
 {#if visible}

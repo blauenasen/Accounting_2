@@ -2,6 +2,10 @@
   // Placeholder for PrimanotaTableBody
   export let rows: any[] = [];
   export let viewMode: string = 'primanota';
+  export let displayRows: any[] = [];
+  export let columns: any[] = [];
+  export let selectedCircle: any = null;
+  export let highlightedRow: any = null;
 </script>
 
 <tbody>

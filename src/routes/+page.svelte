@@ -2,6 +2,9 @@
   import { onMount } from 'svelte';
   import '$lib/all.css';
 
+  // SvelteKit page props
+  export let params: Record<string, string> = {};
+
   interface Stammdaten {
     firma: string;
     adress1: string;
@@ -23,9 +26,17 @@
   let showOfferPreview = true;
 
   async function laden(): Promise<void> {
-    const res = await fetch('/stammdaten');
-    const data = await res.json();
-    stammdaten = data;
+    try {
+      const res = await fetch('/api/stammdaten');
+      if (!res.ok) {
+        console.warn('Stammdaten API not available:', res.status);
+        return;
+      }
+      const data = await res.json();
+      stammdaten = data;
+    } catch (error) {
+      console.warn('Failed to load Stammdaten:', error);
+    }
   }
 
   function ladeStammdaten(): void {

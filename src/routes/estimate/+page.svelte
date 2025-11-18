@@ -9,6 +9,9 @@
   import { tip } from '$lib/actions/tip.js';
   import { handleError } from '$lib/utils/errors';
 
+  // SvelteKit page props
+  export let params: Record<string, string> = {};
+
   const FRAME_TOP = 140;
   const LEFT_WIDTH = 300;
   const FRAME_HEIGHT = 700;

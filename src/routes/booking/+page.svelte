@@ -9,6 +9,9 @@
 
   // Import page-specific styles
   import '$lib/styles/pages/booking.css';
+
+  // SvelteKit page props
+  export let params: Record<string, string> = {};
 </script>
 
 <div class="booking-page">

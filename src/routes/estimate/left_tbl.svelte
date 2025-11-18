@@ -1,6 +1,8 @@
 <script lang="ts">
   // Placeholder for LeftTbl component
   export let data: any[] = [];
+  export let items: any[] = [];
+  export let selectedIndex: number = -1;
 </script>
 
 <div class="left-tbl-placeholder">

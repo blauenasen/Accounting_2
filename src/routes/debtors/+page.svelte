@@ -4,6 +4,9 @@
   import { onMount } from 'svelte';
   import '$lib/styles/pages/debtors.css';
 
+  // SvelteKit page props
+  export let params: Record<string, string> = {};
+
   interface Debtor {
     account: number;
     salutation?: string;

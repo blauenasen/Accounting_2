@@ -6,6 +6,9 @@
   import LedgerCompanyCodes from '$lib/components/ledgers/LedgerCompanyCodes.svelte';
   import LedgerRules from '$lib/components/ledgers/LedgerRules.svelte';
 
+  // SvelteKit page props
+  export let params: Record<string, string> = {};
+
   interface Account {
     active: boolean;
     available: boolean;

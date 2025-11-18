@@ -1,6 +1,8 @@
 <script lang="ts">
   // Placeholder for MiddleTbl component
   export let data: any[] = [];
+  export let selectedIdEstimate: any = null;
+  export let locked: boolean = false;
 </script>
 
 <div class="middle-tbl-placeholder">

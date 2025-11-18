@@ -4,6 +4,9 @@
   import { onMount } from 'svelte';
   import '$lib/styles/pages/rates.css';
 
+  // SvelteKit page props
+  export let params: Record<string, string> = {};
+
   interface Rate {
     id_rate: number;
     service: string;
