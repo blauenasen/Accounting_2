@@ -1,0 +1,173 @@
+/* ==================================================================
+   ACCOUNTING_2 - RATES PAGE SPECIFIC STYLES
+   Matches original Accounting rates.css layout
+   ================================================================== */
+
+/* ==================================================================
+   PAGE HEADER
+   ================================================================== */
+
+.rates-header {
+  position: absolute;
+  top: var(--margin-page-header);
+  left: var(--margin-page-header);
+  font-size: var(--font-size-header);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+
+/* ==================================================================
+   INPUT FORM
+   ================================================================== */
+
+.rates-inputs {
+  position: absolute;
+  top: 100px;
+  left: var(--margin-inputs);
+  display: flex;
+  gap: var(--gap-form-fields);
+}
+
+.rates-inputs label {
+  display: flex;
+  flex-direction: column;
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+  gap: 2px;
+}
+
+.rates-inputs input {
+  padding: var(--padding-input);
+}
+
+/* Field-specific widths */
+.rates-inputs label:nth-child(1) input { /* Service */
+  width: var(--input-width-service);
+}
+
+.rates-inputs label:nth-child(2) input { /* Description */
+  width: var(--input-width-description);
+}
+
+.rates-inputs label:nth-child(3) input { /* Qty */
+  width: var(--input-width-qty);
+  text-align: center;
+}
+
+.rates-inputs label:nth-child(4) input { /* Rate */
+  width: var(--input-width-rate);
+  text-align: right;
+}
+
+
+/* ==================================================================
+   BUTTON CONTAINER
+   ================================================================== */
+
+.rates-button-container {
+  position: absolute;
+  top: 165px;
+  left: var(--margin-button-group);
+  display: flex;
+  gap: var(--gap-form-fields);
+}
+
+
+/* ==================================================================
+   TABLE CONTAINER
+   ================================================================== */
+
+.rates-table-container {
+  position: absolute;
+  top: var(--table-top-rates);
+  left: var(--margin-table-left);
+  width: var(--table-width-rates);
+  height: var(--table-height);
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--color-border-container);
+  background-color: var(--color-bg-table-container);
+}
+
+
+/* ==================================================================
+   TABLE STYLING
+   ================================================================== */
+
+.rates-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+}
+
+.rates-table thead {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky-header);
+}
+
+.rates-table th {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky-header);
+  padding: var(--padding-table-cell);
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+  background-color: var(--color-bg-table-header);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-table);
+  user-select: none;
+}
+
+.rates-table td {
+  padding: var(--padding-table-cell);
+  border: 1px solid var(--color-border-table);
+  background-color: white;
+}
+
+/* Column Alignment */
+.rates-table th:nth-child(1), /* ID */
+.rates-table td:nth-child(1) {
+  text-align: center;
+  width: var(--col-width-id);
+}
+
+.rates-table th:nth-child(2), /* Service */
+.rates-table td:nth-child(2) {
+  text-align: left;
+  width: var(--col-width-service);
+}
+
+.rates-table th:nth-child(3), /* Description */
+.rates-table td:nth-child(3) {
+  text-align: left;
+  width: var(--col-width-description);
+}
+
+.rates-table th:nth-child(4), /* Qty */
+.rates-table td:nth-child(4) {
+  text-align: center;
+  width: var(--col-width-qty);
+}
+
+.rates-table th:nth-child(5), /* Rate */
+.rates-table td:nth-child(5) {
+  text-align: right;
+  width: var(--col-width-rate);
+}
+
+/* Row States */
+.rates-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.rates-table tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+.rates-table tbody tr.selected {
+  background-color: #e3f2fd;
+}

@@ -2,7 +2,7 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
-  import '$lib/all.css';
+  import '$lib/styles/pages/debtors.css';
 
   interface Debtor {
     account: number;

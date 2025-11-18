@@ -2,7 +2,7 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
-  import '$lib/all.css';
+  import '$lib/styles/pages/rates.css';
 
   interface Rate {
     id_rate: number;
@@ -106,17 +106,17 @@
 <h1 class="rates-header">RATES</h1>
 
 <div class="rates-button-container">
-  <button style="background-color: #28a745; color: #fff;" on:click={speichern} disabled={saving}>
+  <button class="btn-success" on:click={speichern} disabled={saving}>
     {saving ? 'Save...' : (selectedIndex === null ? 'New' : 'Update')}
   </button>
-  <button style="background-color: #dc3545; color: #fff;" on:click={loeschen}>Delete</button>
-  <button style="background-color: #666; color: #fff;" on:click={resetForm}>Reset</button>
+  <button class="btn-danger" on:click={loeschen}>Delete</button>
+  <button class="btn-secondary" on:click={resetForm}>Reset</button>
 </div>
 
 <div class="rates-inputs">
   <label>Service:<input type="text" bind:value={service} /></label>
   <label>Description:<input type="text" bind:value={description} /></label>
-  <label>QTY:<input type="text" bind:value={qty} disabled tabindex="-1" style="pointer-events: none; user-select: none; background-color: #e9ecef;" /></label>
+  <label>QTY:<input type="text" bind:value={qty} disabled tabindex="-1" /></label>
   <label>Rate:<input type="text" bind:value={rate}/></label>
 </div>
 
