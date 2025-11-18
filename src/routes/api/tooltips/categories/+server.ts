@@ -33,7 +33,7 @@ export function GET({ }: RequestEvent): Response {
     ensureSchema();
 
     const rows = db.prepare(
-      'SELECT DISTINCT category FROM tooltips WHERE category IS NOT NULL AND TRIM(category)<>"" ORDER BY category'
+      'SELECT DISTINCT category FROM tooltips WHERE category IS NOT NULL AND TRIM(category)!=\'\' ORDER BY category'
     ).all() as { category: string }[];
 
     return json<SuccessResponseBody>({
