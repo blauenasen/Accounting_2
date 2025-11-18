@@ -20,9 +20,24 @@ interface AccountsResponse {
   };
 }
 
+interface ErrorDetails {
+  code: string;
+  message: string;
+  details?: {
+    required?: string[];
+    received?: Record<string, string | null>;
+    [key: string]: any;
+  };
+}
+
 interface ErrorResponse {
   ok: false;
-  error: string;
+  error: ErrorDetails | string;
+  accounts?: Account[];
+  meta?: {
+    total: number;
+    range: { from: number | null; to: number | null };
+  };
 }
 
 type Response = AccountsResponse | ErrorResponse;
@@ -51,11 +66,37 @@ export function GET({ url }: RequestEvent): Response {
   const side = normalizeSideParam(sideParam);
 
   if (!Number.isFinite(bookCircle) || bookCircle === null || bookCircle <= 0) {
-    return json<ErrorResponse>({ ok: false, error: 'INVALID_BOOK_CIRCLE' }, { status: 400 });
+    return json<ErrorResponse>({
+      ok: false,
+      error: {
+        code: 'INVALID_BOOK_CIRCLE',
+        message: 'Required parameter "no" (book circle) must be a positive integer',
+        details: {
+          required: ['no'],
+          received: { no: noParam, side: sideParam },
+          validation: 'Must be a positive integer greater than 0'
+        }
+      },
+      accounts: [],
+      meta: { total: 0, range: { from: null, to: null } }
+    }, { status: 400 });
   }
 
   if (!side) {
-    return json<ErrorResponse>({ ok: false, error: 'INVALID_SIDE' }, { status: 400 });
+    return json<ErrorResponse>({
+      ok: false,
+      error: {
+        code: 'INVALID_SIDE',
+        message: 'Required parameter "side" must be either "HK" (Hauptkonto) or "CK" (Contra-Konto)',
+        details: {
+          required: ['side'],
+          received: { no: noParam, side: sideParam },
+          allowedValues: ['HK', 'CK']
+        }
+      },
+      accounts: [],
+      meta: { total: 0, range: { from: null, to: null } }
+    }, { status: 400 });
   }
 
   try {

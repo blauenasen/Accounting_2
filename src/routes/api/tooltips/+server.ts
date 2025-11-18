@@ -11,9 +11,19 @@ interface Tooltip {
   updated_at: string;
 }
 
+interface ErrorDetails {
+  code: string;
+  message: string;
+  details?: {
+    required?: string[];
+    received?: Record<string, unknown>;
+    [key: string]: any;
+  };
+}
+
 interface ErrorResponseBody {
   ok: false;
-  error: string;
+  error: ErrorDetails | string;
 }
 
 interface GetResponseBody {
@@ -49,7 +59,18 @@ export function GET({ url }: RequestEvent): Response {
     const key = url.searchParams.get('key');
     if (!key) {
       return json<ErrorResponseBody>(
-        { ok: false, error: 'KEY_REQUIRED' },
+        {
+          ok: false,
+          error: {
+            code: 'KEY_REQUIRED',
+            message: 'Required query parameter "key" is missing',
+            details: {
+              required: ['key'],
+              received: Object.fromEntries(url.searchParams.entries()),
+              example: '/api/tooltips?key=booking.save'
+            }
+          }
+        },
         { status: 400 }
       );
     }
@@ -84,14 +105,36 @@ export async function POST({ request }: RequestEvent): Promise<Response> {
 
     if (!key) {
       return json<ErrorResponseBody>(
-        { ok: false, error: 'KEY_REQUIRED' },
+        {
+          ok: false,
+          error: {
+            code: 'KEY_REQUIRED',
+            message: 'Required field "key" is missing or empty',
+            details: {
+              required: ['key', 'en', 'de'],
+              received: { key, en, de, category, active },
+              example: { key: 'booking.save', en: 'Save', de: 'Speichern' }
+            }
+          }
+        },
         { status: 400 }
       );
     }
 
     if (!en || !de) {
       return json<ErrorResponseBody>(
-        { ok: false, error: 'EN_DE_REQUIRED' },
+        {
+          ok: false,
+          error: {
+            code: 'EN_DE_REQUIRED',
+            message: 'Required fields "en" and "de" are missing or empty',
+            details: {
+              required: ['key', 'en', 'de'],
+              received: { key, en, de, category, active },
+              missing: [!en && 'en', !de && 'de'].filter(Boolean)
+            }
+          }
+        },
         { status: 400 }
       );
     }

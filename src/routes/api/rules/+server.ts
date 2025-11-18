@@ -29,9 +29,19 @@ interface SuccessResponseBody {
   [key: string]: unknown;
 }
 
+interface ErrorDetails {
+  code: string;
+  message: string;
+  details?: {
+    required?: string[];
+    received?: Record<string, unknown>;
+    [key: string]: any;
+  };
+}
+
 interface ErrorResponseBody {
   ok: false;
-  error: string;
+  error: ErrorDetails | string;
 }
 
 type ApiResponseBody = SuccessResponseBody | ErrorResponseBody;
@@ -268,9 +278,37 @@ function respondOk(data: Record<string, unknown>): Response {
   return json<SuccessResponseBody>({ ok: true, ...data });
 }
 
-function respondError(error: Error | string, status = 400): Response {
-  const message = typeof error === 'string' ? error : error?.message || 'UNKNOWN_ERROR';
-  return json<ErrorResponseBody>({ ok: false, error: message }, { status });
+function respondError(error: Error | string, status = 400, context?: Record<string, unknown>): Response {
+  const code = typeof error === 'string' ? error : error?.message || 'UNKNOWN_ERROR';
+
+  const errorMessages: Record<string, string> = {
+    'INVALID_BOOK_CIRCLE': 'Required parameter "no" (book circle) must be a valid non-negative integer',
+    'COMPANY_CODE_NOT_FOUND': 'The specified company code does not exist',
+    'CATEGORY_NOT_ALLOWED_FOR_SIDE': 'The specified category is not allowed for this side (HK/CK)',
+    'RULE_ID_REQUIRED': 'Required field "id_rule" is missing',
+    'RULE_SIDE_REQUIRED': 'Required field "side" must be either "HK" or "CK"',
+    'ACCOUNT_RANGE_INVALID': 'Account range is invalid (max < min)',
+    'RULE_NEEDS_CATEGORY_OR_RANGE': 'Rule must specify either a category or an account range',
+    'RULE_NOT_FOUND': 'The specified rule does not exist',
+    'RULE_ITEM_DUPLICATE': 'A rule item with this account/category already exists',
+    'RULE_ITEM_ID_REQUIRED': 'Required field "id_item" is missing',
+    'RULE_ITEM_SOURCE_REQUIRED': 'Required field "source" must be specified',
+    'RULE_ITEM_AMBIGUOUS': 'Rule item cannot have both account and category',
+    'RULE_ITEM_INCOMPLETE': 'Rule item must specify either account or category',
+    'RULE_ITEM_ACCOUNT_UNKNOWN': 'The specified account does not exist in the source',
+    'ACTION_REQUIRED': 'Required field "action" is missing',
+    'ACTION_UNKNOWN': 'Unknown action specified'
+  };
+
+  const message = errorMessages[code] || code;
+
+  const errorDetails: ErrorDetails = {
+    code,
+    message,
+    details: context
+  };
+
+  return json<ErrorResponseBody>({ ok: false, error: errorDetails }, { status });
 }
 
 export function GET({ url }: RequestEvent): Response {
