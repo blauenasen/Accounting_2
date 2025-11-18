@@ -1,0 +1,208 @@
+/* ==================================================================
+   ACCOUNTING_2 - TABLE COMPONENT STYLES
+   Matches original Accounting project table design with sticky headers
+   ================================================================== */
+
+/* ==================================================================
+   TABLE CONTAINER
+   ================================================================== */
+
+.table-container {
+  position: absolute;
+  left: var(--margin-table-left);
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--color-border-container);
+  background-color: var(--color-bg-table-container);
+}
+
+/* Specific table container sizes */
+.rates-table-container {
+  width: var(--table-width-rates);
+  height: var(--table-height);
+  top: var(--table-top-rates);
+}
+
+.debtors-table-container {
+  width: var(--table-width-debtors);
+  height: var(--table-height);
+  top: var(--table-top-debtors);
+}
+
+.creditors-table-container {
+  width: var(--table-width-creditors);
+  height: var(--table-height);
+  top: var(--table-top-creditors);
+}
+
+
+/* ==================================================================
+   TABLE BASE STYLES
+   ================================================================== */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+
+/* ==================================================================
+   TABLE HEADER (STICKY)
+   ================================================================== */
+
+thead {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky-header);
+}
+
+th {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-index-sticky-header);
+  padding: var(--padding-table-cell);
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+  background-color: var(--color-bg-table-header);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-table);
+  user-select: none;
+}
+
+
+/* ==================================================================
+   TABLE CELLS
+   ================================================================== */
+
+td {
+  padding: var(--padding-table-cell);
+  border: 1px solid var(--color-border-table);
+  background-color: white;
+}
+
+
+/* ==================================================================
+   COLUMN ALIGNMENT
+   ================================================================== */
+
+th.center,
+td.center {
+  text-align: center;
+}
+
+th.right,
+td.right {
+  text-align: right;
+}
+
+th.left,
+td.left {
+  text-align: left;
+}
+
+
+/* ==================================================================
+   ROW STATES
+   ================================================================== */
+
+tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+tbody tr.selected {
+  background-color: #e3f2fd;
+}
+
+tbody tr.highlighted {
+  background-color: #fff9c4;
+}
+
+
+/* ==================================================================
+   TABLE COLUMN WIDTHS - RATES TABLE
+   ================================================================== */
+
+.rates-table th.col-id,
+.rates-table td.col-id {
+  width: var(--col-width-id);
+  text-align: center;
+}
+
+.rates-table th.col-service,
+.rates-table td.col-service {
+  width: var(--col-width-service);
+}
+
+.rates-table th.col-description,
+.rates-table td.col-description {
+  width: var(--col-width-description);
+}
+
+.rates-table th.col-qty,
+.rates-table td.col-qty {
+  width: var(--col-width-qty);
+  text-align: center;
+}
+
+.rates-table th.col-rate,
+.rates-table td.col-rate {
+  width: var(--col-width-rate);
+  text-align: right;
+}
+
+
+/* ==================================================================
+   TABLE COLUMN WIDTHS - DEBTORS/CREDITORS TABLES
+   ================================================================== */
+
+.debtors-table th.col-account,
+.debtors-table td.col-account,
+.creditors-table th.col-account,
+.creditors-table td.col-account {
+  width: var(--col-width-account);
+  text-align: center;
+}
+
+.debtors-table th.col-info,
+.debtors-table td.col-info,
+.creditors-table th.col-info,
+.creditors-table td.col-info {
+  width: var(--col-width-info);
+}
+
+
+/* ==================================================================
+   EMPTY STATE
+   ================================================================== */
+
+.table-empty {
+  padding: 40px;
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+}
+
+
+/* ==================================================================
+   TABLE SCROLLBAR STYLING (Optional - for consistency)
+   ================================================================== */
+
+.table-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -1,0 +1,124 @@
+/* ==================================================================
+   ACCOUNTING_2 - BUTTON COMPONENT STYLES
+   Matches original Accounting project button design
+   ================================================================== */
+
+/* ==================================================================
+   BASE BUTTON STYLES
+   ================================================================== */
+
+button {
+  display: inline-block;
+  padding: var(--padding-button-y) var(--padding-button-x);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-button);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-button);
+  color: var(--color-text-primary);
+  background-color: #fff;
+  border: 1px solid var(--color-border-container);
+  border-radius: 0;
+  cursor: pointer;
+  outline: none;
+  transition: filter 0.2s ease;
+  user-select: none;
+}
+
+
+/* ==================================================================
+   BUTTON STATES
+   ================================================================== */
+
+button:hover:not(:disabled) {
+  filter: brightness(var(--button-hover-brightness));
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: var(--button-disabled-opacity);
+  cursor: default;
+  pointer-events: none;
+}
+
+button:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+
+/* ==================================================================
+   BUTTON GROUPS
+   ================================================================== */
+
+.button-container {
+  display: flex;
+  gap: var(--gap-form-fields);
+  align-items: center;
+}
+
+.button-container button {
+  margin: 0;
+}
+
+
+/* ==================================================================
+   BUTTON VARIANTS (Optional - for semantic usage)
+   ================================================================== */
+
+button.btn-primary {
+  background-color: #4a90e2;
+  color: white;
+  border-color: #3a7bc8;
+}
+
+button.btn-primary:hover:not(:disabled) {
+  background-color: #3a7bc8;
+}
+
+button.btn-danger {
+  background-color: #dc2626;
+  color: white;
+  border-color: #b91c1c;
+}
+
+button.btn-danger:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
+button.btn-success {
+  background-color: #059669;
+  color: white;
+  border-color: #047857;
+}
+
+button.btn-success:hover:not(:disabled) {
+  background-color: #047857;
+}
+
+button.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  border-color: #4b5563;
+}
+
+button.btn-secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+}
+
+
+/* ==================================================================
+   BUTTON SIZES (Optional)
+   ================================================================== */
+
+button.btn-small {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+button.btn-large {
+  padding: 10px 24px;
+  font-size: 16px;
+}

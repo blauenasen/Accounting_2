@@ -1,0 +1,241 @@
+/* ==================================================================
+   ACCOUNTING_2 - FORM COMPONENT STYLES
+   Matches original Accounting project form design
+   ================================================================== */
+
+/* ==================================================================
+   FORM LABELS
+   ================================================================== */
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+  gap: 2px;
+}
+
+label span {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+
+/* ==================================================================
+   INPUT FIELDS
+   ================================================================== */
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+input[type="tel"],
+input[type="password"] {
+  padding: var(--padding-input);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: #fff;
+  border: 1px solid var(--color-border-container);
+  border-radius: 0;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="password"]:focus {
+  border-color: #0066cc;
+}
+
+input[type="text"]:disabled,
+input[type="number"]:disabled,
+input[type="date"]:disabled,
+input[type="email"]:disabled,
+input[type="tel"]:disabled,
+input[type="password"]:disabled {
+  opacity: var(--button-disabled-opacity);
+  cursor: default;
+  background-color: #f5f5f5;
+}
+
+
+/* ==================================================================
+   NUMBER INPUT ALIGNMENT
+   ================================================================== */
+
+input[type="number"].center {
+  text-align: center;
+}
+
+input[type="number"].right {
+  text-align: right;
+}
+
+
+/* ==================================================================
+   SELECT DROPDOWNS
+   ================================================================== */
+
+select {
+  padding: var(--padding-input);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: #fff;
+  border: 1px solid var(--color-border-container);
+  border-radius: 0;
+  outline: none;
+  cursor: pointer;
+  width: var(--select-width-default);
+  transition: border-color 0.2s ease;
+}
+
+select:focus {
+  border-color: #0066cc;
+}
+
+select:disabled {
+  opacity: var(--button-disabled-opacity);
+  cursor: default;
+  background-color: #f5f5f5;
+}
+
+
+/* ==================================================================
+   TEXTAREA
+   ================================================================== */
+
+textarea {
+  padding: var(--padding-input);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: #fff;
+  border: 1px solid var(--color-border-container);
+  border-radius: 0;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+textarea:focus {
+  border-color: #0066cc;
+}
+
+textarea:disabled {
+  opacity: var(--button-disabled-opacity);
+  cursor: default;
+  background-color: #f5f5f5;
+}
+
+
+/* ==================================================================
+   CHECKBOX & RADIO
+   ================================================================== */
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  cursor: default;
+  opacity: var(--button-disabled-opacity);
+}
+
+
+/* ==================================================================
+   FORM FIELD WIDTHS (from original Accounting)
+   ================================================================== */
+
+/* Rates Page */
+input.input-service {
+  width: var(--input-width-service);
+}
+
+input.input-description {
+  width: var(--input-width-description);
+}
+
+input.input-qty {
+  width: var(--input-width-qty);
+  text-align: center;
+}
+
+input.input-rate {
+  width: var(--input-width-rate);
+  text-align: right;
+}
+
+/* Debtors/Creditors Pages */
+input.input-account {
+  width: var(--input-width-account);
+}
+
+input.input-salutation {
+  width: var(--input-width-salutation);
+}
+
+input.input-name {
+  width: var(--input-width-name);
+}
+
+input.input-address {
+  width: var(--input-width-address);
+}
+
+input.input-email {
+  width: var(--input-width-email);
+}
+
+input.input-contra-acc {
+  width: var(--input-width-contra-acc);
+}
+
+select.select-acc-selection {
+  width: var(--input-width-acc-selection);
+}
+
+input.input-blocked {
+  width: var(--input-width-blocked);
+}
+
+
+/* ==================================================================
+   VALIDATION STATES
+   ================================================================== */
+
+input.error,
+select.error,
+textarea.error {
+  border-color: #dc2626;
+}
+
+input.success,
+select.success,
+textarea.success {
+  border-color: #059669;
+}
+
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: normal;
+}
+
+.field-success {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #059669;
+  font-weight: normal;
+}
