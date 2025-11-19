@@ -57,13 +57,13 @@ Das exakte Erscheinungsbild vom Original-Projekt (Accounting) ins neue Design-Sy
 - [ ] **3.1 Menu/Navigation** - Betrifft alle Seiten
 
 ### Seiten (einzeln)
-- [ ] **3.2 Startseite** (`/`)
+- [x] **3.2 Startseite** (`/`) - Visuell OK
 - [ ] **3.3 Rates** (`/rates`)
 - [ ] **3.4 Debtors** (`/debtors`)
 - [ ] **3.5 Creditors** (`/creditors`)
 - [ ] **3.6 Booking** (`/booking`)
 - [ ] **3.7 Ledgers** (`/ledgers`)
-- [ ] **3.8 Estimate** (`/estimate`)
+- [x] **3.8 Estimate** (`/estimate`) - Button-Padding gefixt
 - [ ] **3.9 Invoice** (`/invoice`)
 
 ---
@@ -318,19 +318,198 @@ Das exakte Erscheinungsbild vom Original-Projekt (Accounting) ins neue Design-Sy
 
 ---
 
-### Session 3: [DATUM]
+### Session 3: 2025-11-19
 
 **Übergabe von:** Session 2
-**Token-Stand Start:** -
+**Token-Stand Start:** ~0 (nach Wechsel)
+**Aktueller Token-Stand:** ~57.000 / 200.000
 
-**Zu erledigen:**
-- MCP Chrome DevTools Test durchführen
-- Menu-Problem lösen
-- Weiter mit 4.2 (Startseite)
+**Erledigt:**
+- ✅ Menu CSS-Fix committet (Commit `3485654`): `box-sizing: content-box` und `line-height: normal`
+- ✅ Menu-Hover-Flackern behoben
+- ✅ Visueller Vergleich Startseite: Original vs. Accounting_2 erfolgreich
+- ✅ MCP Chrome DevTools Test für Estimate-Seite durchgeführt
+
+**Estimate-Seite Test:**
+- ✅ Menu: Korrekt
+- ✅ Button-Farben: Identisch zum Original
+- ✅ Summen-Bereich: Korrekt (schwarz)
+- ⚠️ **Fix:** "Load Old Positions" Button hatte Textumbruch
+  - **Ursache:** Padding `6px 18px` (Accounting_2) vs. `1px 6px` (Original)
+  - **Lösung:** CSS in `+page.svelte` hinzugefügt:
+    ```css
+    .estimate-button-container button {
+      padding: 1px 6px !important;
+      white-space: nowrap;
+    }
+    ```
+- ✅ Button-Umbruch behoben
+
+**Commits:**
+- `3485654` - fix: Resolve menu hover flicker
+
+**Nächste Schritte:**
+1. Estimate-Fix committen
+2. Weitere Seiten testen (Invoice, Rates, etc.)
+3. Komplette visuelle QA
 
 ---
 
-## 8. WICHTIGE HINWEISE FÜR NÄCHSTE SESSION
+## 8. MCP CHROME DEVTOOLS VERGLEICHS-ANLEITUNG
+
+### Übersicht
+Diese Anleitung beschreibt den detaillierten Prozess zum pixelgenauen Vergleich von Seiten zwischen Original und Accounting_2.
+
+### Voraussetzungen
+- Chrome mit Remote Debugging: `chrome.exe --remote-debugging-port=9222`
+- Original-Server: `http://localhost:5174`
+- Accounting_2-Server: `http://localhost:5173`
+- MCP Chrome DevTools aktiviert
+
+### Schritt 1: Screenshots erstellen
+```
+1. Beide Seiten in separaten Tabs öffnen
+2. Screenshots speichern:
+   - mcp__chrome-devtools__take_screenshot mit filePath
+   - Benennung: [seite]_original.png, [seite]_accounting2.png
+```
+
+### Schritt 2: Horizontale Positionen messen (Original)
+```javascript
+// Auf Original-Seite ausführen
+() => {
+  const labels = document.querySelectorAll('label');
+  return Array.from(labels).map(label => {
+    const rect = label.getBoundingClientRect();
+    const input = label.querySelector('input, button, .dropdown-display');
+    const inputRect = input ? input.getBoundingClientRect() : null;
+    return {
+      text: label.querySelector('span')?.textContent?.trim(),
+      labelPos: { top: Math.round(rect.top), left: Math.round(rect.left) },
+      inputPos: inputRect ? {
+        left: Math.round(inputRect.left),
+        width: Math.round(inputRect.width),
+        height: Math.round(inputRect.height)
+      } : null
+    };
+  });
+}
+```
+
+### Schritt 3: Vertikale Abstände messen
+```javascript
+// Kritisch für Gaps zwischen Elementen
+() => {
+  const results = {};
+
+  // Label-Position
+  const firstLabel = document.querySelector('label');
+  if (firstLabel) {
+    results.labelTop = Math.round(firstLabel.getBoundingClientRect().top);
+  }
+
+  // Input-Position
+  const firstInput = document.querySelector('label input');
+  if (firstInput) {
+    const rect = firstInput.getBoundingClientRect();
+    results.inputTop = Math.round(rect.top);
+    results.inputBottom = Math.round(rect.bottom);
+  }
+
+  // Frame/Container-Position
+  const frames = document.querySelectorAll('div[style*="position:absolute"][style*="border"]');
+  if (frames.length >= 1) {
+    results.frameTop = Math.round(frames[0].getBoundingClientRect().top);
+  }
+
+  // Gap berechnen
+  if (results.inputBottom && results.frameTop) {
+    results.gapInputToFrame = results.frameTop - results.inputBottom;
+  }
+
+  return results;
+}
+```
+
+### Schritt 4: Werte vergleichen
+Erstelle eine Tabelle mit allen gemessenen Werten:
+
+| Element | Original | Accounting_2 | Differenz | Aktion |
+|---------|----------|--------------|-----------|--------|
+| Year left | 18px | 10px | -8px | +8px |
+| No. left | 73px | 65px | -8px | +8px |
+| ... | ... | ... | ... | ... |
+
+### Schritt 5: CSS-Spezifische Prüfungen
+
+**Button-Styles:**
+```javascript
+() => {
+  const buttons = document.querySelectorAll('button');
+  return Array.from(buttons).map(btn => ({
+    text: btn.textContent?.trim(),
+    padding: getComputedStyle(btn).padding,
+    fontSize: getComputedStyle(btn).fontSize,
+    whiteSpace: getComputedStyle(btn).whiteSpace
+  }));
+}
+```
+
+**Dropdown/Custom Components:**
+```javascript
+() => {
+  const dropdown = document.querySelector('.dropdown');
+  const btn = document.querySelector('.dropdown-display');
+  return {
+    dropdown: {
+      width: getComputedStyle(dropdown).width,
+      padding: getComputedStyle(dropdown).padding
+    },
+    button: {
+      width: getComputedStyle(btn).width,
+      padding: getComputedStyle(btn).padding
+    }
+  };
+}
+```
+
+### Schritt 6: Korrekturen durchführen
+
+**Typische Korrekturen:**
+1. **Horizontaler Offset:** Alle `left:` Werte um gleichen Betrag anpassen
+2. **Vertikaler Offset:** `top:` Werte und Konstanten (FRAME_TOP) anpassen
+3. **Padding-Probleme:** Explizit `padding: 0` setzen wenn globale Styles überschreiben
+4. **Button-Text-Umbruch:** `white-space: nowrap` und korrektes `padding`
+
+### Schritt 7: Verifizieren
+1. Seite neu laden (mit Cache-Ignore)
+2. Gleiche Messungen wiederholen
+3. Gaps und Positionen prüfen:
+   - Alle Differenzen sollten 0 oder ≤2px sein
+   - Gaps sollten identisch sein (z.B. 4px)
+
+### Checkliste pro Seite
+
+- [ ] Screenshots Original vs. Accounting_2
+- [ ] Horizontale Positionen gemessen
+- [ ] Vertikale Positionen gemessen
+- [ ] Gaps zwischen Elementen geprüft
+- [ ] Button-Padding geprüft
+- [ ] Dropdown/Custom-Components geprüft
+- [ ] Korrekturen angewendet
+- [ ] Erneut gemessen und verifiziert
+- [ ] Finaler Screenshot
+
+### Wichtige Erkenntnisse aus Estimate-Test
+
+1. **Globale CSS kann lokale Styles überschreiben** - Prüfe computed styles, nicht nur den Quellcode
+2. **Padding-Vererbung** - Dropdowns/Inputs erben oft unerwartetes Padding
+3. **Gap-Berechnung** - Negativer Gap bedeutet Überlappung!
+4. **Konsistenter Offset** - Oft ist der gleiche Offset (z.B. 8px) auf alle Elemente anzuwenden
+
+---
+
+## 9. WICHTIGE HINWEISE FÜR NÄCHSTE SESSION
 
 ### Original-Projekt Pfad
 `C:\Users\ejuli\Desktop\Projekt\Accounting`

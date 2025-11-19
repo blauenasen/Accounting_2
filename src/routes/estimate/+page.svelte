@@ -12,12 +12,12 @@
   // SvelteKit page props
   export let params: Record<string, string> = {};
 
-  const FRAME_TOP = 140;
+  const FRAME_TOP = 155;
   const LEFT_WIDTH = 300;
   const FRAME_HEIGHT = 700;
   const TOTALS_LEFT = 952;
 
-  const MID_LEFT = 320;
+  const MID_LEFT = 328;
   const MID_WIDTH = 915;
 
   const NATURAL_W = 794;
@@ -414,11 +414,11 @@
     {/if}
   </div>
 
-  <div style="position:absolute; top:{FRAME_TOP}px; left:10px; width:{LEFT_WIDTH}px; height:{FRAME_HEIGHT}px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
+  <div style="position:absolute; top:{FRAME_TOP}px; left:18px; width:{LEFT_WIDTH}px; height:{FRAME_HEIGHT}px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
     <LeftTbl items={estimates} bind:selectedIndex on:select={onSelectFromList} />
   </div>
 
-  <div style="position:absolute; top:140px; left:320px; width:915px; height:700px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
+  <div style="position:absolute; top:155px; left:328px; width:915px; height:700px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
     <MiddleTbl
       bind:this={midRef}
       selectedIdEstimate={id_estimate}
@@ -441,21 +441,21 @@
     </div>
   </div>
 
-  <label style="position:absolute; top:90px; left:10px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:18px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="text-align:center; display:block; padding-left:4px; margin-bottom:2px;">Year</span>
     <input type="text" value={year} readonly
       style="position:relative; top:0; left:0; width:50px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:center; margin-top:0; box-sizing:border-box; word-break:normal;"
       on:focus={selectOnFocus}/>
   </label>
 
-  <label style="position:absolute; top:90px; left:65px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:73px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="text-align:center; display:block; padding-left:4px; margin-bottom:2px;">No.</span>
     <input type="text" bind:value={num} readonly
       style="position:relative; top:0; left:0; width:70px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:center; margin-top:0; box-sizing:border-box; word-break:normal;"
       on:focus={selectOnFocus}/>
   </label>
 
-  <label style="position:absolute; top:90px; left:140px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:148px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Date</span>
     <input
       type="text"
@@ -471,47 +471,47 @@
   </label>
 
   <label class="dropdown-wrap" bind:this={refDropdownWrap}
-    style="position:absolute; top:90px; left:265px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+    style="position:absolute; top:98px; left:273px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Debtor</span>
     <CustomDropdown id="account" items={debtors} bind:value={account} labelKey="name1" valueKey="account" placeholder="-- choose --"/>
   </label>
 
-  <label style="position:absolute; top:90px; left:365px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:373px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Name</span>
     <input type="text" bind:this={refName} value={debtor.name} readonly
       style="position:relative; top:0; left:0; width:220px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refName)}/>
   </label>
 
-  <label style="position:absolute; top:90px; left:590px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:598px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Address 1</span>
     <input type="text" bind:this={refAddress1} value={debtor.address1} readonly
       style="position:relative; top:0; left:0; width:220px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refAddress1)}/>
   </label>
 
-  <label style="position:absolute; top:90px; left:815px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:823px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Address 2</span>
     <input type="text" bind:this={refAddress2} value={debtor.address2} readonly
       style="position:relative; top:0; left:0; width:220px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refAddress2)}/>
   </label>
 
-  <label style="position:absolute; top:90px; left:1040px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:1048px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Address 3</span>
     <input type="text" bind:this={refAddress3} value={debtor.address3} readonly
       style="position:relative; top:0; left:0; width:220px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refAddress3)}/>
   </label>
 
-  <label style="position:absolute; top:90px; left:1265px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:1273px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">E-Mail</span>
     <input type="text" bind:this={refEmail} value={debtor.email} readonly
       style="position:relative; top:0; left:0; width:240px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refEmail)}/>
   </label>
 
-  <div class="estimate-button-container" style="margin-left:10px; display:flex; gap:8px; margin-top:10px;">
+  <div class="estimate-button-container" style="margin-left:18px; display:flex; gap:8px; margin-top:10px;">
     <button class="save" on:click={saveOrUpdateHeader}
       disabled={!canSaveBtn && !canUpdateBtn}
       style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#28a745;">
@@ -579,4 +579,10 @@
 <style>
   :global(.a4-container .Estimate-num){ right: 20px; }
   :global(.a4-container .date){ right: 20px; }
+
+  /* Fix button padding to match original and prevent text wrap */
+  .estimate-button-container button {
+    padding: 1px 6px !important;
+    white-space: nowrap;
+  }
 </style>

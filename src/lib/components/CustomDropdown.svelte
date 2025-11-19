@@ -190,6 +190,7 @@
     position: relative;
     width: 95px;
     font-size: 13px;
+    padding: 0;
   }
 
   /* Displayed value / button */
