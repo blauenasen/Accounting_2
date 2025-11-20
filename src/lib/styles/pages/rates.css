@@ -198,4 +198,5 @@
   font-size: 13.3333px !important; /* Browser default */
   font-family: Arial !important; /* Arial only */
   border: 2px inset rgb(118, 118, 118) !important; /* Browser default inset border */
+  color: rgb(0, 0, 0) !important; /* Black text, not gray */
 }
