@@ -30,8 +30,18 @@
   display: flex;
   flex-direction: column;
   font-weight: var(--font-weight-bold);
-  text-align: left;
+  text-align: left; /* Default for Service & Description */
   gap: 2px;
+}
+
+/* QTY label - centered to match Original */
+.rates-inputs label:nth-child(3) {
+  text-align: center;
+}
+
+/* Rate label - right-aligned to match Original */
+.rates-inputs label:nth-child(4) {
+  text-align: right;
 }
 
 .rates-inputs input {
@@ -98,7 +108,7 @@
    ================================================================== */
 
 .rates-table {
-  width: 100%;
+  width: 756px; /* Match Original - leaves 34px space for scrollbar in 790px container */
   border-collapse: collapse;
   font-family: var(--font-family-base);
   font-size: var(--font-size-base);

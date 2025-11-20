@@ -119,8 +119,47 @@ mcp__chrome-devtools__take_screenshot({
    - Fettdruck gleich?
    - Farben gleich?
    - Positionen gleich?
+   - **KRITISCH:** Text-Ausrichtung jedes Labels visuell prüfen:
+     * Service Label: links ausgerichtet?
+     * Description Label: links ausgerichtet?
+     * QTY Label: **ZENTRIERT** innerhalb der Label-Box?
+     * Rate Label: **RECHTS** ausgerichtet innerhalb der Label-Box?
+   - Label-Breiten visuell identisch?
+
+6. **Table Container & Width**
+   - Tabelle füllt vollen Container oder hat Platz rechts?
+   - Scrollbar-Platz sichtbar (ca. 34-36px)?
+   - Rechter Rand der Tabelle vs. Container-Rand
 
 **Jede Abweichung notieren!**
+
+---
+
+### 2.3 Seiten-spezifische Verifikation
+
+**KRITISCH:** Jede Seite hat spezifische Details, die manuell geprüft werden müssen!
+
+#### **Rates Page:**
+- ☐ Service Label: links ausgerichtet (visuell prüfen, nicht nur CSS!)
+- ☐ Description Label: links ausgerichtet
+- ☐ **QTY Label: ZENTRIERT** - Text mittig in der Label-Box?
+- ☐ **Rate Label: RECHTS** - Text rechts ausgerichtet in der Label-Box?
+- ☐ Input Borders: 2px inset (Browser-Default 3D-Effekt)
+- ☐ **Table Width:** Prüfen ob Tabelle Container füllt oder Abstand rechts hat (ca. 34-36px für Scrollbar)
+- ☐ Scrollbar: Nur vertikal sichtbar, nicht horizontal
+- ☐ Disabled Input (QTY): Hellerer Border (rgba) + graue Textfarbe
+
+#### **Estimate Page:**
+- ☐ Drei-Tabellen-Layout beibehalten
+- ☐ Position-Tabelle Spaltenbreiten
+- ☐ Button-Positionen relativ zu Tabellen
+- ☐ [Weitere spezifische Checks nach Analyse hinzufügen]
+
+#### **Invoice Page:**
+- ☐ Drei-Tabellen-Layout beibehalten
+- ☐ [Weitere spezifische Checks nach Analyse hinzufügen]
+
+**Für zukünftige Seiten:** Nach erster Analyse seiten-spezifische Checkliste hier ergänzen!
 
 ---
 
@@ -245,6 +284,80 @@ mcp__chrome-devtools__take_snapshot()
 | ... | ... | ... | ... | ... | ... |
 
 **JEDE Abweichung muss als ❌ markiert werden!**
+
+---
+
+### 3.5 Visual Alignment Verification (NEU!)
+
+**KRITISCH:** `getComputedStyle()` ≠ tatsächliche visuelle Darstellung!
+
+**Problem:** Globale CSS-Regeln oder Flex-Layout können `textAlign` überschreiben, ohne dass es in Computed Styles sichtbar ist.
+
+**Lösung:** Tatsächliche Pixel-Positionen messen!
+
+#### Labels - Visuelle Ausrichtung prüfen:
+
+**Script für QTY-Label (zentriert):**
+```javascript
+() => {
+  const qtyLabel = Array.from(document.querySelectorAll('label'))
+    .find(l => l.textContent.includes('QTY:'));
+  const labelBox = qtyLabel.getBoundingClientRect();
+
+  // Text-Node finden
+  const textNode = qtyLabel.childNodes[0];
+  const range = document.createRange();
+  range.selectNode(textNode);
+  const textBox = range.getBoundingClientRect();
+
+  const leftSpace = textBox.left - labelBox.left;
+  const rightSpace = labelBox.right - textBox.right;
+
+  return {
+    labelWidth: labelBox.width,
+    textWidth: textBox.width,
+    leftSpace: leftSpace.toFixed(2),
+    rightSpace: rightSpace.toFixed(2),
+    isCentered: Math.abs(leftSpace - rightSpace) < 2,
+    computedAlign: getComputedStyle(qtyLabel).textAlign
+  };
+}
+```
+
+**Erwartetes Ergebnis (Original):**
+- `isCentered: true` (leftSpace ≈ rightSpace)
+- `computedAlign: "center"`
+
+**Wenn `isCentered: false` aber `computedAlign: "center"`:**
+→ **CSS-Override untersuchen!** Globale Regel überschreibt Element-Style.
+
+#### Table Width - Container vs. Inhalt:
+
+**Script für Table/Container-Vergleich:**
+```javascript
+() => {
+  const table = document.querySelector('.rates-table');
+  const container = document.querySelector('.rates-table-container');
+
+  const tableBox = table.getBoundingClientRect();
+  const containerBox = container.getBoundingClientRect();
+
+  return {
+    tableWidth: tableBox.width,
+    containerWidth: containerBox.width,
+    scrollbarSpace: containerBox.width - tableBox.width,
+    tableComputedWidth: getComputedStyle(table).width,
+    containerComputedWidth: getComputedStyle(container).width
+  };
+}
+```
+
+**Erwartetes Ergebnis (Original):**
+- `scrollbarSpace: 34-36px` (Platz für Scrollbar)
+- Tabelle füllt NICHT vollen Container!
+
+**Wenn `scrollbarSpace: 0-2px`:**
+→ **Table zu breit!** Auf Original-Wert korrigieren (z.B. 756px statt 790px).
 
 ---
 
@@ -635,6 +748,134 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 **Wenn IRGENDEINE Antwort "NEIN":**
 → **NICHT** als "identisch" bezeichnen!
+
+---
+
+## LESSONS LEARNED (aus Rates-Page-Erfahrung 2025-11-20)
+
+### 1. "Messung ≠ Visuelle Darstellung"
+
+**Problem:** `getComputedStyle(element).textAlign` kann "center" zurückgeben, aber der Text wird trotzdem links ausgerichtet!
+
+**Ursache:** Globale CSS-Regeln (z.B. `.rates-inputs label { text-align: left; }`) überschreiben Element-Styles durch höhere Spezifität.
+
+**Lösung:**
+- Nicht nur Computed Styles messen
+- **Tatsächliche Pixel-Positionen** mit `getBoundingClientRect()` prüfen
+- Visuelle Verifikation: "Wo steht der Text WIRKLICH?"
+
+**Beispiel:**
+```javascript
+// FALSCH: Nur CSS prüfen
+const align = getComputedStyle(label).textAlign; // "center"
+// → Kann falsch sein durch CSS-Overrides!
+
+// RICHTIG: Tatsächliche Position messen
+const labelBox = label.getBoundingClientRect();
+const textBox = label.childNodes[0].getBoundingClientRect();
+const isCentered = Math.abs(
+  (textBox.left - labelBox.left) -
+  (labelBox.right - textBox.right)
+) < 2;
+// → Tatsächliche visuelle Ausrichtung!
+```
+
+---
+
+### 2. "Seiten-spezifische Checks erforderlich"
+
+**Problem:** Generisches Protokoll fragt nur "Labels gleich?" - verpasst aber dass Rates-Seite 4 verschiedene Label-Alignments hat!
+
+**Ursache:** Jede Seite hat spezifische Design-Patterns:
+- Rates: 4 verschiedene Label-Ausrichtungen (left, left, center, right)
+- Estimate/Invoice: 3-Tabellen-Layout
+- Andere Seiten: Eigene Besonderheiten
+
+**Lösung:**
+- **Seiten-spezifische Checklisten** im Protokoll (siehe Phase 2.3)
+- Nach erster Analyse: Spezifische Checks dokumentieren
+- Nicht nur generisch "gleich?", sondern "QTY zentriert?"
+
+---
+
+### 3. "Vollständige Property-Erfassung kritisch"
+
+**Problem:** Messskript maß nur `table.borderCollapse`, aber NICHT `table.width` - Unterschied wurde übersehen!
+
+**Ursache:** Unvollständiges Measurement-Script
+
+**Lösung:**
+- **ALLE relevanten Properties** messen (siehe erweiterte Phase 3.2)
+- Für Labels: `textAlign` für JEDES Label einzeln
+- Für Tables: `width`, `overflow`, `scrollbarSpace`
+- Nicht nur generische Properties!
+
+---
+
+### 4. "Browser-Default ≠ Explizites CSS"
+
+**Problem:** `border: 2px inset` sieht "dicker" aus als `1px solid`, obwohl beide gemessen werden.
+
+**Ursache:** Browser-Default 3D-Effekte (inset/outset) vs. flache Borders
+
+**Lösung:**
+- Browser-Defaults in Original identifizieren
+- Nicht durch "sieht anders aus" täuschen lassen
+- Exakte Werte messen: 2px inset = 2px inset ✅
+
+---
+
+### 5. "Globale CSS-Regeln maskieren Element-Styles"
+
+**Problem:** `.rates-inputs label { text-align: left; }` überschreibt ALLE Labels, auch wenn QTY center sein sollte.
+
+**Ursache:** CSS-Specificity - Klassen-Selektoren überschreiben Element-Styles
+
+**Lösung:**
+- Spezifischere Selektoren verwenden:
+  ```css
+  .rates-inputs label:nth-child(3) { text-align: center; }
+  .rates-inputs label:nth-child(4) { text-align: right; }
+  ```
+- CSS-Hierarchie verstehen (siehe Phase 5.1)
+- DevTools "Computed" Tab prüfen: Welche Regel gewinnt?
+
+---
+
+### 6. "Scrollbar-Platz berücksichtigen"
+
+**Problem:** Table füllt vollen Container (790px), Original hat aber nur 756px (Platz für Scrollbar)
+
+**Ursache:** `table { width: 100%; }` vs. `table { width: 756px; }`
+
+**Lösung:**
+- Container-Width ≠ Table-Width!
+- Scrollbar-Space messen: `containerWidth - tableWidth`
+- Original: 34-36px Platz für vertikale Scrollbar
+- Accounting_2: Auf exakte Pixel-Werte setzen, nicht 100%
+
+---
+
+### 7. "Zentrale Erkenntnis"
+
+> **"Pixel-perfektes Matching erfordert MEHR als nur CSS-Messungen.**
+> **Es erfordert visuelle Verifikation der tatsächlich gerenderten Positionen."**
+
+**Was funktioniert hat:**
+✅ Systematische Messung aller Elements
+✅ Vergleichstabellen mit Dokumentation
+✅ Finale Screenshots als Beweis
+
+**Was gefehlt hat:**
+❌ Visuelle Pixel-Position-Verifikation
+❌ Seiten-spezifische Detail-Checks
+❌ Vollständige Property-Erfassung
+
+**Was jetzt verbessert wurde:**
+✅ Phase 2.3: Seiten-spezifische Verifikation
+✅ Phase 3.5: Visual Alignment Verification
+✅ Erweiterte Messskripte
+✅ Lessons Learned für zukünftige Aufgaben
 
 ---
 
