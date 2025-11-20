@@ -84,10 +84,10 @@
   --table-top-creditors: 265px;        /* Creditors table top position */
 
   /* Input Field Widths - Rates Page */
-  --input-width-service: 230px;
-  --input-width-description: 180px;
-  --input-width-qty: 45px;
-  --input-width-rate: 90px;
+  --input-width-service: 273px;
+  --input-width-description: 200px;
+  --input-width-qty: 49px;
+  --input-width-rate: 100px;
 
   /* Input Field Widths - Debtors/Creditors Pages */
   --input-width-account: 80px;

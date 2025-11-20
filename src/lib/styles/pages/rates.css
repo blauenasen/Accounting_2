@@ -221,12 +221,12 @@
 .rates-inputs input {
   font-size: 13.3333px !important; /* Browser default */
   font-family: Arial !important; /* Arial only */
-  border: 2px inset rgb(118, 118, 118) !important; /* Browser default inset border */
+  border: 1px inset rgb(118, 118, 118) !important; /* Browser default inset border */
   color: rgb(0, 0, 0) !important; /* Black text, not gray */
 }
 
 /* Disabled input state (browser default styling from Original) */
 .rates-inputs input:disabled {
-  border: 2px inset rgba(118, 118, 118, 0.3) !important; /* Lighter border with transparency */
+  border: 1px inset rgba(118, 118, 118, 0.3) !important; /* Lighter border with transparency */
   color: rgb(84, 84, 84) !important; /* Gray text for disabled state */
 }
