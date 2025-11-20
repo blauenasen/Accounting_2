@@ -8,12 +8,9 @@
    ================================================================== */
 
 .rates-header {
-  position: absolute;
-  top: var(--margin-page-header);
-  left: var(--margin-page-header);
-  font-size: var(--font-size-header);
-  font-weight: var(--font-weight-bold);
-  margin: 0;
+  margin-left: 50px;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 
@@ -23,8 +20,8 @@
 
 .rates-inputs {
   position: absolute;
-  top: 100px;
-  left: var(--margin-inputs);
+  top: 165px;
+  left: 128px;
   display: flex;
   gap: var(--gap-form-fields);
 }
@@ -67,10 +64,15 @@
 
 .rates-button-container {
   position: absolute;
-  top: 165px;
-  left: var(--margin-button-group);
+  top: 115px;
+  left: 258px;
   display: flex;
-  gap: var(--gap-form-fields);
+  gap: 20px;
+}
+
+.rates-button-container button {
+  width: 150px;
+  height: 30px;
 }
 
 
@@ -116,15 +118,17 @@
   font-weight: var(--font-weight-bold);
   text-align: left;
   background-color: var(--color-bg-table-header);
-  color: var(--color-text-primary);
+  color: var(--color-text-black);
   border: 1px solid var(--color-border-table);
   user-select: none;
 }
 
 .rates-table td {
-  padding: var(--padding-table-cell);
+  padding: 2px;
+  height: 32px;
   border: 1px solid var(--color-border-table);
   background-color: white;
+  color: var(--color-text-black);
 }
 
 /* Column Alignment */
@@ -164,10 +168,34 @@
   transition: background-color 0.15s ease;
 }
 
-.rates-table tbody tr:hover {
-  background-color: #f0f0f0;
+.rates-table tbody tr:hover td {
+  background-color: #d9fbe1; /* Grünlicher Hovereffekt */
 }
 
-.rates-table tbody tr.selected {
-  background-color: #e3f2fd;
+.rates-table tbody tr.selected td {
+  background-color: #cce4ff; /* Blaue Markierung */
+}
+
+.rates-table tbody tr.selected:hover td {
+  background-color: #cce4ff !important; /* Fixierte Markierung */
+}
+
+
+/* ==================================================================
+   BROWSER-DEFAULT OVERRIDES FOR RATES PAGE
+   Original uses browser default styles for buttons/inputs
+   ================================================================== */
+
+/* Restore browser-default button styling (from Original) */
+.rates-button-container button {
+  font-weight: 400 !important; /* Normal, not bold */
+  border: 2px outset rgb(0, 0, 0) !important; /* Browser default 3D border - black */
+  border-radius: 6px !important; /* Rounded corners */
+}
+
+/* Restore browser-default input styling (from Original) */
+.rates-inputs input {
+  font-size: 13.3333px !important; /* Browser default */
+  font-family: Arial !important; /* Arial only */
+  border: 2px inset rgb(118, 118, 118) !important; /* Browser default inset border */
 }

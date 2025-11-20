@@ -35,9 +35,10 @@ h1 {
   color: black;
   background-color: #c8e78d;
   text-align: left;
-  margin-left: 10px;
-  margin-bottom: 5px;
-  padding: 5px 10px;
+  margin: 13.4px 0px 5px 50px;
+  padding: 0;
+  display: block;
+  width: auto;
 }
 
 h2 {
