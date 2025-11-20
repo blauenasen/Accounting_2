@@ -140,14 +140,28 @@
 
 .rates-table th:nth-child(2), /* Service */
 .rates-table td:nth-child(2) {
-  text-align: left;
   width: var(--col-width-service);
+}
+
+.rates-table th:nth-child(2) {
+  text-align: center; /* Header centered (Original) */
+}
+
+.rates-table td:nth-child(2) {
+  text-align: left; /* Cell data left-aligned */
 }
 
 .rates-table th:nth-child(3), /* Description */
 .rates-table td:nth-child(3) {
-  text-align: left;
   width: var(--col-width-description);
+}
+
+.rates-table th:nth-child(3) {
+  text-align: center; /* Header centered (Original) */
+}
+
+.rates-table td:nth-child(3) {
+  text-align: left; /* Cell data left-aligned */
 }
 
 .rates-table th:nth-child(4), /* Qty */
@@ -199,4 +213,10 @@
   font-family: Arial !important; /* Arial only */
   border: 2px inset rgb(118, 118, 118) !important; /* Browser default inset border */
   color: rgb(0, 0, 0) !important; /* Black text, not gray */
+}
+
+/* Disabled input state (browser default styling from Original) */
+.rates-inputs input:disabled {
+  border: 2px inset rgba(118, 118, 118, 0.3) !important; /* Lighter border with transparency */
+  color: rgb(84, 84, 84) !important; /* Gray text for disabled state */
 }
