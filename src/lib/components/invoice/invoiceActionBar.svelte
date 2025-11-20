@@ -42,7 +42,7 @@
   <button class="load" on:click={onLoadOld}
     disabled={!canLoadOld}
     title="Reload positions from DB"
-    style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#17a2b8;">
+    style="height:30px; width:170px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#17a2b8;">
     Load Old Positions
   </button>
 
@@ -52,7 +52,7 @@
   </button>
 
   <button class="refresh" on:click={onRefresh} disabled={loading}
-    style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#666;">
+    style="height:30px; width:165px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#666;">
     Refresh Page
   </button>
 
@@ -67,7 +67,7 @@
   </button>
 
   <button class="load" disabled={!canShowPrint} title="Invoice after left_tbl" on:click={onPrint}
-    style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#17a2b8;">
+    style="height:30px; width:165px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#17a2b8;">
     Print Invoice
   </button>
 

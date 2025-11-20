@@ -1,29 +1,36 @@
 <!-- src/lib/components/invoice/InvoiceContainer.svelte -->
+<!-- Invoice container with three-table layout matching Original -->
 <script lang="ts">
-  // Invoice container orchestrator - coordinates all sub-components
   import { createEventDispatcher, onMount } from 'svelte';
-  import type {
-    InvoiceData,
-    InvoiceDialogState,
-    InvoiceViewMode
-  } from '$lib/types/ui.js';
+  import type { InvoiceData, InvoiceDialogState } from '$lib/types/ui.js';
   import { toastStore } from '$lib/utils/toast.js';
 
   // Sub-components
   import InvoiceState from './InvoiceState.svelte';
-  import InvoiceForm from './InvoiceForm.svelte';
-  import InvoiceList from './InvoiceList.svelte';
+  import InvoiceStatusBar from './invoiceStatusBar.svelte';
+  import InvoiceActionBar from './invoiceActionBar.svelte';
+  import InvoiceHeaderFields from './invoiceHeaderFields.svelte';
+  import InvoiceTotalsBox from './invoiceTotalsBox.svelte';
+  import InvoiceEstimateNumbers from './invoiceEstimateNumbers.svelte';
+  import InvoicePositionsTable from './InvoicePositionsTable.svelte';
+  import InvoiceListTable from './InvoiceListTable.svelte';
+  import InvoiceEstimatesTable from './InvoiceEstimatesTable.svelte';
   import InvoiceDialogs from './InvoiceDialogs.svelte';
 
-  const dispatch = createEventDispatcher<{
-    'view-change': { mode: InvoiceViewMode };
-  }>();
+  const dispatch = createEventDispatcher();
 
-  // Props
-  export let viewMode: InvoiceViewMode = 'list';
+  // Layout constants (matching Original + 5px spacing adjustment)
+  const FRAME_TOP = 145;
+  const LEFT_WIDTH = 300;
+  const FRAME_HEIGHT = 700;
+  const MID_LEFT = 320;
+  const MID_WIDTH = 915;
+  const RIGHT_LEFT = MID_LEFT + MID_WIDTH + 10; // 1245
+  const RIGHT_WIDTH = LEFT_WIDTH;
 
   // Component refs
   let stateRef: InvoiceState;
+  let positionsRef: any;
 
   // State bindings (from InvoiceState)
   let invoiceData: InvoiceData = {
@@ -53,6 +60,10 @@
   let saving = false;
   let statusMsg = '';
   let statusType: 'info' | 'success' | 'error' = 'info';
+
+  // Selection indices
+  let selectedInvoiceIndex: number | null = null;
+  let selectedEstimateIndex: number | null = null;
 
   // Dialog states
   let dialogState: InvoiceDialogState = {
@@ -96,6 +107,13 @@
     canHandover = flags.canHandover;
     canPrint = flags.canPrint;
   }
+
+  /**
+   * Filter estimates by current account
+   */
+  $: rightItems = Array.isArray(estimates) && invoiceData.account != null
+    ? estimates.filter(r => Number(r?.account) === Number(invoiceData.account))
+    : [];
 
   /**
    * Handle save new invoice
@@ -220,15 +238,62 @@
     invoiceData.headerDirty = true;
   }
 
+
   /**
-   * Handle lines change
+   * Handle invoice selection from left table
    */
-  function handleLinesChange(event: CustomEvent): void {
-    const { positions: newPositions } = event.detail;
-    positions = newPositions;
-    invoiceData.linesDirty = true;
-    if (stateRef) {
-      stateRef.updateTotals();
+  function handleInvoiceSelect(event: CustomEvent): void {
+    const { index, id_invoice } = event.detail;
+    selectedInvoiceIndex = index;
+    // TODO: Load selected invoice data
+    if (id_invoice && stateRef) {
+      toastStore.info(`Invoice ${id_invoice} selected`);
+    }
+  }
+
+  /**
+   * Handle estimate selection from right table
+   */
+  function handleEstimateSelect(event: CustomEvent): void {
+    const { index } = event.detail;
+    selectedEstimateIndex = index;
+  }
+
+  /**
+   * Handle estimate double-click (copy positions)
+   */
+  async function handleEstimateDblPick(event: CustomEvent): Promise<void> {
+    const { id_estimate } = event.detail;
+    if (!id_estimate || !positionsRef || !invoiceData.id_invoice) return;
+
+    try {
+      // TODO: Fetch estimate positions and copy to invoice
+      const res = await fetch(`/estimate-db?id_estimate=${encodeURIComponent(id_estimate)}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`/estimate-db -> ${res.status}`);
+
+      const payload = await res.json();
+      const lines = (Array.isArray(payload) ? payload : Array.isArray(payload?.rows) ? payload.rows : [])
+        .map(r => ({ id_rate: r?.id_rate ?? null, description: r?.description ?? '', qty: Number(r?.qty ?? 0) }))
+        .filter(x => x.id_rate != null);
+
+      // TODO: Replace positions
+      toastStore.info(`Copied ${lines.length} line(s) from estimate (not saved)`);
+      invoiceData.linesDirty = true;
+    } catch (err) {
+      console.error(err);
+      toastStore.error('Copy from estimate failed');
+    }
+  }
+
+  /**
+   * Handle estimate blocked
+   */
+  function handleEstimateBlocked(event: CustomEvent): void {
+    const { reason } = event.detail;
+    if (reason === 'invoice-locked') {
+      toastStore.info('Invoice is locked – copying is disabled');
+    } else if (reason === 'estimate-locked') {
+      toastStore.info('Offer is locked – copying is disabled');
     }
   }
 
@@ -242,71 +307,9 @@
       await stateRef.loadInvoices();
     }
   }
-
-  /**
-   * Handle invoice selection from list
-   */
-  function handleInvoiceSelect(event: CustomEvent): void {
-    const { invoice } = event.detail;
-    // TODO: Load invoice data and switch to form view
-    toastStore.info(`Invoice ${invoice.year}-${invoice.num} selected`);
-    viewMode = 'form';
-  }
-
-  /**
-   * Handle new invoice from list
-   */
-  function handleNewInvoice(): void {
-    if (stateRef) {
-      stateRef.initNewForm();
-    }
-    viewMode = 'form';
-  }
-
-  /**
-   * Handle view PDF
-   */
-  function handleViewPdf(event: CustomEvent): void {
-    const { invoiceId } = event.detail;
-    toastStore.info(`View PDF for invoice ${invoiceId}`);
-    // TODO: Open PDF in new window
-  }
-
-  /**
-   * Handle send email from list
-   */
-  function handleSendEmailFromList(event: CustomEvent): void {
-    const { invoiceId } = event.detail;
-    // TODO: Load invoice and open send dialog
-    toastStore.info(`Prepare to send invoice ${invoiceId}`);
-  }
-
-  /**
-   * Handle delete invoice
-   */
-  async function handleDeleteInvoice(event: CustomEvent): Promise<void> {
-    const { invoiceId } = event.detail;
-    try {
-      // TODO: API call to delete invoice
-      toastStore.success(`Invoice ${invoiceId} deleted`);
-      if (stateRef) {
-        await stateRef.loadInvoices();
-      }
-    } catch (error) {
-      toastStore.error('Failed to delete invoice');
-    }
-  }
-
-  /**
-   * Public API: Switch view mode
-   */
-  export function switchView(mode: InvoiceViewMode): void {
-    viewMode = mode;
-    dispatch('view-change', { mode });
-  }
 </script>
 
-<div class="invoice-container">
+<div class="page-wrap">
   <!-- State Management Component (no visual output) -->
   <InvoiceState
     bind:this={stateRef}
@@ -323,58 +326,104 @@
     bind:statusType
   />
 
-  <!-- Main Form View -->
-  {#if viewMode === 'form'}
-    <InvoiceForm
-      {invoiceData}
-      {debtor}
-      {debtors}
-      {positions}
-      {totals}
-      {loading}
-      {saving}
-      {statusMsg}
-      {statusType}
-      {canSave}
-      {canUpdate}
-      {canDelete}
-      {canPrint}
-      {canSend}
-      {canHandover}
-      on:save={handleSave}
-      on:update={handleUpdate}
-      on:delete={handleDelete}
-      on:reset={handleReset}
-      on:print={handlePrint}
-      on:send={handleSend}
-      on:handover={handleHandover}
-      on:header-change={handleHeaderChange}
-      on:lines-change={handleLinesChange}
-    />
-  {:else}
-    <!-- List View -->
-    <InvoiceList
-      {invoices}
-      {loading}
+  <!-- Status Bar -->
+  <InvoiceStatusBar {statusMsg} />
+
+  <!-- Action Bar -->
+  <InvoiceActionBar
+    id_invoice={invoiceData.id_invoice}
+    canSaveBtn={canSave}
+    canUpdateBtn={canUpdate}
+    canLoadOld={false}
+    canShowPrint={canPrint}
+    canSendCommitBtn={canSend}
+    canHandover={canHandover}
+    hasSel={invoiceData.id_invoice !== null}
+    isBlocked={invoiceData.blocked}
+    booked={invoiceData.booked}
+    {loading}
+    {saving}
+    showLetter={false}
+    on:save={handleSave}
+    on:loadOld={() => {}}
+    on:new={handleReset}
+    on:refresh={() => window.location.reload()}
+    on:toggleLetter={() => {}}
+    on:print={handlePrint}
+    on:delete={handleDelete}
+    on:send={handleSend}
+    on:handover={handleHandover}
+  />
+
+  <!-- Header Fields -->
+  <InvoiceHeaderFields
+    bind:year={invoiceData.year}
+    bind:num={invoiceData.num}
+    bind:date={invoiceData.date}
+    bind:account={invoiceData.account}
+    {debtor}
+    {debtors}
+  />
+
+  <!-- Left Table: Invoice List -->
+  <div style="position:absolute; top:{FRAME_TOP}px; left:10px; width:{LEFT_WIDTH}px; height:{FRAME_HEIGHT}px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff; z-index:2;">
+    <InvoiceListTable
+      items={invoices}
+      bind:selectedIndex={selectedInvoiceIndex}
       on:select={handleInvoiceSelect}
-      on:new-invoice={handleNewInvoice}
-      on:view-pdf={handleViewPdf}
-      on:send-email={handleSendEmailFromList}
-      on:delete={handleDeleteInvoice}
     />
-  {/if}
+  </div>
+
+  <!-- Middle Table: Positions -->
+  <div style="position:absolute; top:{FRAME_TOP}px; left:{MID_LEFT}px; width:{MID_WIDTH}px; height:{FRAME_HEIGHT}px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff; z-index:2;">
+    <InvoicePositionsTable
+      bind:this={positionsRef}
+      selectedIdInvoice={invoiceData.id_invoice}
+      locked={invoiceData.blocked || invoiceData.booked || saving}
+      on:totals={(e) => { totals = e.detail; }}
+      on:dirty={(e) => { invoiceData.linesDirty = e.detail.value; }}
+      on:stats={(e) => { invoiceData.linesCount = e.detail.count; }}
+      on:snapshot={() => {}}
+    />
+  </div>
+
+  <!-- Right Table: Estimates -->
+  <div style="position:absolute; top:{FRAME_TOP}px; left:{RIGHT_LEFT}px; width:{RIGHT_WIDTH}px; height:{FRAME_HEIGHT}px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff; z-index:1;">
+    <InvoiceEstimatesTable
+      items={rightItems}
+      bind:selectedIndex={selectedEstimateIndex}
+      invoiceLocked={invoiceData.blocked}
+      on:select={handleEstimateSelect}
+      on:dblpick={handleEstimateDblPick}
+      on:blocked={handleEstimateBlocked}
+    />
+  </div>
+
+  <!-- Totals Box -->
+  <div style="position:absolute; top:{FRAME_TOP + FRAME_HEIGHT + 6}px; left:{MID_LEFT + MID_WIDTH - 277}px; display:flex; justify-content:flex-end;">
+    <InvoiceTotalsBox {totals} />
+  </div>
+
+  <!-- Estimate Numbers -->
+  <InvoiceEstimateNumbers
+    estimateNr1={invoiceData.estimateNr1}
+    estimateNr2={invoiceData.estimateNr2}
+    frameTop={FRAME_TOP}
+    frameHeight={FRAME_HEIGHT}
+    rightLeft={RIGHT_LEFT}
+    rightWidth={RIGHT_WIDTH}
+    leftWidth={LEFT_WIDTH}
+  />
 
   <!-- Dialogs -->
   <InvoiceDialogs bind:dialogState on:success={handleSendSuccess} />
 </div>
 
 <style>
-  .invoice-container {
-    display: flex;
-    flex-direction: column;
+  .page-wrap {
+    position: relative;
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
     background: #f5f5f5;
   }
-
 </style>
