@@ -1,12 +1,44 @@
 # VISUAL MATCHING PROTOCOL - 1:1 Übereinstimmung Original → Accounting_2
 
-**KRITISCH:** Diese Anleitung MUSS vollständig befolgt werden, um pixel-genaue Übereinstimmung zu garantieren.
+**KRITISCH:** Diese Anleitung MUSS vollständig befolgt werden, um pixel-genaue Übereinstimmung zu garantieren und dabei claude.md vollständig berücksichtigen. 
 
 ---
 
 ## GRUNDREGEL
 
 **NIEMALS** behaupten, dass etwas "identisch" oder "pixel-genau" ist, ohne ALLE Schritte dieser Anleitung durchgeführt zu haben!
+
+---
+
+## KRITISCHER GRUNDSATZ: VISUAL MATCHING ≠ CODE-KOPIE
+
+**WICHTIG:** Die Übernahme vom Aussehen aus dem Original bedeutet NICHT die Wiederherstellung des alten Codes!
+
+### Was übernommen wird:
+✅ **Visuelles Erscheinungsbild** - 1:1 identisch zum Original
+✅ **CSS-Werte** - Alle Farben, Größen, Abstände, Borders
+✅ **Exaktes Aussehen** - Pixel-genau für den Endnutzer
+
+### Was NICHT übernommen wird:
+❌ **Alter Code** - KEIN Kopieren aus Original
+❌ **Alte Dateistrukturen** - KEINE Regression
+❌ **Alte CSS-Dateien** - KEIN direktes Kopieren von `all.css`, `static/css/*`
+
+### Was beibehalten wird:
+✅ **Neue Architektur** - Refactored-Struktur in Accounting_2
+✅ **Design-System** - `variables.css`, `components/`, `pages/`
+✅ **Modulare Struktur** - < 500 Zeilen pro Datei (CLAUDE.md)
+✅ **Neue CSS-Organisation** - Keine Rückschritte
+
+### Umsetzung:
+1. Original **analysieren** → CSS-Werte messen (mit DevTools)
+2. **Neue Design-System-Dateien** finden (`variables.css`, `components/`, `pages/`)
+3. **Nur Werte anpassen** - Struktur bleibt modern
+4. **Refactoring beibehalten** - Nur visuelle Angleichung
+
+**Beispiel:**
+- ❌ FALSCH: `cp Accounting/src/lib/all.css Accounting_2/src/lib/`
+- ✅ RICHTIG: Werte aus `all.css` in `variables.css` + `components/buttons.css` übertragen
 
 ---
 
