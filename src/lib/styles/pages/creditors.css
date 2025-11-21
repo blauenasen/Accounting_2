@@ -38,6 +38,10 @@
   box-sizing: border-box;
 }
 
+.creditors-button-container button:disabled {
+  border: 2px outset rgba(118, 118, 118, 0.3);
+}
+
 .creditors-button-container button:hover {
   filter: brightness(0.95);
 }
@@ -74,8 +78,8 @@
   padding: var(--padding-input);
   font-size: 13.3333px !important;
   font-family: Arial !important;
-  border: 1px solid rgb(118, 118, 118) !important;
-  box-sizing: border-box;  /* Ensures width includes padding */
+  border: 2px inset rgb(118, 118, 118) !important;
+  box-sizing: content-box;  /* Original uses content-box */
 }
 
 .creditors-inputs input[type="text"]::placeholder {
@@ -88,7 +92,7 @@
   border: 1px solid rgba(118, 118, 118, 0.3) !important;
   font-size: 13.3333px !important;
   font-family: Arial !important;
-  box-sizing: border-box;  /* Ensures width includes padding */
+  box-sizing: border-box;
 }
 
 .creditors-inputs select::placeholder {
@@ -96,15 +100,17 @@
   color: rgb(136, 136, 136) !important;
 }
 
-/* Field-specific widths (from Original creditors.css) */
-.creditors-inputs label:nth-child(1) input { width: 80px; }   /* Account */
-.creditors-inputs label:nth-child(2) input { width: 70px; }   /* Salutation */
-.creditors-inputs label:nth-child(3) input { width: 200px; }  /* Name */
-.creditors-inputs label:nth-child(4) input { width: 200px; }  /* Address 1 */
-.creditors-inputs label:nth-child(5) input { width: 200px; }  /* Address 2 */
-.creditors-inputs label:nth-child(6) input { width: 200px; }  /* Address 3 */
-.creditors-inputs label:nth-child(7) input { width: 200px; }  /* E-Mail */
-.creditors-inputs label:nth-child(8) select { width: 110px; } /* Blocked */
+/* Field-specific widths (from Original creditors.css)
+   Original uses content-box, so these are content widths.
+   Actual rendered width = content + padding(10px) + border(4px) */
+.creditors-inputs label:nth-child(1) input { width: 80px; }   /* Account → 94px actual */
+.creditors-inputs label:nth-child(2) input { width: 70px; }   /* Salutation → 84px actual */
+.creditors-inputs label:nth-child(3) input { width: 200px; }  /* Name → 214px actual */
+.creditors-inputs label:nth-child(4) input { width: 200px; }  /* Address 1 → 214px actual */
+.creditors-inputs label:nth-child(5) input { width: 200px; }  /* Address 2 → 214px actual */
+.creditors-inputs label:nth-child(6) input { width: 200px; }  /* Address 3 → 214px actual */
+.creditors-inputs label:nth-child(7) input { width: 169px; }  /* E-Mail → 183px actual */
+.creditors-inputs label:nth-child(8) select { width: 125px; } /* Blocked → 125px (border-box) */
 
 
 /* ==================================================================
