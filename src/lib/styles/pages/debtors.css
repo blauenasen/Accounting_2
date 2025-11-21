@@ -8,12 +8,8 @@
    ================================================================== */
 
 .debtors-header {
-  position: absolute;
-  top: var(--margin-page-header);
-  left: var(--margin-page-header);
-  font-size: var(--font-size-header);
-  font-weight: var(--font-weight-bold);
-  margin: 0;
+  /* Uses global h1 styles from global.css - no overrides needed */
+  /* Original: margin-left: 50px, top: 50px (static flow) */
 }
 
 
@@ -22,43 +18,55 @@
    ================================================================== */
 
 .debtors-inputs {
-  position: absolute;
-  top: 100px;
-  left: var(--margin-inputs);
+  margin-left: 52px;
+  margin-top: 20px;
+  margin-bottom: 20px;
   display: flex;
   gap: var(--gap-form-fields);
+  align-items: flex-start;
 }
 
-.rates-inputs label {
+.debtors-inputs label {
   display: flex;
   flex-direction: column;
   font-weight: var(--font-weight-bold);
   text-align: left;
-  gap: 2px;
+  gap: 0;
 }
 
-.rates-inputs input {
+.debtors-inputs input[type="text"] {
   padding: var(--padding-input);
+  font-size: 13.3333px !important;
+  font-family: Arial !important;
+  border: 1px solid rgb(118, 118, 118) !important;
 }
 
-/* Field-specific widths */
-.rates-inputs label:nth-child(1) input { /* Service */
-  width: var(--input-width-service);
+.debtors-inputs input[type="text"]::placeholder {
+  font-size: 9px !important;
+  color: rgb(136, 136, 136) !important;
 }
 
-.rates-inputs label:nth-child(2) input { /* Description */
-  width: var(--input-width-description);
+.debtors-inputs select {
+  padding: var(--padding-input);
+  border: 1px solid rgba(118, 118, 118, 0.3) !important;
+  font-size: 13.3333px !important;
+  font-family: Arial !important;
 }
 
-.rates-inputs label:nth-child(3) input { /* Qty */
-  width: var(--input-width-qty);
-  text-align: center;
+.debtors-inputs select::placeholder {
+  font-size: 9px !important;
+  color: rgb(136, 136, 136) !important;
 }
 
-.rates-inputs label:nth-child(4) input { /* Rate */
-  width: var(--input-width-rate);
-  text-align: right;
-}
+/* Field-specific widths (from Original debtors.css) */
+.debtors-inputs label:nth-child(1) input { width: 80px; }   /* Account */
+.debtors-inputs label:nth-child(2) input { width: 70px; }   /* Salutation */
+.debtors-inputs label:nth-child(3) input { width: 200px; }  /* Name */
+.debtors-inputs label:nth-child(4) input { width: 200px; }  /* Address 1 */
+.debtors-inputs label:nth-child(5) input { width: 200px; }  /* Address 2 */
+.debtors-inputs label:nth-child(6) input { width: 200px; }  /* Address 3 */
+.debtors-inputs label:nth-child(7) input { width: 200px; }  /* E-Mail */
+.debtors-inputs label:nth-child(8) select { width: 110px; } /* Blocked */
 
 
 /* ==================================================================
@@ -66,11 +74,33 @@
    ================================================================== */
 
 .debtors-button-container {
-  position: absolute;
-  top: 165px;
-  left: var(--margin-button-group);
+  margin-left: 250px;
+  margin-top: 20px;
   display: flex;
-  gap: var(--gap-form-fields);
+  gap: 20px;
+}
+
+.debtors-button-container button {
+  display: inline-block;
+  width: 150px;
+  height: 30px;
+  padding: 6px 18px;
+  font-weight: bold;
+  line-height: 1.2;
+  cursor: pointer;
+  outline: none;
+  border: 2px outset rgb(0, 0, 0);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.debtors-button-container button:hover {
+  filter: brightness(0.95);
+}
+
+.debtors-button-container button:disabled {
+  opacity: 0.7;
+  cursor: default;
 }
 
 
@@ -80,10 +110,10 @@
 
 .debtors-table-container {
   position: absolute;
-  top: var(--table-top-debtors);
-  left: var(--margin-table-left);
-  width: var(--table-width-debtors);
-  height: var(--table-height);
+  top: 265px;
+  left: 60px;
+  width: 1365px;
+  height: 700px;
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid var(--color-border-container);
@@ -100,74 +130,107 @@
   border-collapse: collapse;
   font-family: var(--font-family-base);
   font-size: var(--font-size-base);
+  background-color: #e5f0ea; /* Helles Mintgrün (from Original) */
 }
 
-.rates-table thead {
+.debtors-table thead {
   position: sticky;
   top: 0;
   z-index: var(--z-index-sticky-header);
 }
 
-.rates-table th {
+.debtors-table th {
   position: sticky;
   top: 0;
   z-index: var(--z-index-sticky-header);
   padding: var(--padding-table-cell);
   font-weight: var(--font-weight-bold);
-  text-align: left;
   background-color: var(--color-bg-table-header);
-  color: var(--color-text-primary);
+  color: var(--color-text-black);
   border: 1px solid var(--color-border-table);
   user-select: none;
 }
 
-.rates-table td {
-  padding: var(--padding-table-cell);
+.debtors-table td {
+  padding: 2px;
+  height: 32px;
   border: 1px solid var(--color-border-table);
   background-color: white;
+  color: var(--color-text-black);
+  user-select: none;
+  word-break: break-word;
 }
 
-/* Column Alignment */
-.rates-table th:nth-child(1), /* ID */
-.rates-table td:nth-child(1) {
+/* Column Alignment and Widths (from Original debtors.css) */
+.debtors-table th:nth-child(1),
+.debtors-table td:nth-child(1) {
+  width: 50px;
   text-align: center;
-  width: var(--col-width-id);
 }
 
-.rates-table th:nth-child(2), /* Service */
-.rates-table td:nth-child(2) {
+.debtors-table th:nth-child(2),
+.debtors-table td:nth-child(2) {
+  width: 230px;
   text-align: left;
-  width: var(--col-width-service);
 }
 
-.rates-table th:nth-child(3), /* Description */
-.rates-table td:nth-child(3) {
+.debtors-table th:nth-child(3),
+.debtors-table td:nth-child(3) {
+  width: 230px;
   text-align: left;
-  width: var(--col-width-description);
 }
 
-.rates-table th:nth-child(4), /* Qty */
-.rates-table td:nth-child(4) {
+.debtors-table th:nth-child(4),
+.debtors-table td:nth-child(4) {
+  width: 230px;
+  text-align: left;
+}
+
+.debtors-table th:nth-child(5),
+.debtors-table td:nth-child(5) {
+  width: 230px;
+  text-align: left;
+}
+
+.debtors-table th:nth-child(6),
+.debtors-table td:nth-child(6) {
+  width: 230px;
+  text-align: left;
+}
+
+.debtors-table th:nth-child(7),
+.debtors-table td:nth-child(7) {
+  width: 70px;
   text-align: center;
-  width: var(--col-width-qty);
-}
-
-.rates-table th:nth-child(5), /* Rate */
-.rates-table td:nth-child(5) {
-  text-align: right;
-  width: var(--col-width-rate);
 }
 
 /* Row States */
-.rates-table tbody tr {
+.debtors-table tbody tr {
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
-.rates-table tbody tr:hover {
-  background-color: #f0f0f0;
+.debtors-table tr:hover td {
+  background-color: #d9fbe1;
+  cursor: pointer;
 }
 
-.rates-table tbody tr.selected {
-  background-color: #e3f2fd;
+.debtors-table tr.selected td {
+  background-color: #cce4ff;
+}
+
+.debtors-table tr.selected:hover td {
+  background-color: #cce4ff !important;
+}
+
+/* Blocked rows (from Original) */
+.debtors-table tr.blocked-row td {
+  background-color: red !important;
+  color: white !important;
+}
+
+.debtors-table tr.blocked-row.selected td,
+.debtors-table tr.blocked-row:hover td {
+  background-color: red !important;
+  color: white !important;
 }
