@@ -1,6 +1,6 @@
 /* ==================================================================
    ACCOUNTING_2 - CREDITORS PAGE SPECIFIC STYLES
-   Matches original Accounting creditors.css layout
+   Matches original Accounting creditors.css layout 1:1
    ================================================================== */
 
 /* ==================================================================
@@ -8,56 +8,8 @@
    ================================================================== */
 
 .creditors-header {
-  position: absolute;
-  top: var(--margin-page-header);
-  left: var(--margin-page-header);
-  font-size: var(--font-size-header);
-  font-weight: var(--font-weight-bold);
-  margin: 0;
-}
-
-
-/* ==================================================================
-   INPUT FORM
-   ================================================================== */
-
-.creditors-inputs {
-  position: absolute;
-  top: 100px;
-  left: var(--margin-inputs);
-  display: flex;
-  gap: var(--gap-form-fields);
-}
-
-.creditors-inputs label {
-  display: flex;
-  flex-direction: column;
-  font-weight: var(--font-weight-bold);
-  text-align: left;
-  gap: 2px;
-}
-
-.creditors-inputs input {
-  padding: var(--padding-input);
-}
-
-/* Field-specific widths */
-.creditors-inputs label:nth-child(1) input { /* Service */
-  width: var(--input-width-service);
-}
-
-.creditors-inputs label:nth-child(2) input { /* Description */
-  width: var(--input-width-description);
-}
-
-.creditors-inputs label:nth-child(3) input { /* Qty */
-  width: var(--input-width-qty);
-  text-align: center;
-}
-
-.creditors-inputs label:nth-child(4) input { /* Rate */
-  width: var(--input-width-rate);
-  text-align: right;
+  /* Uses global h1 styles from global.css - no overrides needed */
+  /* Original: margin-left: 50px, top: 50px (static flow) */
 }
 
 
@@ -66,12 +18,93 @@
    ================================================================== */
 
 .creditors-button-container {
-  position: absolute;
-  top: 165px;
-  left: var(--margin-button-group);
+  margin-left: 250px;
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+}
+
+.creditors-button-container button {
+  display: inline-block;
+  width: 150px;
+  height: 30px;
+  padding: 6px 18px;
+  font-weight: bold;
+  line-height: 1.2;
+  cursor: pointer;
+  outline: none;
+  border: 2px outset rgb(0, 0, 0);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.creditors-button-container button:hover {
+  filter: brightness(0.95);
+}
+
+.creditors-button-container button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+
+/* ==================================================================
+   INPUT FORM
+   ================================================================== */
+
+.creditors-inputs {
+  margin-left: 52px;
+  margin-top: 20px;
+  margin-bottom: 20px;
   display: flex;
   gap: var(--gap-form-fields);
+  align-items: flex-start;
 }
+
+.creditors-inputs label {
+  display: flex;
+  flex-direction: column;
+  font-weight: var(--font-weight-bold);
+  color: rgb(0, 0, 0);  /* Black labels (from Original) */
+  text-align: left;
+  gap: 0;
+}
+
+.creditors-inputs input[type="text"] {
+  padding: var(--padding-input);
+  font-size: 13.3333px !important;
+  font-family: Arial !important;
+  border: 1px solid rgb(118, 118, 118) !important;
+  box-sizing: border-box;  /* Ensures width includes padding */
+}
+
+.creditors-inputs input[type="text"]::placeholder {
+  font-size: 9px !important;
+  color: rgb(136, 136, 136) !important;
+}
+
+.creditors-inputs select {
+  padding: var(--padding-input);
+  border: 1px solid rgba(118, 118, 118, 0.3) !important;
+  font-size: 13.3333px !important;
+  font-family: Arial !important;
+  box-sizing: border-box;  /* Ensures width includes padding */
+}
+
+.creditors-inputs select::placeholder {
+  font-size: 9px !important;
+  color: rgb(136, 136, 136) !important;
+}
+
+/* Field-specific widths (from Original creditors.css) */
+.creditors-inputs label:nth-child(1) input { width: 80px; }   /* Account */
+.creditors-inputs label:nth-child(2) input { width: 70px; }   /* Salutation */
+.creditors-inputs label:nth-child(3) input { width: 200px; }  /* Name */
+.creditors-inputs label:nth-child(4) input { width: 200px; }  /* Address 1 */
+.creditors-inputs label:nth-child(5) input { width: 200px; }  /* Address 2 */
+.creditors-inputs label:nth-child(6) input { width: 200px; }  /* Address 3 */
+.creditors-inputs label:nth-child(7) input { width: 200px; }  /* E-Mail */
+.creditors-inputs label:nth-child(8) select { width: 110px; } /* Blocked */
 
 
 /* ==================================================================
@@ -80,10 +113,10 @@
 
 .creditors-table-container {
   position: absolute;
-  top: var(--table-top-creditors);
-  left: var(--margin-table-left);
-  width: var(--table-width-creditors);
-  height: var(--table-height);
+  top: 265px;
+  left: 60px;
+  width: 1140px;
+  height: 700px;
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid var(--color-border-container);
@@ -100,6 +133,7 @@
   border-collapse: collapse;
   font-family: var(--font-family-base);
   font-size: var(--font-size-base);
+  background-color: #e5f0ea; /* Helles Mintgrün (from Original) */
 }
 
 .creditors-table thead {
@@ -114,48 +148,63 @@
   z-index: var(--z-index-sticky-header);
   padding: var(--padding-table-cell);
   font-weight: var(--font-weight-bold);
-  text-align: left;
   background-color: var(--color-bg-table-header);
-  color: var(--color-text-primary);
+  color: var(--color-text-black);
   border: 1px solid var(--color-border-table);
   user-select: none;
 }
 
 .creditors-table td {
-  padding: var(--padding-table-cell);
+  padding: 2px;
+  height: 32px;
   border: 1px solid var(--color-border-table);
   background-color: white;
+  color: var(--color-text-black);
+  user-select: none;
+  word-break: break-word;
 }
 
-/* Column Alignment */
-.creditors-table th:nth-child(1), /* ID */
+/* Column Alignment and Widths (from Original creditors.css) */
+.creditors-table th:nth-child(1),
 .creditors-table td:nth-child(1) {
+  width: 50px;
   text-align: center;
-  width: var(--col-width-id);
 }
 
-.creditors-table th:nth-child(2), /* Service */
+.creditors-table th:nth-child(2),
 .creditors-table td:nth-child(2) {
+  width: 230px;
   text-align: left;
-  width: var(--col-width-service);
 }
 
-.creditors-table th:nth-child(3), /* Description */
+.creditors-table th:nth-child(3),
 .creditors-table td:nth-child(3) {
+  width: 230px;
   text-align: left;
-  width: var(--col-width-description);
 }
 
-.creditors-table th:nth-child(4), /* Qty */
+.creditors-table th:nth-child(4),
 .creditors-table td:nth-child(4) {
-  text-align: center;
-  width: var(--col-width-qty);
+  width: 230px;
+  text-align: left;
 }
 
-.creditors-table th:nth-child(5), /* Rate */
+.creditors-table th:nth-child(5),
 .creditors-table td:nth-child(5) {
-  text-align: right;
-  width: var(--col-width-rate);
+  width: 230px;
+  text-align: left;
+}
+
+.creditors-table th:nth-child(6),
+.creditors-table td:nth-child(6) {
+  width: 230px;
+  text-align: left;
+}
+
+.creditors-table th:nth-child(7),
+.creditors-table td:nth-child(7) {
+  width: 70px;
+  text-align: center;
 }
 
 /* Row States */
@@ -164,10 +213,27 @@
   transition: background-color 0.15s ease;
 }
 
-.creditors-table tbody tr:hover {
-  background-color: #f0f0f0;
+.creditors-table tr:hover td {
+  background-color: #d9fbe1;
+  cursor: pointer;
 }
 
-.creditors-table tbody tr.selected {
-  background-color: #e3f2fd;
+.creditors-table tr.selected td {
+  background-color: #cce4ff;
+}
+
+.creditors-table tr.selected:hover td {
+  background-color: #cce4ff !important;
+}
+
+/* Blocked rows (from Original) */
+.creditors-table tr.blocked-row td {
+  background-color: red !important;
+  color: white !important;
+}
+
+.creditors-table tr.blocked-row.selected td,
+.creditors-table tr.blocked-row:hover td {
+  background-color: red !important;
+  color: white !important;
 }
