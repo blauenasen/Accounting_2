@@ -7,10 +7,7 @@
    PAGE HEADER
    ================================================================== */
 
-.debtors-header {
-  /* Uses global h1 styles from global.css - no overrides needed */
-  /* Original: margin-left: 50px, top: 50px (static flow) */
-}
+/* .debtors-header uses global h1 styles from global.css - no overrides needed */
 
 
 /* ==================================================================
