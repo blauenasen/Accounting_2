@@ -115,7 +115,7 @@
   position: absolute;
   top: 265px;
   left: 60px;
-  width: 1140px;
+  width: 1280px;
   height: 700px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -173,7 +173,7 @@
 
 .creditors-table th:nth-child(2),
 .creditors-table td:nth-child(2) {
-  width: 230px;
+  width: 370px;
   text-align: left;
 }
 

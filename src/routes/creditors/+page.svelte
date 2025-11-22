@@ -4,9 +4,6 @@
   import { onMount } from 'svelte';
   import '$lib/styles/pages/creditors.css';
 
-  // SvelteKit page props
-  export let params: Record<string, string> = {};
-
   interface Creditor {
     account: number;
     salutation?: string;
@@ -41,7 +38,7 @@
 
   async function ladeCreditors() {
     try {
-      const url = showAll ? '/creditors?all=1' : '/creditors';
+      const url = showAll ? '/api/creditors?all=1' : '/api/creditors';
       const res = await fetch(url);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       rows = await res.json();
@@ -114,34 +111,57 @@
 
     saving = true;
     try {
-      const payload = {
-        _update: selectedIndex !== null,
-        original_account,
-        account: parseInt(account, 10),
-        salutation,
-        name,
-        adress1,
-        adress2,
-        adress3,
-        email,
-        OPBereich: 'OP',
-        OPArt: 'Debitor',
-        filterNo: 20,
-        blocked: selectedIndex === null ? 0 : parseInt(blocked || '0', 10)
-      };
+      const accountNum = parseInt(account, 10);
 
-      const res = await fetch('/creditors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error('Error saving');
-      await res.json();
+      if (selectedIndex === null) {
+        // Create new creditor
+        const payload = {
+          account: accountNum,
+          salutation,
+          name,
+          adress1,
+          adress2,
+          adress3,
+          email
+        };
+
+        const res = await fetch('/api/creditors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Error saving');
+        }
+      } else {
+        // Update existing creditor
+        const payload = {
+          salutation,
+          name,
+          adress1,
+          adress2,
+          adress3,
+          email,
+          blocked: parseInt(blocked || '0', 10)
+        };
+
+        const res = await fetch(`/api/creditors/${original_account}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Error updating');
+        }
+      }
+
       alert('Saved!');
       await ladeCreditors();
       await resetForm();
     } catch (err) {
-      alert('Error saving');
+      alert(err instanceof Error ? err.message : 'Error saving');
     } finally {
       saving = false;
     }
@@ -152,13 +172,16 @@
     if (!confirm('Are you sure you want to deactivate this entry?')) return;
     try {
       const acc = rows[selectedIndex].account;
-      const res = await fetch(`/creditors?account=${encodeURIComponent(acc)}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Error deactivating');
+      const res = await fetch(`/api/creditors/${encodeURIComponent(acc)}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Error deactivating');
+      }
       alert('Entry deactivated!');
       await ladeCreditors();
       await resetForm();
     } catch (err) {
-      alert('Error deactivating');
+      alert(err instanceof Error ? err.message : 'Error deactivating');
     }
   }
 
