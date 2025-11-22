@@ -9,12 +9,9 @@
   import { tip } from '$lib/actions/tip.js';
   import { handleError } from '$lib/utils/errors';
 
-  // SvelteKit page props
-  export let params: Record<string, string> = {};
-
   const FRAME_TOP = 155;
   const LEFT_WIDTH = 300;
-  const FRAME_HEIGHT = 700;
+  const FRAME_HEIGHT =700;
   const TOTALS_LEFT = 952;
 
   const MID_LEFT = 328;
@@ -76,6 +73,7 @@
 
   // Zustände
   let isBlocked = false;
+  let isBooked = false;
   let headerDirty = false;
   let linesDirty = false;
   let linesCount = 0;
@@ -92,8 +90,8 @@
   $: headerValidExisting = !!(date && (account != null) && year && num);
 
   $: canSaveBtn   = isNew  && headerValidNew;
-  $: canUpdateBtn = hasSel && dirty && !isBlocked;
-  $: canLoadOld   = hasSel && dirty && !isBlocked;
+  $: canUpdateBtn = hasSel && dirty && !isBlocked && !isBooked;
+  $: canLoadOld   = hasSel && dirty && !isBlocked && !isBooked;
   $: canShowPrint = hasSel && !dirty && linesCount > 0;
   $: if (!canShowPrint && showLetter) showLetter = false;
 
@@ -134,13 +132,17 @@
 
   async function apiGet(path: string){ const res = await fetch(path); if(!res.ok) throw new Error(`${path} -> ${res.status}`); return res.json(); }
 
-  async function loadDebtors(){ const rows = await apiGet('/estimate?mode=debtors'); debtors = Array.isArray(rows)?rows:[]; }
+  async function loadDebtors(){
+    const rows = await apiGet('/api/debtors');
+    debtors = Array.isArray(rows) ? rows.sort((a, b) => (a.account ?? 0) - (b.account ?? 0)) : [];
+  }
 
   async function loadEstimates() {
-    const rows = await apiGet('/estimate');
+    const rows = await apiGet('/api/estimates');
     estimates = (Array.isArray(rows) ? rows : []).map((r: any) => ({
       ...r,
-      blocked: Number(r?.blocked ?? r?.locked ?? 0)
+      blocked: Number(r?.blocked ?? r?.locked ?? 0),
+      booked: Number(r?.booked ?? 0)
     }));
   }
 
@@ -166,6 +168,7 @@
     selectedIndex = null;
 
     isBlocked = false;
+    isBooked = false;
     headerDirty = false;
     linesDirty = false;
     linesCount = 0;
@@ -192,12 +195,12 @@
       if (isNew) {
         if (!headerValidNew) { setStatus('Header incomplete.', 'error'); return; }
         const dateToSave = usToISO(date) || dateISO || todayISO();
-        const resNew = await fetch('/estimate', {
+        const resNew = await fetch('/api/estimates', {
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ year, date:dateToSave, account:Number(account) })
         });
-        if (!resNew.ok) throw new Error(`POST /estimate -> ${resNew.status}`);
+        if (!resNew.ok) throw new Error(`POST /api/estimates -> ${resNew.status}`);
         const dataNew = await resNew.json();
         if (typeof dataNew?.id_estimate === 'number') id_estimate = dataNew.id_estimate;
         didHeader = true;
@@ -210,12 +213,12 @@
       } else {
         if (headerDirty && headerValidExisting) {
           const dateToSave = usToISO(date) || dateISO || todayISO();
-          const resUpd = await fetch('/estimate', {
-            method:'POST',
+          const resUpd = await fetch(`/api/estimates/${id_estimate}`, {
+            method:'PUT',
             headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ id_estimate:Number(id_estimate), date:dateToSave, account:Number(account) })
+            body: JSON.stringify({ date:dateToSave, account:Number(account) })
           });
-          if (!resUpd.ok) throw new Error(`POST /estimate -> ${resUpd.status}`);
+          if (!resUpd.ok) throw new Error(`PUT /api/estimates/${id_estimate} -> ${resUpd.status}`);
           didHeader = true;
           await loadEstimates();
         }
@@ -283,6 +286,7 @@
     account = row.account ?? null;
 
     isBlocked = !!(row.blocked);
+    isBooked = !!(row.booked);
 
     originalAccount = account;
     originalDateISO = dateISO;
@@ -298,7 +302,7 @@
    }
 
    $: {
-    if (hasSel && !isBlocked) {
+    if (hasSel && !isBlocked && !isBooked) {
       const nowISO = usToISO(date) || '';
       headerDirty = (account !== originalAccount) || (nowISO !== (originalDateISO || ''));
     } else if (isNew) {
@@ -337,7 +341,7 @@
     const ok1 = window.confirm(previewMsg);
     if (!ok1) return;
 
-    const check = await fetch(`/estimate-db?mode=delete-check&id_estimate=${encodeURIComponent(id_estimate!)}`);
+    const check = await fetch(`/api/estimates/${id_estimate}/delete-check`);
     const checkData = await check.json();
     if (!checkData?.ok) { alert(checkData?.message || 'Delete check failed.'); return; }
 
@@ -350,7 +354,7 @@
     const ok2 = window.confirm(finalMsg);
     if (!ok2) return;
 
-    const del = await fetch(`/estimate-db?mode=delete&id_estimate=${encodeURIComponent(id_estimate!)}`);
+    const del = await fetch(`/api/estimates/${id_estimate}`, { method: 'DELETE' });
     const delData = await del.json();
     if (!delData?.ok) { alert(delData?.message || 'Deletion failed.'); return; }
 
@@ -414,15 +418,16 @@
     {/if}
   </div>
 
-  <div style="position:absolute; top:{FRAME_TOP}px; left:18px; width:{LEFT_WIDTH}px; height:{FRAME_HEIGHT}px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
+  <div style="position:absolute; top:{FRAME_TOP}px; left:13px; width:{LEFT_WIDTH}px; height:{FRAME_HEIGHT}px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
     <LeftTbl items={estimates} bind:selectedIndex on:select={onSelectFromList} />
   </div>
 
-  <div style="position:absolute; top:155px; left:328px; width:915px; height:700px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
+  <div style="position:absolute; top:155px; left:323px; width:915px; height:700px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
     <MiddleTbl
       bind:this={midRef}
       selectedIdEstimate={id_estimate}
       locked={isBlocked}
+      booked={isBooked}
       on:totals={onTotals}
       on:dirty={onLinesDirty}
       on:stats={onLinesStats}
@@ -430,7 +435,7 @@
       on:snapshot={onSnapshot} />
   </div>
 
-  <div style="position:absolute; top:{FRAME_TOP + FRAME_HEIGHT + 16}px; left:{TOTALS_LEFT + 6}px; display:flex; justify-content:flex-end;">
+  <div style="position:absolute; top:{FRAME_TOP + FRAME_HEIGHT + 16}px; left:{TOTALS_LEFT + 1}px; display:flex; justify-content:flex-end;">
     <div style="display:grid; grid-template-columns:auto 120px; column-gap:8px; row-gap:4px; font-size:13px; color:#000;">
       <div style="text-align:right;">Subtotal</div>
       <div style="text-align:right; white-space:nowrap;">{fmtMoney(totals.subtotal)}</div>
@@ -441,21 +446,21 @@
     </div>
   </div>
 
-  <label style="position:absolute; top:98px; left:18px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:13px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="text-align:center; display:block; padding-left:4px; margin-bottom:2px;">Year</span>
     <input type="text" value={year} readonly
-      style="position:relative; top:0; left:0; width:50px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:center; margin-top:0; box-sizing:border-box; word-break:normal;"
+      style="position:relative; top:0; left: 0; width:50px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:center; margin-top:0; box-sizing:border-box; word-break:normal;"
       on:focus={selectOnFocus}/>
   </label>
 
-  <label style="position:absolute; top:98px; left:73px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:68px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="text-align:center; display:block; padding-left:4px; margin-bottom:2px;">No.</span>
     <input type="text" bind:value={num} readonly
       style="position:relative; top:0; left:0; width:70px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:center; margin-top:0; box-sizing:border-box; word-break:normal;"
       on:focus={selectOnFocus}/>
   </label>
 
-  <label style="position:absolute; top:98px; left:148px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:143px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Date</span>
     <input
       type="text"
@@ -470,48 +475,48 @@
       on:keydown={(e)=>handleEnterNavigation(e,refDate)}/>
   </label>
 
-  <label class="dropdown-wrap" bind:this={refDropdownWrap}
-    style="position:absolute; top:98px; left:273px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label for="account" class="dropdown-wrap" bind:this={refDropdownWrap}
+    style="position:absolute; top:98px; left:268px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Debtor</span>
     <CustomDropdown id="account" items={debtors} bind:value={account} labelKey="name1" valueKey="account" placeholder="-- choose --"/>
   </label>
 
-  <label style="position:absolute; top:98px; left:373px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:368px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Name</span>
     <input type="text" bind:this={refName} value={debtor.name} readonly
       style="position:relative; top:0; left:0; width:220px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refName)}/>
   </label>
 
-  <label style="position:absolute; top:98px; left:598px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:593px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Address 1</span>
     <input type="text" bind:this={refAddress1} value={debtor.address1} readonly
       style="position:relative; top:0; left:0; width:220px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refAddress1)}/>
   </label>
 
-  <label style="position:absolute; top:98px; left:823px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:818px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Address 2</span>
     <input type="text" bind:this={refAddress2} value={debtor.address2} readonly
       style="position:relative; top:0; left:0; width:220px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refAddress2)}/>
   </label>
 
-  <label style="position:absolute; top:98px; left:1048px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:1043px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">Address 3</span>
     <input type="text" bind:this={refAddress3} value={debtor.address3} readonly
       style="position:relative; top:0; left:0; width:220px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refAddress3)}/>
   </label>
 
-  <label style="position:absolute; top:98px; left:1273px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
+  <label style="position:absolute; top:98px; left:1268px; margin-top:0; background-color:transparent; padding:0; word-break:normal; box-sizing:border-box;">
     <span style="display:block; padding-left:4px; margin-bottom:2px;">E-Mail</span>
     <input type="text" bind:this={refEmail} value={debtor.email} readonly
       style="position:relative; top:0; left:0; width:240px; height:28px; background-color:#f5f5f5; border:1px solid #ccc; padding:4px; text-align:left; margin-top:0; box-sizing:border-box; word-break:break-word;"
       on:focus={selectOnFocus} on:keydown={(e)=>handleEnterNavigation(e,refEmail)}/>
   </label>
 
-  <div class="estimate-button-container" style="margin-left:18px; display:flex; gap:8px; margin-top:10px;">
+  <div class="estimate-button-container" style="margin-left:13px; display:flex; gap:8px; margin-top:-2px;">
     <button class="save" on:click={saveOrUpdateHeader}
       disabled={!canSaveBtn && !canUpdateBtn}
       style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#28a745;">
@@ -551,15 +556,15 @@
     </button>
 
     <button class="delete" on:click={handleDelete}
-      disabled={!hasSel || isBlocked}
-      title={isBlocked ? 'Locked estimates cannot be deleted' : 'Delete selected estimate'}
-      style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#d9534f; opacity:{(!hasSel || isBlocked)?0.5:1}; cursor:{(!hasSel || isBlocked)?'not-allowed':'pointer'};">
+      disabled={!hasSel || isBlocked || isBooked}
+      title={isBooked ? 'Booked estimates cannot be deleted' : isBlocked ? 'Locked estimates cannot be deleted' : 'Delete selected estimate'}
+      style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#d9534f; opacity:{(!hasSel || isBlocked || isBooked)?0.5:1}; cursor:{(!hasSel || isBlocked || isBooked)?'not-allowed':'pointer'};">
       Delete
     </button>
   </div>
 
   {#if showLetter}
-    <div style="position:absolute; top:{FRAME_TOP}px; left:{MID_LEFT + MID_WIDTH + 20}px; width:{letterWidth}px; height:{letterHeight}px;">
+    <div style="position:absolute; top:{FRAME_TOP}px; left:{MID_LEFT + MID_WIDTH + 15}px; width:{letterWidth}px; height:{letterHeight}px;">
       <div style="position:absolute; left:0; top:0; width:{NATURAL_W}px; height:{NATURAL_H}px; transform:scale({letterScale}); transform-origin:0 0;">
         {#key `${id_estimate}-${letterVersion}`}
           <Letter
