@@ -4,7 +4,6 @@
   import CustomDropdown from '$lib/components/CustomDropdown.svelte';
   import LeftTbl from './left_tbl.svelte';
   import MiddleTbl from './middle_tbl.svelte';
-  import Letter from '$lib/components/Letter.svelte';
   import '$lib/all.css';
   import { tip } from '$lib/actions/tip.js';
   import { handleError } from '$lib/utils/errors';
@@ -17,29 +16,10 @@
   const MID_LEFT = 328;
   const MID_WIDTH = 915;
 
-  const NATURAL_W = 794;
-  const NATURAL_H = 1123;
-  let letterScale = 1, letterWidth = NATURAL_W, letterHeight = NATURAL_H;
-  let letterVersion = 0;
-  let showLetter = false;
   let liveLines: any[] = [];
-
-  function computeLetterSize(){
-    const winW = (typeof window !== 'undefined') ? window.innerWidth  : NATURAL_W;
-    const winH = (typeof window !== 'undefined') ? window.innerHeight : NATURAL_H;
-    const letterLeft  = MID_LEFT + MID_WIDTH + 20;
-    const rightGutter = 20;
-    const availW = Math.max(200, winW - letterLeft - rightGutter);
-    const availH = Math.max(200, winH - FRAME_TOP - 20);
-    const scale  = Math.min(0.9, availW / NATURAL_W, availH / NATURAL_H);
-    letterScale  = scale;
-    letterWidth  = NATURAL_W * scale;
-    letterHeight = NATURAL_H * scale;
-  }
 
   function onSnapshot(e: any){
     liveLines = e?.detail?.lines ?? [];
-    letterVersion += 1;
   }
   function requestSnapshot(){ try{ if (midRef?.getSnapshot) liveLines = midRef.getSnapshot(); }catch{} }
 
@@ -93,7 +73,6 @@
   $: canUpdateBtn = hasSel && dirty && !isBlocked && !isBooked;
   $: canLoadOld   = hasSel && dirty && !isBlocked && !isBooked;
   $: canShowPrint = hasSel && !dirty && linesCount > 0;
-  $: if (!canShowPrint && showLetter) showLetter = false;
 
   // Refs
   let refDate: HTMLInputElement, refDropdownWrap: HTMLElement, refName: HTMLInputElement, refAddress1: HTMLInputElement, refAddress2: HTMLInputElement, refAddress3: HTMLInputElement, refEmail: HTMLInputElement;
@@ -295,8 +274,6 @@
 
     statusMsg = `Selected E-${year}-${num}.`;
     liveLines = [];
-    letterVersion += 1;
-    computeLetterSize();
     await tick();
     requestSnapshot();
    }
@@ -319,8 +296,8 @@
   $: if (account!==null) syncDebtorDetails();
   $: if (account===null) debtor={name:'', address1:'', address2:'', address3:'', email:''};
 
-  onMount(async()=>{ try{ document?.documentElement?.setAttribute('lang','en-US'); }catch{} await refreshPage(); computeLetterSize(); if (typeof window!=='undefined'){ window.addEventListener('resize', computeLetterSize); } });
-  onDestroy(()=>{ if (typeof window!=='undefined'){ window.removeEventListener('resize', computeLetterSize); } });
+  onMount(async()=>{ try{ document?.documentElement?.setAttribute('lang','en-US'); }catch{} await refreshPage(); });
+  onDestroy(()=>{});
 
   function onLockState(e: any){
     const v = !!(e?.detail?.value ?? false);
@@ -375,18 +352,6 @@
     linesDirty = false;
     totals = { subtotal: 0, gstSum: 0, gstPct: 0, total: 0 };
     setStatus(`Estimate ${oldYear}-${oldNum} deleted, ${delData?.deleted?.lines ?? 0} line(s) removed.`,'ok');
-  }
-
-  function letterPositions(){
-    return (liveLines||[]).map((r: any)=>({
-      pos: r.pos,
-      service: r.service,
-      description: r.description,
-      tax: totals.gstPct ?? r.tax ?? 0,
-      qty: Number(r.qty||0),
-      rate: Number(r.rate||0),
-      amount: Number(r.amount ?? (Number(r.qty||0)*Number(r.rate||0)))
-    }));
   }
 
   function handlePrintOffer(){
@@ -540,16 +505,6 @@
       Refresh Page
     </button>
 
-    <button
-      class="load"
-      on:click={() => { if (canShowPrint){ showLetter = !showLetter; computeLetterSize(); requestSnapshot(); } }}
-      disabled={!canShowPrint}
-      aria-pressed={showLetter}
-      title="Letter after left_tbl"
-      style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:{showLetter ? '#136b4a' : '#17a2b8'};">
-      Show Letter
-    </button>
-
     <button class="load" disabled={!canShowPrint} title="Offer after left_tbl" on:click={handlePrintOffer}
       style="height:30px; width:150px; border-radius:6px; color:white; border:1px solid #6c757d; box-sizing:border-box; background-color:#17a2b8;">
       Print Offer
@@ -562,23 +517,6 @@
       Delete
     </button>
   </div>
-
-  {#if showLetter}
-    <div style="position:absolute; top:{FRAME_TOP}px; left:{MID_LEFT + MID_WIDTH + 15}px; width:{letterWidth}px; height:{letterHeight}px;">
-      <div style="position:absolute; left:0; top:0; width:{NATURAL_W}px; height:{NATURAL_H}px; transform:scale({letterScale}); transform-origin:0 0;">
-        {#key `${id_estimate}-${letterVersion}`}
-          <Letter
-            receiver={{ name:debtor.name, adress1:debtor.address1, adress2:debtor.address2, adress3:debtor.address3, email:debtor.email }}
-            offerNumber={`E-${year}-${num}`}
-            offerDate={date}
-            positions={letterPositions()}
-            subtotal={totals.subtotal}
-            gst={totals.gstSum}
-            total={totals.total} />
-        {/key}
-      </div>
-    </div>
-  {/if}
 </div>
 
 <style>
