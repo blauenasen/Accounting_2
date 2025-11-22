@@ -46,7 +46,7 @@
 
   async function loadRates(){
     try{
-      const res = await fetch('/rates'); if(!res.ok) throw new Error(`/rates -> ${res.status}`);
+      const res = await fetch('/api/rates'); if(!res.ok) throw new Error(`/api/rates -> ${res.status}`);
       const arr = arrFromPayload(await res.json());
       rates = arr.map((r) => ({
         id_rate: r.id_rate ?? r.id ?? r.ID ?? '',
@@ -64,7 +64,7 @@
 
   async function loadTax(){
     try{
-      const res = await fetch('/stammdaten'); if(!res.ok) throw new Error(`/stammdaten -> ${res.status}`);
+      const res = await fetch('/api/stammdaten'); if(!res.ok) throw new Error(`/api/stammdaten -> ${res.status}`);
       const payload = await res.json();
       const first = (Array.isArray(payload) && payload[0]) || (Array.isArray(payload?.rows) && payload.rows[0]) || payload;
       tax = toNum(first?.tax ?? 0);
@@ -77,8 +77,8 @@
   async function loadLines(id_invoice){
     if (!id_invoice) { lines = []; deletedIds=[]; sendStats(); sendDirty(false); fireSnapshot(); return; }
     try{
-      const res = await fetch(`/invoice-db?id_invoice=${encodeURIComponent(id_invoice)}`);
-      if (!res.ok) throw new Error(`/invoice-db -> ${res.status}`);
+      const res = await fetch(`/api/invoices/${encodeURIComponent(id_invoice)}/lines`);
+      if (!res.ok) throw new Error(`/api/invoices/${id_invoice}/lines -> ${res.status}`);
       const arr = arrFromPayload(await res.json());
       lines = arr.map((r) => ({
         id_line: r.id_line ?? null,
@@ -108,7 +108,7 @@
 
   export async function reloadFromServer(id_inv){ const id = id_inv ?? selectedIdInvoice; await loadLines(id); }
 
-  // SAVE via GET (Replace-Modus)
+  // SAVE via PUT (Replace-Modus)
   export async function saveToServer(id_inv){
     const id = id_inv ?? selectedIdInvoice;
     if (!id || locked) return { ok:false, reason:'no id or locked' };
@@ -124,11 +124,18 @@
         qty: toNum(r.qty ?? 0)
       }));
 
-    const url = `/invoice-db?mode=savelines&id_invoice=${encodeURIComponent(id)}&lines=${encodeURIComponent(JSON.stringify(linesPayload))}`;
+    const url = `/api/invoices/${encodeURIComponent(id)}/lines`;
 
     try{
-      const res = await fetch(url, { method:'GET', headers:{ 'Cache-Control':'no-cache' } });
-      if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        body: JSON.stringify({ lines: linesPayload })
+      });
+      if (!res.ok) throw new Error(`PUT ${url} -> ${res.status}`);
       await reloadFromServer(id);
       sendDirty(false);
       fireSnapshot();
@@ -261,6 +268,7 @@
         <th class="col-qty ta-center">QTY</th>
         <th class="col-unit ta-right">RATE</th>
         <th class="col-amount ta-right">AMOUNT</th>
+        <th class="col-delete ta-center">DEL</th>
       </tr>
     </thead>
 
@@ -312,8 +320,9 @@
 
           <td class="ta-right">{row.id_rate ? nf.format(unitPriceOf(row.id_rate)) + ' $' : ''}</td>
 
-          <td class="ta-right amount-cell">
-            <span class="amount-value">{row.id_rate ? nf.format(amountOf(row)) + ' $' : ''}</span>
+          <td class="ta-right">{row.id_rate ? nf.format(amountOf(row)) + ' $' : ''}</td>
+
+          <td class="ta-center col-delete">
             {#if !locked && (row.id_rate || row.description || row.qty)}
               <button class="trash-btn" title="Delete line" aria-label="Delete line" on:click={() => deleteRow(i)}>🗑</button>
             {/if}
@@ -327,14 +336,14 @@
 <style>
   .mid-wrap { height:100%; overflow:auto; background:#fff;
     --tbl-width: 890px;
-    --col-rate-w:40px; --col-service-w:230px; --col-desc-w:240px; --col-gst-w:60px; --col-qty-w:50px; --col-unit-w:60px; --col-amount-w:110px;
+    --col-rate-w:40px; --col-service-w:220px; --col-desc-w:240px; --col-gst-w:60px; --col-qty-w:50px; --col-unit-w:60px; --col-amount-w:80px; --col-delete-w:40px;
   }
   .tbl { width:var(--tbl-width); border-collapse:collapse; table-layout:fixed; font-family:Helvetica, Arial, sans-serif; font-size:13px; color:#000; border:1px solid #d1d5db; }
   .tbl th { overflow:hidden; } .tbl td { overflow:visible; }
   thead th { position:sticky; top:0; background:#f3f4f6; z-index:1; border-bottom:1px solid #cfd3d7; padding:4px 6px; font-weight:700; color:#000; }
 
   thead th.col-rate{width:var(--col-rate-w);} thead th.col-service{width:var(--col-service-w);} thead th.col-desc{width:var(--col-desc-w);}
-  thead th.col-gst{width:var(--col-gst-w);} thead th.col-qty{width:var(--col-qty-w);} thead th.col-unit{width:var(--col-unit-w);} thead th.col-amount{width:var(--col-amount-w);}
+  thead th.col-gst{width:var(--col-gst-w);} thead th.col-qty{width:var(--col-qty-w);} thead th.col-unit{width:var(--col-unit-w);} thead th.col-amount{width:var(--col-amount-w);} thead th.col-delete{width:var(--col-delete-w);}
 
   thead th + th, tbody td + td { border-left:1px solid #d1d5db; }
 
@@ -348,6 +357,7 @@
   thead th.col-qty{ text-align:center; } tbody td:nth-child(5){ text-align:right; } tbody td:nth-child(5) .cell-input{ text-align:right; }
   thead th.col-unit, tbody td:nth-child(6){ text-align:right; white-space:nowrap; }
   thead th.col-amount, tbody td:nth-child(7){ text-align:right; white-space:nowrap; }
+  thead th.col-delete, tbody td:nth-child(8){ text-align:center; vertical-align:middle; }
 
   .cell-input{ width:100%; height:20px; border:none; outline:none; background:transparent; font:inherit; color:#000; -webkit-text-fill-color:#000; appearance:none; -webkit-appearance:none; -moz-appearance:none; }
   .cell-input:disabled, .cell-input:read-only{ color:#000; -webkit-text-fill-color:#000; text-align:inherit; opacity:1; }
@@ -359,9 +369,7 @@
   td :global(.rate-dd){ width:var(--col-rate-w); height:20px; font-size:13px; }
   td :global(.rate-dd .display){ width:100%; height:20px; line-height:20px; padding:0 2px; border:1px solid transparent !important; background:transparent !important; text-align:center; box-sizing:border-box; }
 
-  .amount-cell{ white-space:nowrap; }
-  .amount-value{ display:inline-block; vertical-align:middle; }
-  .trash-btn{ display:inline-block; width:20px; height:20px; line-height:18px; text-align:center; border:none; background:transparent; color:#8a8a8a; cursor:pointer; margin-left:6px; vertical-align:middle; }
+  .trash-btn{ display:inline-block; width:20px; text-align:center; border:none; background:transparent; color:#8a8a8a; cursor:pointer; padding:0; line-height:normal; vertical-align:middle; }
   .trash-btn:hover{ color:#000; }
 
   tr.blocked { background:#f2f2f2; }
