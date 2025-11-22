@@ -1,0 +1,193 @@
+/* File: static/css/offer.css */
+@page { size: A4; margin: 20mm 0 0 0; }
+@page :first { margin-top: 0; margin-bottom: 15mm; } /* +10mm unten nur auf Seite 1 → ~2 Zeilen wandern auf Seite 2 */
+
+html, body { margin: 0; padding: 0; background: #fff; }
+
+/* Root */
+.offer-root { display: block; }
+
+/* A4 page container */
+.a4-container{
+  /* Page insets */
+  --page-left: 20mm;
+  --page-right: 10mm;
+  --page-top: 25mm;
+
+  /* Header-to-table distance (first page) */
+  --table-top: calc(var(--page-top) - 20mm);
+
+  /* Logo / meta */
+  --logo-width: 86px;
+  --logo-top-adjust: 0px;
+  --logo-right-offset: 0px;
+  --meta-right-offset: px;
+
+  /* Table columns */
+  --col-pos: 25px;
+  --col-service: 50mm;
+  --col-tax: 15mm;
+  --col-qty: 10mm;
+  --col-rate: 15mm;
+  --col-amount: 20mm;
+
+  /* Totals label width (manual fine tuning) */
+  --totals-label: 15mm;
+  --totals-gap: 0px;
+
+  /* Header/Zellen-Ausrichtungen je Spalte (überschreibbar) */
+  --align-th-pos: center;    --align-td-pos: center;
+  --align-th-service: left;  --align-td-service: left;
+  --align-th-desc: left;     --align-td-desc: left;
+  --align-th-tax: center;    --align-td-tax: center;
+  --align-th-qty: center;    --align-td-qty: center;
+  --align-th-rate: right;    --align-td-rate: right;
+  --align-th-amount: right;  --align-td-amount: right;
+
+  /* ---- fine-tuning vars ---- */
+  --cell-pad-x: 4px;        /* horizontale Zellen-Padding der Tabelle */
+  --cell-pad-y: 4px;        /* vertikal (optional) */
+  --border-w: 1px;          /* Tabellenlinien-Breite */
+  --totals-offset-x: 0px;   /* Feinkorrektur (± px) falls noch 1–2px daneben */
+
+  box-sizing: border-box;
+  width: 794px;   /* A4 @ 96dpi */
+  height: 1010px; /* A4 @ 96dpi */
+  margin: 0;
+  position: relative;
+  color:#000;
+  font-family: Arial, Helvetica, sans-serif;
+
+@media print{
+  html, body { height: auto !important; }
+  .a4-container{
+    height: auto !important;      /* keine starre Seitenhöhe im Druck */
+    min-height: 0 !important;     /* verhindert Überlauf um wenige Pixel */
+  }
+}}
+
+/* Header (page 1 only) */
+.offer-header{
+  position: relative;
+  padding: var(--page-top) var(--page-right) 8px var(--page-left);
+  display:flex;
+  justify-content: space-between;
+  align-items:flex-start;
+  gap: 16px;
+}
+.leftcol{ display:flex; flex-direction:column; gap:100px; }
+
+.sender .s-name{ font-size:14px; font-weight:700; margin-bottom:2px; }
+.sender .s-line{ font-size:14px; color:#333; }
+
+.receiver { max-width: 360px; line-height: 1.2; }
+.receiver .r-name{ font-size:14px; font-weight:700; margin-bottom:3px; }
+.receiver .r-line{ font-size:14px; color:#333; }
+
+.rightcol{ display:flex; flex-direction:column; align-items:flex-end; gap:11px; min-width:220px; }
+.logo{
+  display:block; width:var(--logo-width); height:auto; object-fit:contain;
+  margin-top:var(--logo-top-adjust); margin-right:var(--logo-right-offset);
+}
+.meta{ text-align:right; margin-right:var(--meta-right-offset); }
+.meta .title{ font-size:14px; font-weight:800; letter-spacing:.5px; margin-bottom:4px; }
+.meta-row{ font-size:14px; margin:2px 0; white-space:nowrap; }
+.meta-row .lbl{ display:inline-block; min-width:62px; color:#333; }
+.meta-row .val{ display:inline-block; min-width:80px; font-weight:normal; }
+.meta-row.estimate-ref {
+  font-size: 11px;
+  font-style: italic;
+  color: #666;
+}
+
+/* Body / table */
+.offer-body{ padding: var(--table-top) 0 0 0; }
+
+/* Table box spans exactly between page-left/right */
+.table-box{
+  width: calc(210mm - var(--page-left) - var(--page-right));
+  margin-left: var(--page-left);
+  margin-right: var(--page-right);
+}
+
+.pos-table{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  table-layout: fixed;
+}
+
+/* Repeat header on each printed page and avoid splitting rows */
+.pos-table thead{ display: table-header-group; }
+.pos-table tbody{ display: table-row-group; }                 /* FIX: tbody darf brechen, sonst wandert Tabelle auf Seite 2 */
+.pos-table tr{ break-inside: avoid; page-break-inside: avoid; } /* Zeilen nicht splitten */
+
+.pos-table thead th{
+  border:1px solid #999; padding:6px 4px; background:#eee; font-weight:700;
+}
+
+.pos-table tbody td{
+  border:1px solid #bbb;
+  padding: var(--cell-pad-y) var(--cell-pad-x);
+  vertical-align: top;
+  word-wrap: break-word;
+}
+
+/* Column widths & alignments */
+.th-pos   { width:var(--col-pos);    text-align: var(--align-th-pos); }
+.td-pos   { width:var(--col-pos);    text-align: var(--align-td-pos); }
+.th-service { width:var(--col-service); text-align: var(--align-th-service); }
+.td-service { width:var(--col-service); text-align: var(--align-td-service); }
+.th-desc, .td-desc{
+  width: calc(100% - (var(--col-pos) + var(--col-service) + var(--col-tax) + var(--col-qty) + var(--col-rate) + var(--col-amount)));
+}
+.th-desc { text-align: var(--align-th-desc); }
+.td-desc { text-align: var(--align-td-desc); }
+.th-tax   { width:var(--col-tax);   text-align: var(--align-th-tax); }
+.td-tax   { width:var(--col-tax);   text-align: var(--align-td-tax); }
+.th-qty   { width:var(--col-qty);   text-align: var(--align-th-qty); }
+.td-qty   { width:var(--col-qty);   text-align: var(--align-td-qty); }
+.th-rate  { width:var(--col-rate);  text-align: var(--align-th-rate); }
+.td-rate  { width:var(--col-rate);  text-align: var(--align-td-rate); }
+.th-amount{ width:var(--col-amount);text-align: var(--align-th-amount); }
+.td-amount{ width:var(--col-amount);text-align: var(--align-td-amount); }
+
+.pos-table tbody tr.empty td{ height:18px; border-color:#e5e5e5; }
+
+/* Footer / totals aligned under AMOUNT */
+.offer-footer{
+  width: calc(210mm - var(--page-left) - var(--page-right));
+  margin: 11px var(--page-right) 0 var(--page-left);
+  page-break-inside: avoid;
+}
+.offer-footer .totals{
+  /* Box besteht aus Label + Wertspalte (=AMOUNT-Breite) */
+  width: calc(var(--totals-label) + var(--col-amount));
+  /* linke Kante genau auf Beginn der AMOUNT-Spalte setzen
+     (mit optionaler Feinkorrektur, z.B. +1px / -1px) */
+  margin-left: calc(100% - var(--col-amount) - var(--totals-label) + var(--totals-offset-x));
+  font-size: 11px;
+}
+.offer-footer .totals .row{
+  display: grid;
+  grid-template-columns: var(--totals-label) var(--col-amount);
+  gap: var(--totals-gap);
+  padding: var(--cell-pad-y) 0;
+  border-top: 1px solid #999;
+}
+.offer-footer .totals .row.total{ font-size:10px; font-weight:800; border-top:2px solid #000; }
+.offer-footer .totals .lbl{
+  text-align: right;
+  color:#000;
+  /* gleiche Innenkante wie Tabellenzellen */
+  padding-right: var(--cell-pad-x);
+}
+.offer-footer .totals .val{
+  text-align: right;
+  /* rechte Innenkante der Zahlen exakt wie in der Tabelle */
+  padding-right: var(--cell-pad-x);
+}
+
+.offer-footer .note{
+  font-size: 13px; max-width: 680px; color:#444; margin-top: 8mm;
+}

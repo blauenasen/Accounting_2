@@ -54,8 +54,7 @@
       </div>
 
       <div class="rightcol">
-        <!-- TODO: Add company logo in Phase 4 (Styling Alignment) -->
-        <!-- <img class="logo" src="/img/logo.png" alt="Company logo" /> -->
+        <img class="logo" src="/img/logo.png" alt="Company logo" />
         <div class="meta">
           <div class="title">ESTIMATE</div>
           <div class="meta-row"><span class="lbl">ESTIMATE No.:</span><span class="val">{offerNumber}</span></div>
