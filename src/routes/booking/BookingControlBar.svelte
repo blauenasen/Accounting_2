@@ -91,8 +91,8 @@
   {/each}
 </select>
 
-<!-- PRIMANOTA / OP-ANSICHT CONTROLS -->
-{#if currentView === 'primanota' || currentView === 'op'}
+<!-- PRIMANOTA CONTROLS -->
+{#if currentView === 'primanota'}
   <!-- BOOK CIRCLE BUTTON: X:149px, Y:105px (Primanota) -->
   <button
     class="book-circle-button"
@@ -150,8 +150,8 @@
 
   .year-select {
     position: absolute;
-    left: 18px;
-    top: 115px;
+    left: 10px;
+    top: 40px;
     width: 60px;
     height: 30px;
 
@@ -165,8 +165,8 @@
 
   .month-select {
     position: absolute;
-    left: 86px;
-    top: 115px;
+    left: 80px;
+    top: 40px;
     width: 55px;
     height: 30px;
 
@@ -184,8 +184,8 @@
 
   .book-circle-button {
     position: absolute;
-    left: 149px;
-    top: 105px;
+    left: 145px;
+    top: 40px;
     width: 150px;
     height: 30px;
 
@@ -206,9 +206,9 @@
 
   .selected-circle-display {
     position: absolute;
-    left: 307px;
-    top: 105px;
-    width: 150px;
+    left: 300px;
+    top: 40px;
+    width: 250px;
     height: 30px;
 
     border: 1px solid rgb(204, 204, 204);
@@ -226,7 +226,7 @@
 
   .navigation-buttons {
     position: absolute;
-    top: 115px;
+    top: 40px;
     left: 149px;
   }
 
@@ -285,7 +285,7 @@
   .account-selector {
     position: absolute;
     left: 389px;
-    top: 115px;
+    top: 40px;
     width: 225px;
     height: 30px;
 
@@ -304,7 +304,7 @@
 
   .hide-stornos {
     position: absolute;
-    left: 30px;
+    left: 10px;
     display: flex;
     align-items: center;
     gap: 7px;
@@ -312,12 +312,12 @@
 
   /* Primanota/OP: Y:151px */
   .hide-stornos.primanota-pos {
-    top: 151px;
+    top: 90px;
   }
 
   /* Kontoansicht: Y:181px */
   .hide-stornos.other-pos {
-    top: 181px;
+    top: 90px;
   }
 
   .hide-stornos-checkbox {

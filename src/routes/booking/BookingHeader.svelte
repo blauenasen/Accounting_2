@@ -23,81 +23,89 @@
   }
 </script>
 
-<!-- H1 HEADER: X:18px, Y:59px, W:1439.75px, H:25px -->
-<h1 class="booking-h1">BOOKING</h1>
-
-<!-- STATUS TEXT: X:1467.75px, Y:59px, W:242.25px, H:26px -->
-<div class="booking-status">{statusText}</div>
-
-<!-- VIEW MODE BUTTONS: Y:57px, gap:15px, W:28px, H:28px -->
-<div class="view-mode-buttons">
-  <!-- Primanota: X:208px -->
-  <button
-    class="view-btn primanota"
-    class:active={currentView === 'primanota'}
-    on:click={() => setView('primanota')}
-    title="Primanota View"
-    aria-label="Primanota View">
-    📋
-  </button>
-
-  <!-- Kontoansicht: X:251px -->
-  <button
-    class="view-btn kontoansicht"
-    class:active={currentView === 'kontoansicht'}
-    on:click={() => setView('kontoansicht')}
-    title="Account View"
-    aria-label="Account View">
-    📁
-  </button>
-
-  <!-- OP-Ansicht: X:294px -->
-  <button
-    class="view-btn op"
-    class:active={currentView === 'op'}
-    on:click={() => setView('op')}
-    title="Open Items View"
-    aria-label="Open Items View">
-    ✓
-  </button>
-
-  <!-- Filter Toggle: X:337px -->
-  <button
-    class="view-btn filter"
-    on:click={toggleFilter}
-    title="Turn filters on and off"
-    aria-label="Toggle filters">
-    🔍
-  </button>
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <h1 class="booking-h1">BOOKING</h1>
+  <div class="status-box">{statusText}</div>
 </div>
 
-<!-- BOOK CIRCLE BUTTONS: X:380px-595px, gap:15px -->
-<div class="book-circle-buttons">
-  {#each ['B005', 'B006', 'B007', 'B008', 'B009', 'B0010'] as circle, index}
+<!-- ICON CONTAINER -->
+<div class="icon-container">
+  <!-- B001: Primanota -->
+  <button
+    type="button"
+    class="icon-button"
+    class:active={currentView === 'primanota'}
+    data-tip-key="B001"
+    on:click={() => setView('primanota')}
+    title="Primanota"
+    aria-description="Primanota">
+    <img src="/img/Primanota.png" alt="icon" />
+  </button>
+
+  <!-- B002: Konto -->
+  <button
+    type="button"
+    class="icon-button"
+    class:active={currentView === 'kontoansicht'}
+    data-tip-key="B002"
+    on:click={() => setView('kontoansicht')}
+    title="Account"
+    aria-description="Account">
+    <img src="/img/Konto.png" alt="icon" />
+  </button>
+
+  <!-- B003: OP -->
+  <button
+    type="button"
+    class="icon-button"
+    class:active={currentView === 'op'}
+    data-tip-key="B003"
+    on:click={() => setView('op')}
+    title="Open Items"
+    aria-description="Open Items">
+    <img src="/img/OP.png" alt="icon" />
+  </button>
+
+  <!-- B004: Lupe (Filter) -->
+  <button
+    type="button"
+    class="icon-button"
+    data-tip-key="B004"
+    on:click={toggleFilter}
+    title="Filter"
+    aria-description="Turn filters on and off">
+    <img src="/img/Lupe.png" alt="icon" />
+  </button>
+
+  <!-- B005-B010: Platzhalter -->
+  {#each ['B005', 'B006', 'B007', 'B008', 'B009', 'B010'] as circle}
     <button
-      class="book-circle-btn"
+      type="button"
+      class="icon-button"
+      data-tip-key={circle}
       on:click={() => selectBookCircle(circle)}
       title={circle}
-      aria-label={`Book Circle ${circle}`}
-      style="left: {380 + index * 43}px;">
-      {circle}
+      aria-description={circle}>
+      <img src="/img/Platzhalter.png" alt="icon" />
     </button>
   {/each}
 </div>
 
 <style>
-  /* ==================================================================
-     H1 HEADER - Mess-Tabelle.md: H1 HEADER SECTION
-     ================================================================== */
+  .page-header {
+    display: flex;
+    position: relative;
+    width: calc(100vw - 16px);
+    margin: 0px 0px 8px;
+  }
 
   .booking-h1 {
-    position: absolute;
-    left: 18px;
-    top: 59px;
+    display: block;
+    position: static;
     width: 1439.75px;
     height: 25px;
-    margin: 0;
-    margin-left: 10px;
+    margin: 0px 0px 0px 10px;
     padding: 0;
 
     font-family: Helvetica, Arial, sans-serif;
@@ -109,37 +117,24 @@
     background-color: rgb(200, 231, 141);
   }
 
-  /* ==================================================================
-     STATUS TEXT - Mess-Tabelle.md: H1 HEADER SECTION
-     ================================================================== */
-
-  .booking-status {
-    position: absolute;
-    left: 1467.75px;
-    top: 59px;
-    width: 242.25px;
-    height: 26px;
-
+  .status-box {
     font-family: Helvetica, Arial, sans-serif;
     font-size: 11px;
     font-weight: 400;
     color: rgb(55, 48, 163);
-    background-color: transparent;
   }
 
-  /* ==================================================================
-     VIEW MODE BUTTONS - Mess-Tabelle.md: VIEW MODE BUTTONS
-     ================================================================== */
-
-  .view-mode-buttons {
-    position: absolute;
-    top: 57px;
-    left: 208px;
+  .icon-container {
     display: flex;
+    position: absolute;
+    top: -2px;
+    left: 200px;
     gap: 15px;
   }
 
-  .view-btn {
+  .icon-button {
+    display: block;
+    position: static;
     width: 28px;
     height: 28px;
     padding: 2px;
@@ -148,57 +143,17 @@
     border: 0px none;
     border-radius: 0px;
 
-    font-size: 16px;
     cursor: pointer;
-    user-select: none;
-
-    transition: border 0.15s ease, padding 0.15s ease;
   }
 
-  .view-btn:hover {
-    opacity: 0.8;
+  .icon-button img {
+    width: 24px;
+    height: 24px;
+    display: block;
   }
 
-  /* Active State: Green border, padding 0px */
-  .view-btn.active {
+  .icon-button.active {
     border: 2px solid rgb(6, 161, 58);
     padding: 0px;
-  }
-
-  /* ==================================================================
-     BOOK CIRCLE BUTTONS - Mess-Tabelle.md: BOOK CIRCLE SELECTOR BUTTONS
-     ================================================================== */
-
-  .book-circle-buttons {
-    position: absolute;
-    top: 57px;
-    /* left positions set inline per button */
-  }
-
-  .book-circle-btn {
-    position: absolute;
-    width: 28px;
-    height: 28px;
-    padding: 2px;
-
-    background-color: transparent;
-    border: 0px none;
-    border-radius: 0px;
-
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    color: rgb(34, 34, 34);
-
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .book-circle-btn:hover {
-    background-color: rgba(6, 161, 58, 0.1);
-  }
-
-  .book-circle-btn:active {
-    background-color: rgba(6, 161, 58, 0.2);
   }
 </style>

@@ -53,40 +53,6 @@
     on:selectbookcircle={handleSelectBookCircle} />
 
   <BookingControlBar />
-
-  <!-- Balance Fields (Kontoansicht & OP-Ansicht only) -->
-  {#if $bookingStore.currentView === 'kontoansicht' || $bookingStore.currentView === 'op'}
-    <BookingBalanceFields
-      openingBalance={balanceData.openingBalance}
-      debitBalance={balanceData.debitBalance}
-      creditBalance={balanceData.creditBalance}
-      totalBalance={balanceData.totalBalance}
-      closingBalance={balanceData.closingBalance}
-      sumDebit={balanceData.sumDebit}
-      sumCredit={balanceData.sumCredit}
-      sumTotal={balanceData.sumTotal} />
-  {/if}
-
-  <!-- Primanota Table (Primanota view only) -->
-  {#if $bookingStore.currentView === 'primanota'}
-    <PrimanotaTable entries={journalEntries} />
-  {/if}
-
-  <!-- Kontoansicht Table (Kontoansicht view only) -->
-  {#if $bookingStore.currentView === 'kontoansicht'}
-    <KontoansichtTable entries={journalEntries} />
-  {/if}
-
-  <!-- OP-Ansicht Table (OP view only) -->
-  {#if $bookingStore.currentView === 'op'}
-    <OPAnsichtTable entries={journalEntries} />
-  {/if}
-
-  <!-- Temporary view indicator -->
-  <div class="view-indicator">
-    <h2>Current View: {$bookingStore.currentView}</h2>
-    <p>Year: {$bookingStore.selectedYear}, Month: {$bookingStore.selectedMonth}</p>
-  </div>
 </div>
 
 <style>
@@ -94,14 +60,5 @@
     position: relative;
     min-height: 100vh;
     background-color: rgb(247, 244, 239);
-  }
-
-  .view-indicator {
-    position: absolute;
-    top: 200px;
-    left: 700px;
-    padding: 20px;
-    background: white;
-    border: 1px solid #ddd;
   }
 </style>
