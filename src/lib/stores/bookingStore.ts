@@ -9,7 +9,7 @@ export type BookingView = 'primanota' | 'kontoansicht' | 'op';
 export interface BookingState {
   currentView: BookingView;
   selectedYear: number;
-  selectedMonth: number;
+  selectedMonth: number | 'All';
   selectedBookCircle: string;
   selectedAccount: string;
   hideStornos: boolean;
@@ -21,7 +21,7 @@ function createBookingStore() {
   const { subscribe, set, update } = writable<BookingState>({
     currentView: 'primanota',
     selectedYear: new Date().getFullYear(),
-    selectedMonth: new Date().getMonth() + 1,
+    selectedMonth: 'All',
     selectedBookCircle: 'Bank 1',
     selectedAccount: '',
     hideStornos: false,
@@ -40,7 +40,7 @@ function createBookingStore() {
       update(state => ({ ...state, selectedYear: year }));
     },
 
-    setMonth: (month: number) => {
+    setMonth: (month: number | 'All') => {
       update(state => ({ ...state, selectedMonth: month }));
     },
 
@@ -68,7 +68,7 @@ function createBookingStore() {
       set({
         currentView: 'primanota',
         selectedYear: new Date().getFullYear(),
-        selectedMonth: new Date().getMonth() + 1,
+        selectedMonth: 'All',
         selectedBookCircle: 'Bank 1',
         selectedAccount: '',
         hideStornos: false,
