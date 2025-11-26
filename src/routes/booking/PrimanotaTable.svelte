@@ -3,26 +3,34 @@
 <!-- Measurements from Mess-Tabelle.md: PRIMANOTA VIEW -->
 
 <script lang="ts">
-  // Define JournalEntry type inline to avoid imports
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher();
+
+  // Define JournalEntry type based on actual API response
   interface JournalEntry {
-    id: number;
-    pdf?: string;
-    w?: string;
-    no: number;
-    turnover: number;
-    sh: string;
-    gu: string;
-    bu: string;
-    contraAccount: number;
-    docNumber: string;
-    date: string;
-    account: number;
-    bookingText: string;
-    hk: string;
-    taxRate: number;
+    IdNr: number;
+    pdf_blob?: string;
+    Warnung?: string;
+    LfdNr: number;
+    UE: number;
+    SH: string;
+    GU: string;
+    BU: string;
+    GegKto: number;
+    BelNr: string;
+    Datum: string;
+    Kto: number;
+    Buchungstext: string;
+    BookCircle: number;
+    Steuer: string;
   }
 
   export let entries: JournalEntry[] = [];
+
+  function selectRow(entry: JournalEntry) {
+    dispatch('rowselect', entry);
+  }
 
   // Sorting state
   let sortColumn: string = '';
@@ -134,22 +142,22 @@
         </tr>
       {:else}
         {#each entries as entry}
-          <tr>
-            <td class="cell-id">{entry.id}</td>
-            <td class="cell-pdf">{entry.pdf || ''}</td>
-            <td class="cell-w">{entry.w || ''}</td>
-            <td class="cell-no">{entry.no}</td>
-            <td class="cell-turnover">{formatCurrency(entry.turnover)}</td>
-            <td class="cell-sh">{entry.sh}</td>
-            <td class="cell-gu">{entry.gu}</td>
-            <td class="cell-bu">{entry.bu}</td>
-            <td class="cell-contra">{entry.contraAccount}</td>
-            <td class="cell-doc">{entry.docNumber}</td>
-            <td class="cell-date">{entry.date}</td>
-            <td class="cell-account">{entry.account}</td>
-            <td class="cell-text">{entry.bookingText}</td>
-            <td class="cell-hk">{entry.hk}</td>
-            <td class="cell-tax">{formatCurrency(entry.taxRate)}</td>
+          <tr on:click={() => selectRow(entry)} class="data-row">
+            <td class="cell-id">{entry.IdNr}</td>
+            <td class="cell-pdf">{entry.pdf_blob ? 'PDF' : ''}</td>
+            <td class="cell-w">{entry.Warnung || ''}</td>
+            <td class="cell-no">{entry.LfdNr}</td>
+            <td class="cell-turnover">{formatCurrency(entry.UE)}</td>
+            <td class="cell-sh">{entry.SH}</td>
+            <td class="cell-gu">{entry.GU || ''}</td>
+            <td class="cell-bu">{entry.BU}</td>
+            <td class="cell-contra">{entry.GegKto}</td>
+            <td class="cell-doc">{entry.BelNr}</td>
+            <td class="cell-date">{entry.Datum}</td>
+            <td class="cell-account">{entry.Kto}</td>
+            <td class="cell-text">{entry.Buchungstext}</td>
+            <td class="cell-hk">{entry.BookCircle}</td>
+            <td class="cell-tax">{entry.Steuer}</td>
           </tr>
         {/each}
       {/if}
@@ -164,9 +172,10 @@
 
   .primanota-table-container {
     position: absolute;
-    left: 20px;
-    top: 194px;
+    left: 10px;
+    top: 130px;
     width: 1580px;
+    max-height: 800px;
     overflow-y: auto;
     overflow-x: hidden;
   }
@@ -191,11 +200,17 @@
     height: 22px;
   }
 
+  .primanota-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+  }
+
   .primanota-table th {
     font-size: 13px;
     font-weight: 700;
     color: rgb(34, 34, 34);
-    background-color: transparent;
+    background-color: rgb(229, 240, 234);
     padding: 1px;
     text-align: center;
     cursor: pointer;
@@ -234,6 +249,10 @@
 
   .primanota-table tbody tr {
     height: 35px;
+  }
+
+  .primanota-table tbody tr.data-row {
+    cursor: pointer;
   }
 
   .primanota-table tbody tr:hover {
