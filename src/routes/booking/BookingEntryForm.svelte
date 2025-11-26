@@ -4,6 +4,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { bookingStore } from '$lib/stores/bookingStore';
 
   const dispatch = createEventDispatcher();
 
@@ -23,22 +24,101 @@
   $: disc = '';
   $: description = selectedEntry?.Buchungstext || '';
 
-  // Account info (mock data for now - will come from API)
-  $: contraAccountInfo = contraAccount ? {
-    number: contraAccount,
-    name: 'Cash in transit',
-    saldo: '+775.20',
-    currency: 'EUR',
-    type: 'S'
-  } : null;
+  // Account info - loaded dynamically from API
+  let contraAccountInfo: any = null;
+  let accountInfo: any = null;
 
-  $: accountInfo = account ? {
-    number: account,
-    name: 'Bank 1',
-    saldo: '+829.35',
-    currency: 'EUR',
-    type: 'S'
-  } : null;
+  // Reactive loading - trigger when account numbers change
+  $: loadContraAccountInfo(contraAccount);
+  $: loadMainAccountInfo(account);
+
+  // Load contra account details
+  async function loadContraAccountInfo(accNum: any) {
+    if (!accNum) {
+      contraAccountInfo = null;
+      return;
+    }
+    const details = await loadAccountDetails(accNum);
+    if (details) {
+      const currency = details.currency || '$';
+      const balance = await calculateBalance(accNum, $bookingStore.selectedYear, $bookingStore.selectedMonth);
+      const saldo = formatCurrency(balance, currency);
+      contraAccountInfo = {
+        number: accNum,
+        name: details.designation,
+        saldo: saldo
+      };
+    }
+  }
+
+  // Load main account details
+  async function loadMainAccountInfo(accNum: any) {
+    if (!accNum) {
+      accountInfo = null;
+      return;
+    }
+    const details = await loadAccountDetails(accNum);
+    if (details) {
+      const currency = details.currency || '$';
+      const balance = await calculateBalance(accNum, $bookingStore.selectedYear, $bookingStore.selectedMonth);
+      const saldo = formatCurrency(balance, currency);
+      accountInfo = {
+        number: accNum,
+        name: details.designation,
+        saldo: saldo
+      };
+    }
+  }
+
+  // Fetch account details from API
+  async function loadAccountDetails(accountNumber: number | string) {
+    try {
+      const response = await fetch(`/api/booking/account-details?account=${accountNumber}`);
+      const data = await response.json();
+      if (data.ok) {
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to load account details:', error);
+      return null;
+    }
+  }
+
+  // Format currency with +/- prefix and currency symbol
+  function formatCurrency(value: number, currency: string = '$'): string {
+    const num = Number(value);
+    const formatted = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(Math.abs(num));
+    const sign = num < 0 ? '-' : '+';
+    return `${sign}${formatted} ${currency}`;
+  }
+
+  // Calculate balance using Original's formula
+  async function calculateBalance(accountNumber: number | string, year: number, month: number | 'All'): Promise<number> {
+    try {
+      // Get opening balance
+      const resOpen = await fetch(`/api/booking/balance-open?account=${accountNumber}&year=${year}`);
+      const dataOpen = await resOpen.json();
+      const openBalance = Number(dataOpen.balanceOpen) || 0;
+
+      // Get totals for period
+      const resTotals = await fetch(`/api/booking/account-totals?account=${accountNumber}&year=${year}&month=${month}`);
+      const dataTotals = await resTotals.json();
+
+      const totalDebit = Number(dataTotals.totalDebit) || 0;
+      const totalCredit = Number(dataTotals.totalCredit) || 0;
+      const nettoTotal = totalDebit + totalCredit;
+      const closingBalance = openBalance + nettoTotal;
+
+      return closingBalance;
+    } catch (error) {
+      console.error('Failed to calculate balance:', error);
+      return 0;
+    }
+  }
 
   function handleOK() {
     dispatch('save', {
@@ -72,25 +152,25 @@
     </div>
 
     <!-- SH -->
-    <div class="field-group" style="left: 134px;">
+    <div class="field-group" style="left: 143px;">
       <label class="field-label" for="input-sh">SH</label>
       <input id="input-sh" type="text" readonly value={sh} class="field-input field-readonly" style="width: 35px; text-align: center;" />
     </div>
 
     <!-- Contra Account -->
-    <div class="field-group" style="left: 198px;">
+    <div class="field-group" style="left: 182px;">
       <label class="field-label" for="input-contra-account">Contra Account</label>
       <input id="input-contra-account" type="text" bind:value={contraAccount} class="field-input" style="width: 100px; text-align: center;" />
     </div>
 
     <!-- Reference -->
-    <div class="field-group" style="left: 310px;">
+    <div class="field-group" style="left: 285px;">
       <label class="field-label" for="input-reference">Reference</label>
       <input id="input-reference" type="text" bind:value={reference} class="field-input" style="width: 150px; text-align: left;" />
     </div>
 
     <!-- Date -->
-    <div class="field-group" style="left: 472px;">
+    <div class="field-group" style="left: 439px;">
       <label class="field-label" for="input-date">Date</label>
       <input id="input-date" type="text" bind:value={date} placeholder="tt.mm.jjjj" class="field-input" style="width: 120px; text-align: center;" />
       <label class="keep-label">
@@ -100,7 +180,7 @@
     </div>
 
     <!-- Account -->
-    <div class="field-group" style="left: 604px;">
+    <div class="field-group" style="left: 563px;">
       <label class="field-label" for="input-account">Account</label>
       <input id="input-account" type="text" readonly value={account} class="field-input field-readonly-gray" style="width: 100px; text-align: center;" />
       <label class="keep-label">
@@ -110,7 +190,7 @@
     </div>
 
     <!-- Tax -->
-    <div class="field-group" style="left: 716px;">
+    <div class="field-group" style="left: 665px;">
       <label class="field-label" for="input-tax">Tax</label>
       <select id="input-tax" bind:value={tax} class="field-select" style="width: 75px; text-align: center;">
         <option value="0.00%">0.00%</option>
@@ -125,13 +205,13 @@
     </div>
 
     <!-- Due Date -->
-    <div class="field-group" style="left: 800px;">
+    <div class="field-group" style="left: 744px;">
       <label class="field-label" for="input-due-date">Due Date</label>
       <input id="input-due-date" type="text" bind:value={dueDate} placeholder="tt.mm.jjjj" class="field-input" style="width: 120px; text-align: center;" />
     </div>
 
     <!-- Disc. -->
-    <div class="field-group" style="left: 930px;">
+    <div class="field-group" style="left: 867px;">
       <label class="field-label" for="input-disc">Disc.</label>
       <input id="input-disc" type="text" bind:value={disc} class="field-input" style="width: 60px; text-align: right;" />
       <label class="keep-label">
@@ -141,7 +221,7 @@
     </div>
 
     <!-- Description -->
-    <div class="field-group" style="left: 1002px;">
+    <div class="field-group" style="left: 931px;">
       <label class="field-label" for="input-description">Description</label>
       <input id="input-description" type="text" bind:value={description} class="field-input" style="width: 350px; text-align: left;" />
       <label class="keep-label">
@@ -164,19 +244,23 @@
   {#if contraAccountInfo}
     <div class="account-info-row">
       <span class="info-label">Contra Account:</span>
-      <span class="info-value">{contraAccountInfo.number} {contraAccountInfo.name}</span>
-      <span class="saldo-label">Saldo: {contraAccountInfo.currency}</span>
-      <span class="saldo-amount">{contraAccountInfo.saldo} {contraAccountInfo.type}</span>
+      <span class="info-number">{contraAccountInfo.number}</span>
+      <span class="info-name">{contraAccountInfo.name}</span>
+      <span class="saldo-label">Saldo:</span>
+      <span class="saldo-amount" class:negative={contraAccountInfo.saldo.startsWith('-')}>
+        {contraAccountInfo.saldo}
+      </span>
     </div>
   {/if}
 
   {#if accountInfo}
     <div class="account-info-row">
       <span class="info-label">Account:</span>
-      <span class="info-value">{accountInfo.number} {accountInfo.name}</span>
-      <span class="saldo-label">Saldo: {accountInfo.currency}</span>
+      <span class="info-number">{accountInfo.number}</span>
+      <span class="info-name">{accountInfo.name}</span>
+      <span class="saldo-label">Saldo:</span>
       <span class="saldo-amount" class:negative={accountInfo.saldo.startsWith('-')}>
-        {accountInfo.saldo} {accountInfo.type}
+        {accountInfo.saldo}
       </span>
     </div>
   {/if}
@@ -290,7 +374,7 @@
 
   .action-buttons {
     position: absolute;
-    top: 12px;
+    top: 16px;
     right: 108px;
     display: flex;
     gap: 13.5px;
@@ -309,7 +393,7 @@
   }
 
   .btn-ok {
-    width: 43.27px;
+    width: 70px;
     background-color: rgb(76, 175, 80);
   }
 
@@ -318,7 +402,7 @@
   }
 
   .btn-cancel {
-    width: 65.5px;
+    width: 70px;
     background-color: rgb(244, 67, 54);
   }
 
@@ -344,9 +428,14 @@
     position: absolute;
     left: 10px;
     top: 1025px; /* Below form (880px + 80px + margin) */
-    width: 1578px;
+    width: 900px;
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
+    border: 1px solid rgb(204, 204, 204);
+    background-color: rgb(249, 249, 249);
+    padding: 8px 10px;
+    box-sizing: border-box;
+    height: 68px
   }
 
   .account-info-row {
@@ -356,16 +445,44 @@
     margin-bottom: 5px;
   }
 
+  .account-info-row:first-child {
+    border-bottom: 1px solid rgb(221, 221, 221);
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+  }
+
   .info-label {
     font-weight: 600;
     color: rgb(51, 51, 51);
-    width: 200px;
+    width: 140px;
   }
 
   .info-value {
     font-weight: 400;
     color: rgb(85, 85, 85);
     flex: 1;
+  }
+
+  /* Account Number - separate field for alignment */
+  .info-number {
+    font-weight: 600;
+    color: rgb(51, 51, 51);
+    display: flex;
+    justify-content: flex-end;
+    margin-left: 0px;
+    width: 30px;
+    padding-right: 5px;
+    margin-right: 10px;
+    box-sizing: border-box;
+  }
+
+  /* Account Name - separate field */
+  .info-name {
+    font-weight: 400;
+    color: rgb(85, 85, 85);
+    margin-left: 10px;
+    width: 500px;
+    margin-right: 20px;
   }
 
   .saldo-label {
