@@ -35,7 +35,8 @@
 
   function handleMonthChange(event: Event) {
     const target = event.target as HTMLSelectElement;
-    selectedMonth = parseInt(target.value);
+    const value = target.value;
+    selectedMonth = value === 'All' ? 'All' : parseInt(value);
     bookingStore.setMonth(selectedMonth);
     dispatch('periodchange', { year: selectedYear, month: selectedMonth });
   }
@@ -86,6 +87,7 @@
   class="month-select"
   bind:value={selectedMonth}
   on:change={handleMonthChange}>
+  <option value="All">All</option>
   {#each months as month}
     <option value={month}>{month}</option>
   {/each}
