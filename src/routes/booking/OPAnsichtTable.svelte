@@ -22,6 +22,13 @@
   }
 
   export let entries: OPEntry[] = [];
+  export let hideStornos = false;
+
+  // Filter entries based on hideStornos flag
+  // Stornos are identified by w column containing '❌'
+  $: filteredEntries = hideStornos
+    ? entries.filter(entry => entry.w !== '❌')
+    : entries;
 
   // Sorting state
   let sortColumn: string = '';
@@ -38,7 +45,10 @@
   }
 
   // Format currency to 2 decimal places
-  function formatCurrency(value: number): string {
+  function formatCurrency(value: number | undefined): string {
+    if (value === undefined || value === null) {
+      return '0.00';
+    }
     return value.toFixed(2);
   }
 </script>
@@ -122,12 +132,12 @@
       </tr>
     </thead>
     <tbody>
-      {#if entries.length === 0}
+      {#if filteredEntries.length === 0}
         <tr>
           <td colspan="14" class="no-data">No open items found</td>
         </tr>
       {:else}
-        {#each entries as entry}
+        {#each filteredEntries as entry}
           <tr>
             <td class="cell-id">{entry.id}</td>
             <td class="cell-pdf">{entry.pdf || ''}</td>

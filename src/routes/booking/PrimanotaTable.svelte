@@ -28,6 +28,13 @@
   }
 
   export let entries: JournalEntry[] = [];
+  export let hideStornos = false;
+
+  // Filter entries based on hideStornos flag
+  // Stornos are identified by Warnung (W) column containing '❌'
+  $: filteredEntries = hideStornos
+    ? entries.filter(entry => entry.Warnung !== '❌')
+    : entries;
 
   // Row selection and highlighting
   let highlightedRowId: number | null = null;
@@ -144,12 +151,12 @@
       </tr>
     </thead>
     <tbody>
-      {#if entries.length === 0}
+      {#if filteredEntries.length === 0}
         <tr>
           <td colspan="15" class="no-data">No data found for this month</td>
         </tr>
       {:else}
-        {#each entries as entry}
+        {#each filteredEntries as entry}
           <tr
             on:click={() => highlightRow(entry.IdNr)}
             on:dblclick={() => selectRow(entry)}

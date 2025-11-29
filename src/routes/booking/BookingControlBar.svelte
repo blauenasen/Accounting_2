@@ -8,37 +8,43 @@
 
   const dispatch = createEventDispatcher();
 
-  let selectedYear = 2024;
-  let selectedMonth = 12;
-  let selectedBookCircle = 'Bank 1';
-  let selectedAccount = '';
-  let hideStornos = false;
+  // Props
+  export let availableYears: number[] = [];
+  export let selectedBookCircle: { idcode: string; no: number; textcode: string } | null = null;
+
   let searchText = '';
 
-  $: currentView = $bookingStore.currentView;
+  // Display text for selected book circle
+  $: bookCircleDisplay = selectedBookCircle
+    ? `${selectedBookCircle.no} - ${selectedBookCircle.textcode}`
+    : '';
 
-  // Subscribe to store
-  bookingStore.subscribe(state => {
-    selectedYear = state.selectedYear;
-    selectedMonth = state.selectedMonth;
-    selectedBookCircle = state.selectedBookCircle;
-    selectedAccount = state.selectedAccount;
-    hideStornos = state.hideStornos;
-  });
+  // Use Svelte 4 auto-subscribe pattern for reactive store values
+  $: currentView = $bookingStore.currentView;
+  $: selectedYear = $bookingStore.selectedYear;
+  $: selectedMonth = $bookingStore.selectedMonth;
+  $: selectedAccount = $bookingStore.selectedAccount;
+  $: hideStornos = $bookingStore.hideStornos;
+
+  // Use available years from API, fallback to current year ± 5 if not loaded yet
+  const currentYear = new Date().getFullYear();
+  $: years = availableYears.length > 0
+    ? availableYears
+    : Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
   function handleYearChange(event: Event) {
     const target = event.target as HTMLSelectElement;
-    selectedYear = parseInt(target.value);
-    bookingStore.setYear(selectedYear);
-    dispatch('periodchange', { year: selectedYear, month: selectedMonth });
+    const year = parseInt(target.value);
+    bookingStore.setYear(year);
+    dispatch('periodchange', { year, month: selectedMonth });
   }
 
   function handleMonthChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const value = target.value;
-    selectedMonth = value === 'All' ? 'All' : parseInt(value);
-    bookingStore.setMonth(selectedMonth);
-    dispatch('periodchange', { year: selectedYear, month: selectedMonth });
+    const month = value === 'All' ? 'All' : parseInt(value);
+    bookingStore.setMonth(month);
+    dispatch('periodchange', { year: selectedYear, month });
   }
 
   function openBookCircleDialog() {
@@ -47,15 +53,14 @@
 
   function handleAccountChange(event: Event) {
     const target = event.target as HTMLSelectElement;
-    selectedAccount = target.value;
-    bookingStore.setAccount(selectedAccount);
-    dispatch('accountchange', selectedAccount);
+    const account = target.value;
+    bookingStore.setAccount(account);
+    dispatch('accountchange', account);
   }
 
   function toggleHideStornos() {
-    hideStornos = !hideStornos;
     bookingStore.toggleHideStornos();
-    dispatch('togglehidestornos', hideStornos);
+    dispatch('togglehidestornos', !hideStornos);
   }
 
   // Navigation functions
@@ -64,10 +69,6 @@
   function next() { dispatch('navnext'); }
   function last() { dispatch('navlast'); }
 
-  // Years for dropdown (current year ± 5)
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
-
   // Months 1-12
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 </script>
@@ -75,7 +76,7 @@
 <!-- YEAR SELECT: X:18px, Y:115px, W:60px, H:30px -->
 <select
   class="year-select"
-  bind:value={selectedYear}
+  value={selectedYear}
   on:change={handleYearChange}>
   {#each years as year}
     <option value={year}>{year}</option>
@@ -85,7 +86,7 @@
 <!-- MONTH SELECT: X:86px, Y:115px, W:55px, H:30px -->
 <select
   class="month-select"
-  bind:value={selectedMonth}
+  value={selectedMonth}
   on:change={handleMonthChange}>
   <option value="All">All</option>
   {#each months as month}
@@ -106,7 +107,8 @@
   <input
     type="text"
     readonly
-    value={selectedBookCircle}
+    value={bookCircleDisplay}
+    placeholder="No circle selected"
     class="selected-circle-display" />
 {/if}
 
@@ -140,7 +142,7 @@
     type="checkbox"
     id="hide-stornos"
     class="hide-stornos-checkbox"
-    bind:checked={hideStornos}
+    checked={hideStornos}
     on:change={toggleHideStornos} />
   <label for="hide-stornos">Hide Stornos</label>
 </div>
