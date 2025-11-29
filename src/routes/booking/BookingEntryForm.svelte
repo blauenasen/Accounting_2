@@ -12,6 +12,8 @@
 
   // Props for selected journal entry
   export let selectedEntry: any = null;
+  // Props for selected book circle (null when no selection)
+  export let selectedBookCircle: { idcode: string; no: number; textcode: string } | null = null;
 
   // Form fields - Storage variables (normal let, NO $:)
   let gu = '';
@@ -277,6 +279,7 @@
         id="input-turnover"
         type="text"
         bind:value={turnoverDisplay}
+        disabled={!selectedBookCircle}
         on:focus={handleTurnoverFocus}
         on:blur={handleTurnoverBlur}
         on:keydown={handleTurnoverKeyDown}
@@ -301,13 +304,13 @@
     <!-- Contra Account -->
     <div class="field-group" style="left: 182px;">
       <label class="field-label" for="input-contra-account">Contra Account</label>
-      <input id="input-contra-account" type="text" bind:value={contraAccount} class="field-input" style="width: 100px; text-align: center;" />
+      <input id="input-contra-account" type="text" bind:value={contraAccount} disabled={!selectedBookCircle} class="field-input" style="width: 100px; text-align: center;" />
     </div>
 
     <!-- Reference -->
     <div class="field-group" style="left: 285px;">
       <label class="field-label" for="input-reference">Reference</label>
-      <input id="input-reference" type="text" bind:value={reference} class="field-input" style="width: 150px; text-align: left;" />
+      <input id="input-reference" type="text" bind:value={reference} disabled={!selectedBookCircle} class="field-input" style="width: 150px; text-align: left;" />
     </div>
 
     <!-- Date -->
@@ -317,12 +320,13 @@
         id="input-date"
         type="text"
         bind:value={dateDisplay}
+        disabled={!selectedBookCircle}
         on:blur={handleDateBlur}
         placeholder="mm-dd-yyyy"
         class="field-input"
         style="width: 120px; text-align: center;" />
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" />
+        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -332,7 +336,7 @@
       <label class="field-label" for="input-account">Account</label>
       <input id="input-account" type="text" readonly value={account} class="field-input field-readonly-gray" style="width: 100px; text-align: center;" />
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" />
+        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -340,14 +344,14 @@
     <!-- Tax -->
     <div class="field-group" style="left: 665px;">
       <label class="field-label" for="input-tax">Tax</label>
-      <select id="input-tax" bind:value={tax} class="field-select" style="width: 75px; text-align: center;">
+      <select id="input-tax" bind:value={tax} disabled={!selectedBookCircle} class="field-select" style="width: 75px; text-align: center;">
         <option value="0.00%">0.00%</option>
         <option value="0.05">0.05</option>
         <option value="0.07">0.07</option>
         <option value="0.10">0.10</option>
       </select>
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" />
+        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -359,6 +363,7 @@
         id="input-due-date"
         type="text"
         bind:value={dueDateDisplay}
+        disabled={!selectedBookCircle}
         on:blur={handleDueDateBlur}
         placeholder="mm-dd-yyyy"
         class="field-input"
@@ -368,9 +373,9 @@
     <!-- Disc. -->
     <div class="field-group" style="left: 867px;">
       <label class="field-label" for="input-disc">Disc.</label>
-      <input id="input-disc" type="text" bind:value={disc} class="field-input" style="width: 60px; text-align: right;" />
+      <input id="input-disc" type="text" bind:value={disc} disabled={!selectedBookCircle} class="field-input" style="width: 60px; text-align: right;" />
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" />
+        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -378,9 +383,9 @@
     <!-- Description -->
     <div class="field-group" style="left: 931px;">
       <label class="field-label" for="input-description">Description</label>
-      <input id="input-description" type="text" bind:value={description} class="field-input" style="width: 350px; text-align: left;" />
+      <input id="input-description" type="text" bind:value={description} disabled={!selectedBookCircle} class="field-input" style="width: 350px; text-align: left;" />
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" />
+        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -388,9 +393,9 @@
 
   <!-- ACTION BUTTONS -->
   <div class="action-buttons">
-    <button class="btn btn-ok" on:click={handleOK}>OK</button>
-    <button class="btn btn-cancel" on:click={handleCancel}>Cancel</button>
-    <button class="btn btn-pdf" on:click={handleAddPDF}>+PDF</button>
+    <button class="btn btn-ok" disabled={!selectedBookCircle} on:click={handleOK}>OK</button>
+    <button class="btn btn-cancel" disabled={!selectedBookCircle} on:click={handleCancel}>Cancel</button>
+    <button class="btn btn-pdf" disabled={!selectedBookCircle} on:click={handleAddPDF}>+PDF</button>
   </div>
 </div>
 
@@ -469,6 +474,14 @@
     font-size: 14.4px;
     padding: 4px 6px;
     box-sizing: border-box;
+  }
+
+  /* Disabled fields - gray background */
+  .field-input:disabled,
+  .field-select:disabled {
+    background-color: rgb(240, 240, 240);
+    color: rgb(120, 120, 120);
+    cursor: not-allowed;
   }
 
   /* ==================================================================
@@ -579,6 +592,17 @@
 
   .btn-pdf:hover {
     filter: brightness(0.95);
+  }
+
+  /* Disabled buttons */
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(50%);
+  }
+
+  .btn:disabled:hover {
+    filter: grayscale(50%);
   }
 
   /* ==================================================================

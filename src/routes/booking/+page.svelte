@@ -244,6 +244,7 @@
   <!-- Booking Entry Form (shown when entry is selected) -->
   <BookingEntryForm
     selectedEntry={selectedEntry}
+    {selectedBookCircle}
     on:save={handleSave}
     on:cancel={handleCancel}
     on:addpdf={handleAddPDF} />

@@ -17,7 +17,7 @@
   // Display text for selected book circle
   $: bookCircleDisplay = selectedBookCircle
     ? `${selectedBookCircle.no} - ${selectedBookCircle.textcode}`
-    : '';
+    : '-- no selection --';
 
   // Use Svelte 4 auto-subscribe pattern for reactive store values
   $: currentView = $bookingStore.currentView;
@@ -109,7 +109,8 @@
     readonly
     value={bookCircleDisplay}
     placeholder="No circle selected"
-    class="selected-circle-display" />
+    class="selected-circle-display"
+    class:no-selection={!selectedBookCircle} />
 {/if}
 
 <!-- KONTOANSICHT / OP-ANSICHT CONTROLS (Navigation + Account) -->
@@ -222,6 +223,12 @@
     padding: 0px 6px;
     box-sizing: border-box;
     color: rgb(85, 85, 85);
+  }
+
+  .selected-circle-display.no-selection {
+    font-style: italic;
+    color: #666;
+    text-align: center;
   }
 
   /* ==================================================================
