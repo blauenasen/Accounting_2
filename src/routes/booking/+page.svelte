@@ -160,14 +160,20 @@
     showBookCircleDialog = false;
   }
 
-  async function handleBookCircleSelect(event: CustomEvent<{ idcode: string; no: number; textcode: string }>) {
+  async function handleBookCircleSelect(event: CustomEvent<{ idcode: string | null; no: number | null; textcode: string }>) {
     const circle = event.detail;
     console.log('Book Circle selected:', circle);
 
-    selectedBookCircle = circle;
-    bookingStore.setBookCircle(`${circle.no} - ${circle.textcode}`);
+    // Check if "-- no selection --" was selected
+    if (circle.no === null) {
+      selectedBookCircle = null;
+      bookingStore.setBookCircle('');
+    } else {
+      selectedBookCircle = circle;
+      bookingStore.setBookCircle(`${circle.no} - ${circle.textcode}`);
+    }
 
-    // Reload data with book circle filter
+    // Reload data with or without book circle filter
     await loadJournalEntries();
   }
 
