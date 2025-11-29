@@ -5,24 +5,58 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { bookingStore } from '$lib/stores/bookingStore';
+  import { formatCurrencyDisplay, parseInputToNumber, unformatCurrency } from '$lib/utils/numberFormat';
+  import { formatDateUS, parseUSDateToISO } from '$lib/utils/dateFormat';
 
   const dispatch = createEventDispatcher();
 
   // Props for selected journal entry
   export let selectedEntry: any = null;
 
-  // Form fields (reactive based on selectedEntry)
-  $: gu = selectedEntry?.GU || '';
-  $: turnover = selectedEntry?.UE || 0;
-  $: sh = selectedEntry?.SH || 'S';
-  $: contraAccount = selectedEntry?.GegKto || '';
-  $: reference = selectedEntry?.BelNr || '';
-  $: date = selectedEntry?.Datum || '';
-  $: account = selectedEntry?.Kto || '';
-  $: tax = selectedEntry?.Steuer || '0.00%';
-  $: dueDate = '';
-  $: disc = '';
-  $: description = selectedEntry?.Buchungstext || '';
+  // Form fields - Storage variables (normal let, NO $:)
+  let gu = '';
+  let turnover = 0;
+  let sh = 'S';
+  let contraAccount = '';
+  let reference = '';
+  let date = '';
+  let account = '';
+  let tax = '0.00%';
+  let dueDate = '';
+  let disc = '';
+  let description = '';
+
+  // Display variables (normal let, NO $:)
+  let turnoverDisplay = '';
+  let dateDisplay = '';
+  let dueDateDisplay = '';
+
+  // Function to load entry data into form (called ONLY on demand)
+  function loadEntryToForm(entry: any) {
+    if (!entry) return;
+
+    gu = entry.GU || '';
+    turnover = entry.UE || 0;
+    sh = entry.SH || 'S';
+    contraAccount = entry.GegKto || '';
+    reference = entry.BelNr || '';
+    date = entry.Datum || '';
+    account = entry.Kto || '';
+    tax = entry.Steuer || '0.00%';
+    dueDate = '';
+    disc = '';
+    description = entry.Buchungstext || '';
+
+    // Update Display-Variablen
+    turnoverDisplay = formatCurrencyDisplay(turnover);
+    dateDisplay = formatDateUS(date);
+    dueDateDisplay = formatDateUS(dueDate);
+  }
+
+  // Load data when selectedEntry changes (ONLY reactive statement!)
+  $: if (selectedEntry) {
+    loadEntryToForm(selectedEntry);
+  }
 
   // Account info - loaded dynamically from API
   let contraAccountInfo: any = null;
@@ -134,6 +168,97 @@
   function handleAddPDF() {
     dispatch('addpdf');
   }
+
+  // Turnover field event handlers
+  function handleTurnoverFocus(event: FocusEvent) {
+    const target = event.target as HTMLInputElement;
+    // Select all content when field gains focus
+    target.select();
+  }
+
+  function handleTurnoverBlur(event: FocusEvent) {
+    const target = event.target as HTMLInputElement;
+    const input = target.value;
+
+    // Parse input and update turnover
+    turnover = parseInputToNumber(input);
+
+    // Update display with formatted value
+    turnoverDisplay = formatCurrencyDisplay(turnover);
+  }
+
+  function handleTurnoverKeyDown(event: KeyboardEvent) {
+    const key = event.key;
+
+    // Enter key: Set SH to "S" and move focus to Contra Account
+    if (key === 'Enter') {
+      event.preventDefault();
+      sh = 'S';
+
+      // Apply formatting before moving focus
+      const target = event.target as HTMLInputElement;
+      turnover = parseInputToNumber(target.value);
+      turnoverDisplay = formatCurrencyDisplay(turnover);
+
+      // Move focus to Contra Account
+      const contraAccountInput = document.getElementById('input-contra-account') as HTMLInputElement;
+      if (contraAccountInput) {
+        contraAccountInput.focus();
+      }
+      return; // Exit function after handling
+    }
+
+    // Plus key: Set SH to "H" and move focus to Contra Account
+    if (key === '+') {
+      event.preventDefault();
+      sh = 'H';
+
+      // Apply formatting before moving focus
+      const target = event.target as HTMLInputElement;
+      turnover = parseInputToNumber(target.value);
+      turnoverDisplay = formatCurrencyDisplay(turnover);
+
+      // Move focus to Contra Account
+      const contraAccountInput = document.getElementById('input-contra-account') as HTMLInputElement;
+      if (contraAccountInput) {
+        contraAccountInput.focus();
+      }
+      return; // Exit function after handling
+    }
+
+    // Minus key: Allow input for negative numbers but DON'T change SH
+    // IMPORTANT: SH must remain unchanged when user types minus
+    if (key === '-') {
+      // Allow normal input behavior (don't preventDefault)
+      // SH stays unchanged (either 'S' or 'H' depending on previous state)
+      return; // Exit without modifying SH
+    }
+
+    // All other keys: Normal input behavior, SH remains unchanged
+  }
+
+  // Date field event handlers
+  function handleDateBlur(event: FocusEvent) {
+    const target = event.target as HTMLInputElement;
+    const input = target.value;
+
+    // Parse US format input and convert to ISO for storage
+    date = parseUSDateToISO(input);
+
+    // Update display with formatted value
+    dateDisplay = formatDateUS(date);
+  }
+
+  function handleDueDateBlur(event: FocusEvent) {
+    const target = event.target as HTMLInputElement;
+    const input = target.value;
+
+    // Parse US format input and convert to ISO for storage
+    dueDate = parseUSDateToISO(input);
+
+    // Update display with formatted value
+    dueDateDisplay = formatDateUS(dueDate);
+  }
 </script>
 
 <div class="booking-form-container">
@@ -142,19 +267,35 @@
     <!-- GU -->
     <div class="field-group" style="left: 10px;">
       <label class="field-label" for="input-gu">GU</label>
-      <input id="input-gu" type="text" readonly value={gu} class="field-input field-readonly" style="width: 37px; text-align: center;" />
+      <input id="input-gu" type="text" readonly value={gu} tabindex="-1" class="field-input field-readonly" style="width: 37px; text-align: center;" />
     </div>
 
     <!-- Turnover (highlighted with red border) -->
     <div class="field-group" style="left: 50px;">
       <label class="field-label" for="input-turnover">Turnover</label>
-      <input id="input-turnover" type="number" step="0.01" bind:value={turnover} class="field-input field-turnover" style="width: 90px; text-align: right;" />
+      <input
+        id="input-turnover"
+        type="text"
+        bind:value={turnoverDisplay}
+        on:focus={handleTurnoverFocus}
+        on:blur={handleTurnoverBlur}
+        on:keydown={handleTurnoverKeyDown}
+        class="field-input field-turnover"
+        style="width: 90px; text-align: right;" />
     </div>
 
     <!-- SH -->
     <div class="field-group" style="left: 143px;">
       <label class="field-label" for="input-sh">SH</label>
-      <input id="input-sh" type="text" readonly value={sh} class="field-input field-readonly" style="width: 35px; text-align: center;" />
+      <input
+        id="input-sh"
+        type="text"
+        readonly
+        bind:value={sh}
+        tabindex="-1"
+        class="field-input field-readonly"
+        class:sh-haben={sh === 'H'}
+        style="width: 35px; text-align: center;" />
     </div>
 
     <!-- Contra Account -->
@@ -172,7 +313,14 @@
     <!-- Date -->
     <div class="field-group" style="left: 439px;">
       <label class="field-label" for="input-date">Date</label>
-      <input id="input-date" type="text" bind:value={date} placeholder="tt.mm.jjjj" class="field-input" style="width: 120px; text-align: center;" />
+      <input
+        id="input-date"
+        type="text"
+        bind:value={dateDisplay}
+        on:blur={handleDateBlur}
+        placeholder="mm-dd-yyyy"
+        class="field-input"
+        style="width: 120px; text-align: center;" />
       <label class="keep-label">
         <input type="checkbox" class="keep-checkbox" />
         Keep
@@ -207,7 +355,14 @@
     <!-- Due Date -->
     <div class="field-group" style="left: 744px;">
       <label class="field-label" for="input-due-date">Due Date</label>
-      <input id="input-due-date" type="text" bind:value={dueDate} placeholder="tt.mm.jjjj" class="field-input" style="width: 120px; text-align: center;" />
+      <input
+        id="input-due-date"
+        type="text"
+        bind:value={dueDateDisplay}
+        on:blur={handleDueDateBlur}
+        placeholder="mm-dd-yyyy"
+        class="field-input"
+        style="width: 120px; text-align: center;" />
     </div>
 
     <!-- Disc. -->
@@ -345,6 +500,12 @@
 
   .field-readonly-gray {
     background-color: rgb(243, 244, 246);
+  }
+
+  /* SH field: Red text when value is "H" (Haben) */
+  .sh-haben {
+    color: rgb(220, 38, 38) !important;
+    font-weight: 700;
   }
 
   /* Select styling */

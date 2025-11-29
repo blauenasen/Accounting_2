@@ -4,6 +4,7 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { formatDateUS } from '$lib/utils/dateFormat';
 
   const dispatch = createEventDispatcher();
 
@@ -27,6 +28,13 @@
   }
 
   export let entries: JournalEntry[] = [];
+
+  // Row selection and highlighting
+  let highlightedRowId: number | null = null;
+
+  function highlightRow(id: number) {
+    highlightedRowId = id;
+  }
 
   function selectRow(entry: JournalEntry) {
     dispatch('rowselect', entry);
@@ -142,7 +150,11 @@
         </tr>
       {:else}
         {#each entries as entry}
-          <tr on:click={() => selectRow(entry)} class="data-row">
+          <tr
+            on:click={() => highlightRow(entry.IdNr)}
+            on:dblclick={() => selectRow(entry)}
+            class="data-row"
+            class:highlighted={highlightedRowId === entry.IdNr}>
             <td class="cell-id">{entry.IdNr}</td>
             <td class="cell-pdf">{entry.pdf_blob ? 'PDF' : ''}</td>
             <td class="cell-w">{entry.Warnung || ''}</td>
@@ -153,7 +165,7 @@
             <td class="cell-bu">{entry.BU}</td>
             <td class="cell-contra">{entry.GegKto}</td>
             <td class="cell-doc">{entry.BelNr}</td>
-            <td class="cell-date">{entry.Datum}</td>
+            <td class="cell-date">{formatDateUS(entry.Datum)}</td>
             <td class="cell-account">{entry.Kto}</td>
             <td class="cell-text">{entry.Buchungstext}</td>
             <td class="cell-hk">{entry.BookCircle}</td>
@@ -257,6 +269,10 @@
 
   .primanota-table tbody tr:hover {
     background-color: rgba(6, 161, 58, 0.1);
+  }
+
+  .primanota-table tbody tr.highlighted {
+    background-color: rgba(6, 161, 58, 0.2);
   }
 
   .primanota-table td {

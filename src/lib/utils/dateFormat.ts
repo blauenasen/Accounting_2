@@ -147,3 +147,43 @@ export function parseToISO(dateStr: string | null | undefined): string {
 
   return '';
 }
+
+/**
+ * Converts YYYY-MM-DD to mm-dd-yyyy (US format with hyphens, no spaces)
+ * @param isoDate Date in YYYY-MM-DD format
+ * @returns Date in mm-dd-yyyy format
+ */
+export function formatDateUS(isoDate: string | null | undefined): string {
+  if (!isoDate) return '';
+
+  const match = String(isoDate).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const [, yyyy, mm, dd] = match;
+    return `${mm}-${dd}-${yyyy}`; // mm-dd-yyyy with hyphens, no spaces
+  }
+
+  return String(isoDate);
+}
+
+/**
+ * Converts mm-dd-yyyy to YYYY-MM-DD for storage
+ * @param usDate Date in mm-dd-yyyy format
+ * @returns Date in YYYY-MM-DD format
+ */
+export function parseUSDateToISO(usDate: string | null | undefined): string {
+  if (!usDate) return '';
+
+  // Match mm-dd-yyyy format (hyphens)
+  const hyphenMatch = String(usDate).trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (hyphenMatch) {
+    const [, mm, dd, yyyy] = hyphenMatch;
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // If already in YYYY-MM-DD format, return as-is
+  if (String(usDate).match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return String(usDate);
+  }
+
+  return String(usDate);
+}
