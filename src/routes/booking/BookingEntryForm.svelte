@@ -7,6 +7,7 @@
   import { bookingStore } from '$lib/stores/bookingStore';
   import { formatCurrencyDisplay, parseInputToNumber, unformatCurrency } from '$lib/utils/numberFormat';
   import { formatDateUS, parseUSDateToISO } from '$lib/utils/dateFormat';
+  import { formatPercent } from '$lib/logic/primanota/formatting';
   import AccountSelectionDialog from '$lib/components/booking/dialogs/AccountSelectionDialog.svelte';
 
   const dispatch = createEventDispatcher();
@@ -34,6 +35,52 @@
   let dialogField = ''; // 'CK' or 'HK'
   let dialogAccounts: any[] = [];
   let dialogFilter = '';
+
+  // Tax handling
+  let accountTaxgroup: string | number | null = null; // Taxgroup from selected account
+  let isTaxReadonly = false; // Whether tax field should be readonly
+  let showTaxDropdown = true; // Whether to show dropdown or input
+  let availableTaxRates: (string | number)[] = []; // Available tax rates when taxgroup = "?"
+
+  // Keep flags for form fields
+  let keepContraAccount = false;
+  let keepDate = false;
+  let keepAccount = false;
+  let keepTax = false;
+  let keepDescription = false;
+
+  // Load keep flags from store
+  $: {
+    keepContraAccount = $bookingStore.keepFlags.contraAccount;
+    keepDate = $bookingStore.keepFlags.date;
+    keepAccount = $bookingStore.keepFlags.account;
+    keepTax = $bookingStore.keepFlags.tax;
+    keepDescription = $bookingStore.keepFlags.description;
+  }
+
+  // Apply kept values when not loading from selectedEntry
+  $: if (!selectedEntry && $bookingStore.keepValues) {
+    if (keepContraAccount && $bookingStore.keepValues.contraAccount) {
+      contraAccount = $bookingStore.keepValues.contraAccount;
+    }
+    if (keepDate && $bookingStore.keepValues.date) {
+      date = $bookingStore.keepValues.date;
+    }
+    if (keepAccount && $bookingStore.keepValues.account) {
+      account = $bookingStore.keepValues.account;
+    }
+    if (keepTax && $bookingStore.keepValues.tax) {
+      tax = $bookingStore.keepValues.tax;
+    }
+    if (keepDescription && $bookingStore.keepValues.description) {
+      description = $bookingStore.keepValues.description;
+    }
+  }
+
+  // Update store when keep flags change
+  function handleKeepChange(field: keyof typeof $bookingStore.keepFlags, value: boolean) {
+    bookingStore.setKeepFlag(field, value);
+  }
 
   // Display variables (normal let, NO $:)
   let turnoverDisplay = '';
@@ -67,6 +114,117 @@
     loadEntryToForm(selectedEntry);
   }
 
+  // Check if HK should be readonly (only one account allowed for BC)
+  let isAccountReadonly = false;
+  let allowedAccountsForHK: any[] = [];
+
+  // Track previous Book Circle to detect changes
+  let previousBookCircle: typeof selectedBookCircle = null;
+
+  // Handle Book Circle changes: clear fields and load allowed accounts
+  $: handleBookCircleChange(selectedBookCircle);
+
+  async function handleBookCircleChange(bc: typeof selectedBookCircle) {
+    // Check if Book Circle actually changed
+    const bcChanged = previousBookCircle?.no !== bc?.no;
+
+    if (bcChanged && previousBookCircle !== null && !selectedEntry) {
+      // Clear all fields when BC changes (but not on initial load or when loading entry)
+      console.log('BC changed from', previousBookCircle?.no, 'to', bc?.no, '- clearing fields');
+      clearFormFields();
+    }
+
+    // Update previous BC
+    previousBookCircle = bc;
+
+    // Load allowed accounts for new BC
+    await loadAllowedAccountsForHK(bc);
+  }
+
+  function clearFormFields() {
+    // Don't clear if we're loading an entry
+    if (selectedEntry) return;
+
+    gu = '';
+    turnover = 0;
+    sh = 'S';
+    contraAccount = '';
+    reference = '';
+    date = '';
+    account = '';
+    tax = '?';
+    dueDate = '';
+    disc = '';
+    description = '';
+
+    // Clear display variables
+    turnoverDisplay = '';
+    dateDisplay = '';
+    dueDateDisplay = '';
+  }
+
+  async function loadAllowedAccountsForHK(bc: typeof selectedBookCircle) {
+    if (!bc || !bc.no) {
+      isAccountReadonly = false;
+      allowedAccountsForHK = [];
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/booking/allowed-accounts?bookCircle=${bc.no}&side=HK`);
+      const data = await response.json();
+
+      console.log('Allowed HK accounts for BC', bc.no, ':', data.accounts?.length, 'accounts');
+      console.log('Current account value:', account);
+
+      if (data.ok && Array.isArray(data.accounts)) {
+        allowedAccountsForHK = data.accounts;
+
+        // If only one account allowed, set it and make field readonly
+        // ONLY if account field is currently empty (was just cleared)
+        if (data.accounts.length === 1 && !selectedEntry && account === '') {
+          console.log('Setting HK to single allowed account:', data.accounts[0].account);
+          account = String(data.accounts[0].account);
+          isAccountReadonly = true;
+        } else if (data.accounts.length === 1) {
+          console.log('Single account but HK already has value, making readonly');
+          isAccountReadonly = true;
+        } else {
+          console.log('Multiple accounts allowed, HK is editable');
+          isAccountReadonly = false;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load allowed accounts for HK:', error);
+      isAccountReadonly = false;
+      allowedAccountsForHK = [];
+    }
+  }
+
+  // Auto-calculate Due Date from Date (Date + paydate from stammdaten)
+  let paymentDays = 30; // Default fallback
+
+  async function loadPaymentDays() {
+    try {
+      const response = await fetch('/api/stammdaten');
+      const data = await response.json();
+      if (data && data.paydate !== undefined) {
+        paymentDays = Number(data.paydate) || 30;
+      }
+    } catch (error) {
+      console.error('Failed to load payment days:', error);
+    }
+  }
+
+  // Calculate due date: Date + paymentDays
+  $: if (date && !selectedEntry) {
+    const dateObj = new Date(date);
+    if (!isNaN(dateObj.getTime())) {
+      dateObj.setDate(dateObj.getDate() + paymentDays);
+      dueDate = dateObj.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    }
+  }
+
   // Account info - loaded dynamically from API
   let contraAccountInfo: any = null;
   let accountInfo: any = null;
@@ -74,6 +232,68 @@
   // Reactive loading - trigger when account numbers change
   $: loadContraAccountInfo(contraAccount);
   $: loadMainAccountInfo(account);
+
+  // Load payment days on mount
+  import { onMount } from 'svelte';
+  onMount(async () => {
+    await loadPaymentDays();
+  });
+
+  // Handle tax based on selected account's taxgroup
+  $: handleTaxFromAccount(account);
+
+  async function handleTaxFromAccount(accountNumber: string) {
+    if (!accountNumber || selectedEntry) {
+      // Reset to default state
+      accountTaxgroup = null;
+      showTaxDropdown = true;
+      isTaxReadonly = false;
+      availableTaxRates = [];
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/booking/account-taxgroup?account=${accountNumber}`);
+      const data = await response.json();
+
+      if (data.ok && data.taxgroup !== undefined) {
+        accountTaxgroup = data.taxgroup;
+
+        // Case 1: Taxgroup = "?" → User must choose from ALL available tax rates
+        if (data.taxgroup === '?') {
+          showTaxDropdown = true;
+          isTaxReadonly = false;
+          tax = '?'; // Keep "?" until user selects
+
+          // Load all available tax rates from database
+          await loadAvailableTaxRates();
+        }
+        // Case 2: Taxgroup has a specific value → Set tax to that value (readonly)
+        else {
+          showTaxDropdown = false;
+          isTaxReadonly = true;
+          tax = String(data.taxgroup);
+          availableTaxRates = [];
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load account taxgroup:', error);
+    }
+  }
+
+  async function loadAvailableTaxRates() {
+    try {
+      const response = await fetch('/api/booking/taxgroups');
+      const data = await response.json();
+      if (data.ok) {
+        // All tax rates from DB (excluding "?")
+        availableTaxRates = data.taxgroups;
+      }
+    } catch (error) {
+      console.error('Failed to load available tax rates:', error);
+      availableTaxRates = [];
+    }
+  }
 
   // Load contra account details
   async function loadContraAccountInfo(accNum: any) {
@@ -164,6 +384,12 @@
   }
 
   function handleOK() {
+    // Save keep values to store before dispatching
+    bookingStore.saveKeepValues(
+      { contraAccount, date, account, tax, description },
+      $bookingStore.keepFlags
+    );
+
     dispatch('save', {
       gu, turnover, sh, contraAccount, reference, date,
       account, tax, dueDate, disc, description
@@ -336,6 +562,13 @@
   }
 
   /**
+   * Handle Account (HK) double-click - always open dialog
+   */
+  async function handleAccountDblClick(): Promise<void> {
+    await openAccountSelectionDialog('account');
+  }
+
+  /**
    * Validate contra account against book circle rules
    */
   async function validateContraAccount(
@@ -446,6 +679,7 @@
         on:focus={handleTurnoverFocus}
         on:blur={handleTurnoverBlur}
         on:keydown={handleTurnoverKeyDown}
+        autocomplete="off"
         class="field-input field-turnover"
         style="width: 90px; text-align: right;" />
     </div>
@@ -478,12 +712,21 @@
         autocomplete="off"
         class="field-input"
         style="width: 100px; text-align: center;" />
+      <label class="keep-label">
+        <input
+          type="checkbox"
+          class="keep-checkbox"
+          bind:checked={keepContraAccount}
+          on:change={() => handleKeepChange('contraAccount', keepContraAccount)}
+          disabled={!selectedBookCircle} />
+        Keep
+      </label>
     </div>
 
     <!-- Reference -->
     <div class="field-group" style="left: 285px;">
       <label class="field-label" for="input-reference">Reference</label>
-      <input id="input-reference" type="text" bind:value={reference} disabled={!selectedBookCircle} class="field-input" style="width: 150px; text-align: left;" />
+      <input id="input-reference" type="text" bind:value={reference} disabled={!selectedBookCircle} autocomplete="off" class="field-input" style="width: 150px; text-align: left;" />
     </div>
 
     <!-- Date -->
@@ -491,15 +734,19 @@
       <label class="field-label" for="input-date">Date</label>
       <input
         id="input-date"
-        type="text"
-        bind:value={dateDisplay}
+        type="date"
+        bind:value={date}
         disabled={!selectedBookCircle}
-        on:blur={handleDateBlur}
-        placeholder="mm-dd-yyyy"
+        autocomplete="off"
         class="field-input"
         style="width: 120px; text-align: center;" />
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
+        <input
+          type="checkbox"
+          class="keep-checkbox"
+          bind:checked={keepDate}
+          on:change={() => handleKeepChange('date', keepDate)}
+          disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -507,9 +754,24 @@
     <!-- Account -->
     <div class="field-group" style="left: 563px;">
       <label class="field-label" for="input-account">Account</label>
-      <input id="input-account" type="text" readonly value={account} class="field-input field-readonly-gray" style="width: 100px; text-align: center;" />
+      <input
+        id="input-account"
+        type="text"
+        bind:value={account}
+        on:dblclick={handleAccountDblClick}
+        disabled={!selectedBookCircle}
+        readonly={isAccountReadonly}
+        autocomplete="off"
+        class="field-input"
+        class:field-readonly-gray={isAccountReadonly}
+        style="width: 100px; text-align: center;" />
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
+        <input
+          type="checkbox"
+          class="keep-checkbox"
+          bind:checked={keepAccount}
+          on:change={() => handleKeepChange('account', keepAccount)}
+          disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -517,14 +779,32 @@
     <!-- Tax -->
     <div class="field-group" style="left: 665px;">
       <label class="field-label" for="input-tax">Tax</label>
-      <select id="input-tax" bind:value={tax} disabled={!selectedBookCircle} class="field-select" style="width: 75px; text-align: center;">
-        <option value="0.00%">0.00%</option>
-        <option value="0.05">0.05</option>
-        <option value="0.07">0.07</option>
-        <option value="0.10">0.10</option>
-      </select>
+      {#if showTaxDropdown}
+        <!-- Dropdown when taxgroup = "?" - User must choose -->
+        <select id="input-tax" bind:value={tax} disabled={!selectedBookCircle} class="field-select" style="width: 75px; text-align: center;">
+          <option value="?" disabled selected hidden>Select tax rate</option>
+          {#each availableTaxRates as taxRate}
+            <option value={taxRate}>{formatPercent(taxRate)}</option>
+          {/each}
+        </select>
+      {:else}
+        <!-- Readonly input when taxgroup has specific value -->
+        <input
+          id="input-tax"
+          type="text"
+          value={formatPercent(tax)}
+          readonly
+          disabled={!selectedBookCircle}
+          class="field-input field-readonly-gray"
+          style="width: 75px; text-align: center;" />
+      {/if}
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
+        <input
+          type="checkbox"
+          class="keep-checkbox"
+          bind:checked={keepTax}
+          on:change={() => handleKeepChange('tax', keepTax)}
+          disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -534,11 +814,10 @@
       <label class="field-label" for="input-due-date">Due Date</label>
       <input
         id="input-due-date"
-        type="text"
-        bind:value={dueDateDisplay}
+        type="date"
+        bind:value={dueDate}
         disabled={!selectedBookCircle}
-        on:blur={handleDueDateBlur}
-        placeholder="mm-dd-yyyy"
+        autocomplete="off"
         class="field-input"
         style="width: 120px; text-align: center;" />
     </div>
@@ -546,19 +825,20 @@
     <!-- Disc. -->
     <div class="field-group" style="left: 867px;">
       <label class="field-label" for="input-disc">Disc.</label>
-      <input id="input-disc" type="text" bind:value={disc} disabled={!selectedBookCircle} class="field-input" style="width: 60px; text-align: right;" />
-      <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
-        Keep
-      </label>
+      <input id="input-disc" type="text" bind:value={disc} disabled={!selectedBookCircle} autocomplete="off" class="field-input" style="width: 60px; text-align: right;" />
     </div>
 
     <!-- Description -->
     <div class="field-group" style="left: 931px;">
       <label class="field-label" for="input-description">Description</label>
-      <input id="input-description" type="text" bind:value={description} disabled={!selectedBookCircle} class="field-input" style="width: 350px; text-align: left;" />
+      <input id="input-description" type="text" bind:value={description} disabled={!selectedBookCircle} autocomplete="off" class="field-input" style="width: 350px; text-align: left;" />
       <label class="keep-label">
-        <input type="checkbox" class="keep-checkbox" disabled={!selectedBookCircle} />
+        <input
+          type="checkbox"
+          class="keep-checkbox"
+          bind:checked={keepDescription}
+          on:change={() => handleKeepChange('description', keepDescription)}
+          disabled={!selectedBookCircle} />
         Keep
       </label>
     </div>
@@ -566,7 +846,7 @@
 
   <!-- ACTION BUTTONS -->
   <div class="action-buttons">
-    <button class="btn btn-ok" disabled={!selectedBookCircle} on:click={handleOK}>OK</button>
+    <button class="btn btn-ok" disabled={!selectedBookCircle || tax === '?'} on:click={handleOK}>OK</button>
     <button class="btn btn-cancel" disabled={!selectedBookCircle} on:click={handleCancel}>Cancel</button>
     <button class="btn btn-pdf" disabled={!selectedBookCircle} on:click={handleAddPDF}>+PDF</button>
   </div>
@@ -657,7 +937,7 @@
     border: 1px inset rgb(118, 118, 118);
     background-color: rgb(255, 255, 255);
     font-family: Arial;
-    font-size: 14.4px;
+    font-size: 12px;
     padding: 4px 6px;
     box-sizing: border-box;
   }

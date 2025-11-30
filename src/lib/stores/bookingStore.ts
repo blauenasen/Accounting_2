@@ -15,6 +15,22 @@ export interface BookingState {
   hideStornos: boolean;
   filterActive: boolean;
   opFilter: 'open' | 'balanced' | 'all';
+  // Keep values for next booking
+  keepValues: {
+    contraAccount?: string;
+    date?: string;
+    account?: string;
+    tax?: string;
+    description?: string;
+  };
+  // Keep flags
+  keepFlags: {
+    contraAccount: boolean;
+    date: boolean;
+    account: boolean;
+    tax: boolean;
+    description: boolean;
+  };
 }
 
 function createBookingStore() {
@@ -26,7 +42,15 @@ function createBookingStore() {
     selectedAccount: '',
     hideStornos: false,
     filterActive: false,
-    opFilter: 'open'
+    opFilter: 'open',
+    keepValues: {},
+    keepFlags: {
+      contraAccount: false,
+      date: false,
+      account: false,
+      tax: false,
+      description: false
+    }
   });
 
   return {
@@ -64,6 +88,27 @@ function createBookingStore() {
       update(state => ({ ...state, opFilter: filter }));
     },
 
+    setKeepFlag: (field: keyof BookingState['keepFlags'], value: boolean) => {
+      update(state => ({
+        ...state,
+        keepFlags: { ...state.keepFlags, [field]: value }
+      }));
+    },
+
+    saveKeepValues: (values: Partial<BookingState['keepValues']>, flags: BookingState['keepFlags']) => {
+      update(state => {
+        const newKeepValues: BookingState['keepValues'] = {};
+
+        if (flags.contraAccount && values.contraAccount) newKeepValues.contraAccount = values.contraAccount;
+        if (flags.date && values.date) newKeepValues.date = values.date;
+        if (flags.account && values.account) newKeepValues.account = values.account;
+        if (flags.tax && values.tax) newKeepValues.tax = values.tax;
+        if (flags.description && values.description) newKeepValues.description = values.description;
+
+        return { ...state, keepValues: newKeepValues };
+      });
+    },
+
     reset: () => {
       set({
         currentView: 'primanota',
@@ -73,7 +118,15 @@ function createBookingStore() {
         selectedAccount: '',
         hideStornos: false,
         filterActive: false,
-        opFilter: 'open'
+        opFilter: 'open',
+        keepValues: {},
+        keepFlags: {
+          contraAccount: false,
+          date: false,
+          account: false,
+          tax: false,
+          description: false
+        }
       });
     }
   };

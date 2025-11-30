@@ -5,6 +5,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { formatDateUS } from '$lib/utils/dateFormat';
+  import { formatPercent } from '$lib/logic/primanota/formatting';
   import PrimanotaTableHeader from '$lib/components/primanota/PrimanotaTableHeader.svelte';
   import PrimanotaFilters from '$lib/components/primanota/PrimanotaFilters.svelte';
   import PrimanotaContextMenu from '$lib/components/primanota/PrimanotaContextMenu.svelte';
@@ -377,7 +378,7 @@
             <td class="cell-account">{entry.Kto}</td>
             <td class="cell-text">{entry.Buchungstext}</td>
             <td class="cell-hk">{entry.BookCircle}</td>
-            <td class="cell-tax">{entry.Steuer}</td>
+            <td class="cell-tax">{formatPercent(entry.Steuer)}</td>
           </tr>
         {/each}
       {/if}
