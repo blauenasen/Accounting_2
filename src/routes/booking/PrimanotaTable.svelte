@@ -3,10 +3,12 @@
 <!-- Measurements from Mess-Tabelle.md: PRIMANOTA VIEW -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { formatDateUS } from '$lib/utils/dateFormat';
   import PrimanotaTableHeader from '$lib/components/primanota/PrimanotaTableHeader.svelte';
   import PrimanotaFilters from '$lib/components/primanota/PrimanotaFilters.svelte';
+  import PrimanotaContextMenu from '$lib/components/primanota/PrimanotaContextMenu.svelte';
+  import { isRowStorno } from '$lib/logic/primanota/validation';
   import {
     sortAndFilterRows,
     createInitialFilterState,
@@ -102,9 +104,13 @@
   let highlightedRowId: number | null = null;
   let selectedRowId: number | null = null;
 
+  // Context menu state
+  let wrapper: HTMLDivElement;
+  let contextMenu = { visible: false, x: 0, y: 0, rowIndex: null as number | null };
+
   function highlightRow(entry: JournalEntry) {
     // Don't highlight storno rows
-    if (isRowStorno(entry)) {
+    if (isRowStornoLocal(entry)) {
       return;
     }
     highlightedRowId = entry.IdNr;
@@ -112,7 +118,7 @@
 
   function selectRow(entry: JournalEntry) {
     // Don't select storno rows
-    if (isRowStorno(entry)) {
+    if (isRowStornoLocal(entry)) {
       return;
     }
     selectedRowId = entry.IdNr;
@@ -120,7 +126,7 @@
   }
 
   // Helper functions to determine row states
-  function isRowStorno(entry: JournalEntry): boolean {
+  function isRowStornoLocal(entry: JournalEntry): boolean {
     return entry.Warnung === '❌';
   }
 
@@ -172,10 +178,138 @@
     }
     previousFiltersActive = filtersActive;
   }
+
+  // Context menu functions
+  function resetContextMenu() {
+    contextMenu = { visible: false, x: 0, y: 0, rowIndex: null };
+  }
+
+  function showContextMenu(event: MouseEvent, index: number) {
+    event.preventDefault();
+    if (!wrapper) return;
+
+    const row = displayRows?.[index] ?? null;
+    if (!row) return;
+
+    // Don't show context menu for storno bookings
+    if (isRowStorno(row)) {
+      return;
+    }
+
+    const SAFETY_MARGIN = 10;
+    const MENU_WIDTH = 200;  // Approximate menu width
+    const MENU_HEIGHT = 80;  // Approximate menu height (2-3 buttons)
+
+    const clickX = event.clientX;
+    const clickY = event.clientY;
+
+    let x = clickX;
+    let y = clickY;
+
+    // Check if menu would overflow bottom
+    if (y + MENU_HEIGHT + SAFETY_MARGIN > window.innerHeight) {
+      y = clickY - MENU_HEIGHT;
+    }
+
+    // Check if menu would overflow right
+    if (x + MENU_WIDTH + SAFETY_MARGIN > window.innerWidth) {
+      x = clickX - MENU_WIDTH;
+    }
+
+    // Ensure menu doesn't go beyond edges
+    x = Math.max(SAFETY_MARGIN, Math.min(x, window.innerWidth - MENU_WIDTH - SAFETY_MARGIN));
+    y = Math.max(SAFETY_MARGIN, Math.min(y, window.innerHeight - MENU_HEIGHT - SAFETY_MARGIN));
+
+    contextMenu = {
+      visible: true,
+      x,
+      y,
+      rowIndex: index
+    };
+  }
+
+  function handleCopyToBookingAction() {
+    const rowIndex = contextMenu.rowIndex;
+    const row = displayRows?.[rowIndex ?? -1] ?? null;
+
+    if (!row) return;
+
+    resetContextMenu();
+
+    // Check if row is storno (cancelled bookings cannot be copied)
+    if (isRowStorno(row)) {
+      dispatch('message', { text: 'Cancelled booking cannot be copied', rowIndex });
+      return;
+    }
+
+    // Create a copy of the row with cleared GU for new entry
+    const copiedEntry = {
+      ...row,
+      GU: '', // Clear GU for new entry
+      IdNr: null, // Clear ID for new entry
+      pdf_blob: null, // Don't copy PDF
+      id_invoice: null // Don't copy invoice link
+    };
+
+    // Dispatch to parent - send the copied entry directly with BookCircle
+    dispatch('fillform', { formData: copiedEntry, originalRow: row, bookCircle: row.BookCircle });
+    dispatch('message', { text: 'Entry copied to booking form', rowIndex });
+  }
+
+  function handleDeleteAction() {
+    const rowIndex = contextMenu.rowIndex;
+    const row = displayRows?.[rowIndex ?? -1] ?? null;
+
+    if (!row) {
+      dispatch('message', { text: 'No booking selected', rowIndex });
+      resetContextMenu();
+      return;
+    }
+
+    resetContextMenu();
+    dispatch('deleteentry', { bookingData: row });
+  }
+
+  function handleContextAction() {
+    const rowIndex = contextMenu.rowIndex;
+    const row = displayRows?.[rowIndex ?? -1] ?? null;
+
+    if (!row) {
+      dispatch('message', { text: 'No booking selected', rowIndex });
+      resetContextMenu();
+      return;
+    }
+
+    resetContextMenu();
+    dispatch('cancelentry', { bookingData: row });
+  }
+
+  function handleGlobalClick(event: MouseEvent) {
+    if (!contextMenu.visible) return;
+
+    // Check if click is within wrapper
+    if (wrapper && wrapper.contains(event.target as Node)) return;
+
+    // Check if click is on context menu itself
+    const target = event.target as HTMLElement;
+    if (target.closest('.context-menu')) return;
+
+    resetContextMenu();
+  }
+
+  // Mount/unmount handlers
+  onMount(() => {
+    window.addEventListener('click', handleGlobalClick, { capture: true });
+
+    // Cleanup function - called when component is destroyed
+    return () => {
+      window.removeEventListener('click', handleGlobalClick, { capture: true });
+    };
+  });
 </script>
 
 <!-- TABLE CONTAINER: Y:194px (Primanota - no balance fields above) -->
-<div class="primanota-table-container">
+<div class="primanota-table-container" bind:this={wrapper}>
   <table class="primanota-table">
     <thead>
       <PrimanotaTableHeader
@@ -201,14 +335,15 @@
           </td>
         </tr>
       {:else}
-        {#each displayRows as entry}
+        {#each displayRows as entry, index}
           <tr
             on:click={() => highlightRow(entry)}
             on:dblclick={() => selectRow(entry)}
+            on:contextmenu={(e) => showContextMenu(e, index)}
             class="data-row"
             class:highlighted={highlightedRowId === entry.IdNr}
             class:selected={selectedRowId === entry.IdNr}
-            class:storno={isRowStorno(entry)}
+            class:storno={isRowStornoLocal(entry)}
             class:split-entry={isSplitEntry(entry)}
             class:reconciled={isReconciled(entry)}>
             <td class="cell-id">{entry.IdNr}</td>
@@ -249,6 +384,18 @@
     </tbody>
   </table>
 </div>
+
+<PrimanotaContextMenu
+  visible={contextMenu.visible}
+  x={contextMenu.x}
+  y={contextMenu.y}
+  row={displayRows?.[contextMenu.rowIndex ?? -1]}
+  rowIndex={contextMenu.rowIndex}
+  viewMode="primanota"
+  on:copytobooking={handleCopyToBookingAction}
+  on:delete={handleDeleteAction}
+  on:cancel={handleContextAction}
+/>
 
 <style>
   /* ==================================================================

@@ -66,15 +66,9 @@
     try {
       const params = new URLSearchParams();
 
-      // On initial load (useDefaults=true), only pass year to let API determine highest month
-      if (options.useDefaults) {
-        params.set('year', $bookingStore.selectedYear.toString());
-        // Don't set month - API will use highest available month as default
-      } else {
-        // Normal load - use current store values
-        params.set('year', $bookingStore.selectedYear.toString());
-        params.set('month', $bookingStore.selectedMonth.toString());
-      }
+      // Always use current store values for API call
+      params.set('year', $bookingStore.selectedYear.toString());
+      params.set('month', $bookingStore.selectedMonth.toString());
 
       // Add book circle filter if selected (only in primanota view)
       if ($bookingStore.currentView === 'primanota' && selectedBookCircle) {
@@ -99,12 +93,15 @@
           console.log('Available years:', availableYears);
         }
 
-        // Update store with resolved values from API
-        if (data.year !== undefined) {
-          bookingStore.setYear(data.year);
-        }
-        if (data.month !== undefined) {
-          bookingStore.setMonth(data.month);
+        // Update store with resolved values from API - BUT NOT on initial load
+        // On initial load (F5), keep "All" as selected month
+        if (!options.useDefaults) {
+          if (data.year !== undefined) {
+            bookingStore.setYear(data.year);
+          }
+          if (data.month !== undefined) {
+            bookingStore.setMonth(data.month);
+          }
         }
 
         console.log('Journal entries set:', journalEntries.length);
@@ -187,7 +184,13 @@
   }
 
   function handleRowSelect(event: CustomEvent) {
-    selectedEntry = event.detail;
+    const entry = event.detail;
+    selectedEntry = entry;
+
+    // Auto-select Book Circle from the double-clicked row
+    if (entry && entry.BookCircle) {
+      setBookCircleFromEntry(entry.BookCircle);
+    }
   }
 
   function handleSave(event: CustomEvent) {
@@ -202,6 +205,106 @@
   function handleAddPDF() {
     console.log('Add PDF to booking entry');
     // TODO: Implement PDF upload functionality
+  }
+
+  // Helper function to set Book Circle from entry
+  async function setBookCircleFromEntry(bookCircleNo: number) {
+    if (!bookCircleNo) return;
+
+    console.log('Auto-selecting Book Circle:', bookCircleNo);
+
+    // Create temporary book circle object
+    // The actual textcode will be fetched from database when dialog is opened
+    selectedBookCircle = {
+      idcode: bookCircleNo.toString(),
+      no: bookCircleNo,
+      textcode: `Circle ${bookCircleNo}` // Temporary label
+    };
+
+    bookingStore.setBookCircle(`${bookCircleNo} - Circle ${bookCircleNo}`);
+
+    // Reload journal entries with new book circle filter
+    await loadJournalEntries();
+  }
+
+  // Context menu event handlers
+  function handleFillForm(event: CustomEvent) {
+    const { formData, originalRow, bookCircle } = event.detail;
+    console.log('Fill form with data:', formData, 'from row:', originalRow);
+    selectedEntry = formData;
+
+    // Auto-select Book Circle from the copied row
+    if (bookCircle) {
+      setBookCircleFromEntry(bookCircle);
+    }
+  }
+
+  async function handleDeleteEntry(event: CustomEvent) {
+    const { bookingData } = event.detail;
+    console.log('Delete entry:', bookingData);
+
+    if (!bookingData || !bookingData.IdNr) {
+      console.error('No IdNr found for deletion');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/booking/delete?idNr=${bookingData.IdNr}`, {
+        method: 'DELETE'
+      });
+
+      const result = await response.json();
+
+      if (result.ok) {
+        console.log('Entry deleted successfully:', result.deletedIdNr);
+        // Reload journal entries to reflect changes
+        await loadJournalEntries();
+      } else {
+        console.error('Delete failed:', result.error);
+        alert(`Failed to delete entry: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Delete request failed:', error);
+      alert('Failed to delete entry');
+    }
+  }
+
+  async function handleCancelEntry(event: CustomEvent) {
+    const { bookingData } = event.detail;
+    console.log('Cancel entry:', bookingData);
+
+    if (!bookingData) {
+      console.error('No booking data for cancellation');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/booking/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ originalBooking: bookingData })
+      });
+
+      const result = await response.json();
+
+      if (result.ok) {
+        console.log('Entry cancelled successfully. GU:', result.guNumber);
+        // Reload journal entries to reflect changes
+        await loadJournalEntries();
+      } else {
+        console.error('Cancel failed:', result.error);
+        alert(`Failed to cancel entry: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Cancel request failed:', error);
+      alert('Failed to cancel entry');
+    }
+  }
+
+  function handleMessage(event: CustomEvent) {
+    const { text } = event.detail;
+    console.log('Message:', text);
+    // TODO: Show message to user (toast notification)
   }
 </script>
 
@@ -228,7 +331,12 @@
     <PrimanotaTable
       entries={journalEntries}
       hideStornos={$bookingStore.hideStornos}
-      on:rowselect={handleRowSelect} />
+      filtersActive={$bookingStore.filterActive}
+      on:rowselect={handleRowSelect}
+      on:fillform={handleFillForm}
+      on:deleteentry={handleDeleteEntry}
+      on:cancelentry={handleCancelEntry}
+      on:message={handleMessage} />
   {/if}
 
   <!-- Kontoansicht Table (Kontoansicht view only) -->
