@@ -91,7 +91,7 @@ export const primanotaColumns: TableColumn[] = [
   { key: 'Datum', label: 'Date', width: PRIMANOTA_COLUMN_WIDTHS.Datum, format: 'date', align: 'center', type: 'text' },
   { key: 'Kto', label: 'Account', width: PRIMANOTA_COLUMN_WIDTHS.Kto, align: 'right', type: 'number' },
   { key: 'Buchungstext', label: 'Booking Text', width: PRIMANOTA_COLUMN_WIDTHS.Buchungstext, align: 'left', type: 'text' },
-  { key: 'HK', label: 'HK', width: PRIMANOTA_COLUMN_WIDTHS.HK, align: 'center', type: 'text' },
+  { key: 'HK', label: 'BC', width: PRIMANOTA_COLUMN_WIDTHS.HK, align: 'center', type: 'text' },
   { key: 'Steuer', label: 'TaxRate', width: PRIMANOTA_COLUMN_WIDTHS.Steuer, format: 'percent', align: 'right', type: 'number' }
 ];
 

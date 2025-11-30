@@ -673,6 +673,56 @@
   function handleRowContextMenuEvent(event: CustomEvent): void {
     showContextMenu(event.detail.event, event.detail.index);
   }
+
+  /**
+   * Handle account field double-click (open account selection dialog)
+   */
+  async function handleAccountFieldDblClick(event: CustomEvent): Promise<void> {
+    const { field, row } = event.detail;
+
+    // Only handle CK (Contra Account) field
+    if (field !== 'CK') return;
+
+    const bookCircle = row?.BookCircle;
+    if (!bookCircle) {
+      toastStore.error('No book circle found');
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/booking/allowed-accounts?bookCircle=${bookCircle}&side=CK`
+      );
+      const result = await response.json();
+
+      if (result.ok) {
+        dialogState.accountSelection = {
+          visible: true,
+          field: 'CK',
+          bookCircle,
+          accounts: result.accounts
+        };
+      } else {
+        toastStore.error(result.error || 'Failed to load accounts');
+      }
+    } catch (err) {
+      toastStore.error('Failed to load allowed accounts');
+    }
+  }
+
+  /**
+   * Handle account selection from dialog
+   */
+  function handleAccountSelect(event: CustomEvent): void {
+    const { account, field } = event.detail;
+    if (field === 'CK' && account) {
+      dispatch('account-selected', {
+        field: 'CK',
+        accountNumber: account.account,
+        designation: account.designation || account.name || ''
+      });
+    }
+  }
 </script>
 
 <div class="primanota-wrapper" bind:this={wrapper}>
@@ -753,6 +803,7 @@
         on:row-click={handleRowClickEvent}
         on:row-dblclick={handleRowDblClickEvent}
         on:row-contextmenu={handleRowContextMenuEvent}
+        on:account-field-dblclick={handleAccountFieldDblClick}
         on:open-pdf
       />
     </table>
@@ -781,6 +832,7 @@
   {viewMode}
   on:confirm={handleCancelDialogConfirm}
   on:confirm={handleReconcileConfirm}
+  on:select={handleAccountSelect}
 />
 
 <style>

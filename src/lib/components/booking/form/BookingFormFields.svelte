@@ -232,6 +232,74 @@
       contraInput?.focus();
     }
   }
+
+  /**
+   * Handle contra account Enter key with validation
+   */
+  async function onContraKeyDown(event: KeyboardEvent): Promise<void> {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+
+      const value = formData.contra?.toString().trim();
+
+      // Empty field → open dialog
+      if (!value || value === '') {
+        await onOpenAccountDialog('CK');
+        return;
+      }
+
+      // Non-numeric input → open dialog
+      if (!/^\d+$/.test(value)) {
+        await onOpenAccountDialog('CK');
+        return;
+      }
+
+      // Validate account is allowed for this book circle
+      const accountNum = Number.parseInt(value, 10);
+      const isValid = await validateContraAccount(accountNum, formData.bookCircle);
+
+      if (!isValid) {
+        // Invalid account → open dialog
+        await onOpenAccountDialog('CK');
+        return;
+      }
+
+      // Valid account → move to next field
+      referenceInput?.focus();
+    }
+  }
+
+  /**
+   * Validate contra account against book circle rules
+   */
+  async function validateContraAccount(
+    account: number,
+    bookCircle: number | null
+  ): Promise<boolean> {
+    if (!bookCircle) return false;
+
+    try {
+      const response = await fetch(
+        `/api/booking/allowed-accounts?bookCircle=${bookCircle}&side=CK`
+      );
+      const data = await response.json();
+
+      if (!data.ok) return false;
+
+      // Check if account exists in allowed accounts
+      return data.accounts.some((acc: any) => acc.account === account);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Open account selection dialog
+   */
+  async function onOpenAccountDialog(field: 'CK' | 'HK'): Promise<void> {
+    // Dispatch event to parent component to open dialog
+    dispatch('open-account-dialog', { field, bookCircle: formData.bookCircle });
+  }
 </script>
 
 <form class="booking-form-fields" on:submit={handleSubmit}>
@@ -289,7 +357,7 @@
         type="text"
         bind:value={formData.contra}
         bind:this={contraInput}
-        on:keydown={handleKeyDown}
+        on:keydown={onContraKeyDown}
         disabled={formLocked}
         maxlength="5"
         autocomplete="off"
