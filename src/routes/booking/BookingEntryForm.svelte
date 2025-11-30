@@ -7,6 +7,7 @@
   import { bookingStore } from '$lib/stores/bookingStore';
   import { formatCurrencyDisplay, parseInputToNumber, unformatCurrency } from '$lib/utils/numberFormat';
   import { formatDateUS, parseUSDateToISO } from '$lib/utils/dateFormat';
+  import AccountSelectionDialog from '$lib/components/booking/dialogs/AccountSelectionDialog.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -27,6 +28,12 @@
   let dueDate = '';
   let disc = '';
   let description = '';
+
+  // Dialog state
+  let dialogVisible = false;
+  let dialogField = ''; // 'CK' or 'HK'
+  let dialogAccounts: any[] = [];
+  let dialogFilter = '';
 
   // Display variables (normal let, NO $:)
   let turnoverDisplay = '';
@@ -261,6 +268,162 @@
     // Update display with formatted value
     dueDateDisplay = formatDateUS(dueDate);
   }
+
+  /**
+   * Handle Contra Account keydown with validation
+   */
+  async function handleContraKeyDown(event: KeyboardEvent): Promise<void> {
+    // Handle Enter, Tab, and Space
+    if (event.key === 'Enter' || event.key === 'Tab' || event.key === ' ') {
+      event.preventDefault();
+
+      // Use event.target.value instead of bound variable (more reliable)
+      const value = (event.target as HTMLInputElement).value?.trim() || '';
+
+      // Empty field → open dialog
+      if (!value || value === '') {
+        await openAccountSelectionDialog('contra');
+        return;
+      }
+
+      // Non-numeric input → open dialog
+      if (!/^\d+$/.test(value)) {
+        await openAccountSelectionDialog('contra', value);
+        return;
+      }
+
+      // Validate account is allowed for this book circle
+      const accountNum = Number.parseInt(value, 10);
+      const isValid = await validateContraAccount(accountNum, selectedBookCircle?.no || null);
+
+      if (!isValid) {
+        // Invalid account → open dialog
+        await openAccountSelectionDialog('contra', value);
+        return;
+      }
+
+      // Valid account → move to next field (Reference)
+      const referenceInput = document.getElementById('input-reference') as HTMLInputElement;
+      if (referenceInput) {
+        referenceInput.focus();
+      }
+    }
+
+    // Handle letter input (non-numeric characters)
+    if (event.key.length === 1 && !/\d/.test(event.key)) {
+      event.preventDefault();
+      await openAccountSelectionDialog('contra', event.key);
+    }
+  }
+
+  /**
+   * Handle Contra Account blur - open dialog if empty
+   */
+  async function handleContraBlur(event: FocusEvent): Promise<void> {
+    const value = (event.target as HTMLInputElement).value?.trim() || '';
+
+    // Only open dialog if field is empty
+    if (!value || value === '') {
+      await openAccountSelectionDialog('contra');
+    }
+  }
+
+  /**
+   * Handle Contra Account double-click - always open dialog
+   */
+  async function handleContraDblClick(): Promise<void> {
+    await openAccountSelectionDialog('contra');
+  }
+
+  /**
+   * Validate contra account against book circle rules
+   */
+  async function validateContraAccount(
+    account: number,
+    bookCircle: number | null
+  ): Promise<boolean> {
+    if (!bookCircle) return false;
+
+    try {
+      const response = await fetch(
+        `/api/booking/allowed-accounts?bookCircle=${bookCircle}&side=CK`
+      );
+      const data = await response.json();
+
+      if (!data.ok) return false;
+
+      // Check if account exists in allowed accounts
+      return data.accounts.some((acc: any) => acc.account === account);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Open account selection dialog
+   */
+  async function openAccountSelectionDialog(field: 'contra' | 'account', initialFilter = ''): Promise<void> {
+    if (!selectedBookCircle || !selectedBookCircle.no) {
+      return;
+    }
+
+    // Convert field: 'contra' → 'CK', 'account' → 'HK'
+    const side = field === 'contra' ? 'CK' : 'HK';
+
+    try {
+      const url = `/api/booking/allowed-accounts?bookCircle=${selectedBookCircle.no}&side=${side}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.ok && Array.isArray(data.accounts)) {
+        dialogAccounts = data.accounts;
+        dialogField = side;
+        dialogFilter = initialFilter;
+        dialogVisible = true;
+      }
+    } catch (error) {
+      console.error('Failed to load accounts for dialog:', error);
+    }
+  }
+
+  /**
+   * Handle dialog close
+   */
+  function handleDialogClose(): void {
+    dialogVisible = false;
+    dialogAccounts = [];
+    dialogField = '';
+    dialogFilter = '';
+  }
+
+  /**
+   * Handle dialog select
+   */
+  function handleDialogSelect(event: CustomEvent): void {
+    const { account: selectedAccount, field } = event.detail;
+
+    if (field === 'CK') {
+      contraAccount = String(selectedAccount.account || '');
+    } else if (field === 'HK') {
+      account = String(selectedAccount.account || '');
+    }
+
+    handleDialogClose();
+
+    // Set focus to next field after selection
+    setTimeout(() => {
+      if (field === 'CK') {
+        const referenceInput = document.getElementById('input-reference') as HTMLInputElement;
+        referenceInput?.focus();
+        referenceInput?.select();
+      }
+    }, 100);
+  }
 </script>
 
 <div class="booking-form-container">
@@ -304,7 +467,17 @@
     <!-- Contra Account -->
     <div class="field-group" style="left: 182px;">
       <label class="field-label" for="input-contra-account">Contra Account</label>
-      <input id="input-contra-account" type="text" bind:value={contraAccount} disabled={!selectedBookCircle} class="field-input" style="width: 100px; text-align: center;" />
+      <input
+        id="input-contra-account"
+        type="text"
+        bind:value={contraAccount}
+        on:keydown={handleContraKeyDown}
+        on:blur={handleContraBlur}
+        on:dblclick={handleContraDblClick}
+        disabled={!selectedBookCircle}
+        autocomplete="off"
+        class="field-input"
+        style="width: 100px; text-align: center;" />
     </div>
 
     <!-- Reference -->
@@ -425,6 +598,19 @@
     </div>
   {/if}
 </div>
+
+<!-- Account Selection Dialog -->
+{#if dialogVisible}
+  <AccountSelectionDialog
+    visible={dialogVisible}
+    field={dialogField}
+    bookCircle={selectedBookCircle?.no}
+    accounts={dialogAccounts}
+    initialFilter={dialogFilter}
+    on:close={handleDialogClose}
+    on:select={handleDialogSelect}
+  />
+{/if}
 
 <style>
   /* ==================================================================
