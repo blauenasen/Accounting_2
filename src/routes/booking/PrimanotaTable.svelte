@@ -78,7 +78,7 @@
     { key: 'Datum', label: 'Date', width: PRIMANOTA_COLUMN_WIDTHS.Datum, align: 'center', type: 'text' },
     { key: 'Kto', label: 'Account', width: PRIMANOTA_COLUMN_WIDTHS.Kto, align: 'right', type: 'number' },
     { key: 'Buchungstext', label: 'Booking Text', width: PRIMANOTA_COLUMN_WIDTHS.Buchungstext, align: 'left', type: 'text' },
-    { key: 'BookCircle', label: 'HK', width: PRIMANOTA_COLUMN_WIDTHS.HK, align: 'center', type: 'number' },
+    { key: 'BookCircle', label: 'BC', width: PRIMANOTA_COLUMN_WIDTHS.HK, align: 'center', type: 'number' },
     { key: 'Steuer', label: 'TaxRate', width: PRIMANOTA_COLUMN_WIDTHS.Steuer, align: 'right', type: 'text' }
   ];
 
