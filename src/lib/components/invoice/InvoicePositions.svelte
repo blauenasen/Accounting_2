@@ -3,7 +3,7 @@
   // Invoice positions component - manages invoice line items
   import { createEventDispatcher } from 'svelte';
   import type { InvoicePosition } from '$lib/types/ui.js';
-  import Decimal from 'decimal.js';
+  import { calculatePositionTotals, formatCurrency } from '$lib/services/invoice/positionCalculator.js';
 
   const dispatch = createEventDispatcher<{
     change: { positions: InvoicePosition[] };
@@ -82,25 +82,6 @@
   }
 
   /**
-   * Calculate position totals (subtotal, GST, total)
-   */
-  function calculatePositionTotals(pos: InvoicePosition) {
-    const quantity = new Decimal(pos.quantity || 0);
-    const unitPrice = new Decimal(pos.unit_price || 0);
-    const gstRate = new Decimal(pos.gst_rate || 0).div(100);
-
-    const subtotal = quantity.times(unitPrice);
-    const gst = subtotal.times(gstRate);
-    const total = subtotal.plus(gst);
-
-    return {
-      subtotal: subtotal.toDecimalPlaces(2).toNumber(),
-      gst: gst.toDecimalPlaces(2).toNumber(),
-      total: total.toDecimalPlaces(2).toNumber()
-    };
-  }
-
-  /**
    * Recalculate single position
    */
   function recalculatePosition(index: number): void {
@@ -143,17 +124,6 @@
       [field]: value
     };
     recalculatePosition(index);
-  }
-
-  /**
-   * Format currency for display
-   */
-  function formatCurrency(value: number): string {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2
-    }).format(value || 0);
   }
 
   // Initialize with one position if empty
