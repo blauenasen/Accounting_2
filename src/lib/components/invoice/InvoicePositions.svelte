@@ -82,27 +82,33 @@
   }
 
   /**
+   * Calculate position totals (subtotal, GST, total)
+   */
+  function calculatePositionTotals(pos: InvoicePosition) {
+    const quantity = new Decimal(pos.quantity || 0);
+    const unitPrice = new Decimal(pos.unit_price || 0);
+    const gstRate = new Decimal(pos.gst_rate || 0).div(100);
+
+    const subtotal = quantity.times(unitPrice);
+    const gst = subtotal.times(gstRate);
+    const total = subtotal.plus(gst);
+
+    return {
+      subtotal: subtotal.toDecimalPlaces(2).toNumber(),
+      gst: gst.toDecimalPlaces(2).toNumber(),
+      total: total.toDecimalPlaces(2).toNumber()
+    };
+  }
+
+  /**
    * Recalculate single position
    */
   function recalculatePosition(index: number): void {
     const pos = positions[index];
 
     try {
-      const quantity = new Decimal(pos.quantity || 0);
-      const unitPrice = new Decimal(pos.unit_price || 0);
-      const gstRate = new Decimal(pos.gst_rate || 0).div(100);
-
-      const subtotal = quantity.times(unitPrice);
-      const gst = subtotal.times(gstRate);
-      const total = subtotal.plus(gst);
-
-      positions[index] = {
-        ...pos,
-        subtotal: subtotal.toDecimalPlaces(2).toNumber(),
-        gst: gst.toDecimalPlaces(2).toNumber(),
-        total: total.toDecimalPlaces(2).toNumber()
-      };
-
+      const totals = calculatePositionTotals(pos);
+      positions[index] = { ...pos, ...totals };
       positions = [...positions]; // Trigger reactivity
       dispatch('change', { positions });
       dispatch('recalculate');
@@ -117,20 +123,8 @@
   function recalculateAll(): void {
     positions = positions.map((pos) => {
       try {
-        const quantity = new Decimal(pos.quantity || 0);
-        const unitPrice = new Decimal(pos.unit_price || 0);
-        const gstRate = new Decimal(pos.gst_rate || 0).div(100);
-
-        const subtotal = quantity.times(unitPrice);
-        const gst = subtotal.times(gstRate);
-        const total = subtotal.plus(gst);
-
-        return {
-          ...pos,
-          subtotal: subtotal.toDecimalPlaces(2).toNumber(),
-          gst: gst.toDecimalPlaces(2).toNumber(),
-          total: total.toDecimalPlaces(2).toNumber()
-        };
+        const totals = calculatePositionTotals(pos);
+        return { ...pos, ...totals };
       } catch {
         return pos;
       }
