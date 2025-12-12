@@ -120,9 +120,21 @@
   function selectRow(entry: JournalEntry) {
     // Don't select storno rows
     if (isRowStornoLocal(entry)) {
+      dispatch('message', { text: 'Cancelled booking cannot be edited' });
       return;
     }
+
+    // Check if row is locked (Gesperrt column would be in entry if it exists)
+    const isLocked = Boolean((entry as any).Gesperrt ?? (entry as any).gesperrt ?? false);
+    if (isLocked) {
+      dispatch('message', { text: 'Record is locked and cannot be edited' });
+      return;
+    }
+
     selectedRowId = entry.IdNr;
+
+    // Dispatch nur die IdNr - Rest wird von +page.svelte per DB-Abfrage geholt
+    dispatch('fillform', { idNr: entry.IdNr });
     dispatch('rowselect', entry);
   }
 

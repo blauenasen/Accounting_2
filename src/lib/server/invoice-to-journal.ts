@@ -3,6 +3,7 @@
 
 import { db } from './index.js';
 import { getAllowedAccounts } from './booking/account-rules.js';
+import { formatJournalEntry } from './db/formatJournal.js';
 import type Database from 'better-sqlite3';
 
 /**
@@ -55,7 +56,7 @@ export interface JournalEntry {
   HNetto: number | null;
   SVSTUSt: number | null;
   HVSTUSt: number | null;
-  SteuerKto: number | null;
+  SteuerKto: number | string | null;
   JASteuer: string | null;
   JAPosSteuer: string | null;
   Sammelkto: number | null;
@@ -383,13 +384,16 @@ export function insertJournalEntry(journalEntry: JournalEntry, options: InsertJo
       WHERE IdNr = @IdNr
     `);
 
+    // Format numeric fields before UPDATE
+    journalEntry = formatJournalEntry(journalEntry);
+
     stmt.run(journalEntry);
 
     const updatedEntry = db.prepare('SELECT LfdNr, BuNr FROM journal WHERE IdNr = ?').get(journalEntry.IdNr) as { LfdNr: number; BuNr: string | null } | undefined;
 
     return {
       ok: true,
-      IdNr: journalEntry.IdNr,
+      IdNr: journalEntry.IdNr!,
       Jahr: journalEntry.Jahr,
       Monat: journalEntry.Monat,
       LfdNr: updatedEntry?.LfdNr || journalEntry.LfdNr || 0,
@@ -433,6 +437,9 @@ export function insertJournalEntry(journalEntry: JournalEntry, options: InsertJo
       @SteuerKto, @JASteuer, @JAPosSteuer, @Sammelkto, @OPVortragGegKto, @SachVortragKto, @id_invoice
     )
   `);
+
+  // Format numeric fields before INSERT
+  journalEntry = formatJournalEntry(journalEntry);
 
   const info = stmt.run(journalEntry);
 

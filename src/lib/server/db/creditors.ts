@@ -21,6 +21,8 @@ export interface Creditor {
   filterNo?: string;
   info: string;
   blocked: number;
+  Sammelkto: number | null;
+  OPVortragKto: number | null;
   original_account?: number; // Used for updates when account number changes
 }
 
@@ -41,7 +43,7 @@ const toInt = (v: unknown): number | null => (v === null || v === undefined || v
 export function getCreditors(db: Database.Database): Creditor[] {
   const stmt = db.prepare(`
     SELECT account, salutation, name, adress1, adress2, adress3, email,
-           name1, OPBereich, OPArt, filterNo, info, blocked
+           name1, OPBereich, OPArt, filterNo, info, blocked, Sammelkto, OPVortragKto
     FROM creditors
     WHERE blocked = 0
     ORDER BY account
@@ -56,7 +58,7 @@ export function getCreditors(db: Database.Database): Creditor[] {
 export function getAllCreditors(db: Database.Database): Creditor[] {
   const stmt = db.prepare(`
     SELECT account, salutation, name, adress1, adress2, adress3, email,
-           name1, OPBereich, OPArt, filterNo, info, blocked
+           name1, OPBereich, OPArt, filterNo, info, blocked, Sammelkto, OPVortragKto
     FROM creditors
     ORDER BY account
   `);

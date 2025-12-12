@@ -214,6 +214,57 @@
   }
 
   /**
+   * Handle open account dialog request
+   */
+  async function handleOpenAccountDialog(event: CustomEvent): Promise<void> {
+    const { field, bookCircle } = event.detail;
+
+    if (!bookCircle) {
+      toastStore.error('Please select a Book Circle first');
+      return;
+    }
+
+    try {
+      // Fetch allowed accounts from backend
+      const response = await fetch(
+        `/api/booking/allowed-accounts?bookCircle=${bookCircle}&side=${field}`
+      );
+      const data = await response.json();
+
+      if (!data.ok) {
+        toastStore.error(`Failed to load accounts: ${data.error}`);
+        return;
+      }
+
+      // Open dialog with accounts
+      dialogState.accountSelection = {
+        visible: true,
+        field,
+        accounts: data.accounts || [],
+        filter: ''
+      };
+    } catch (error) {
+      toastStore.error('Failed to load accounts');
+    }
+  }
+
+  /**
+   * Handle account selection from dialog
+   */
+  function handleAccountSelect(event: CustomEvent): void {
+    const { account, field } = event.detail;
+
+    if (field === 'CK') {
+      setContraAccount(account.account);
+    } else if (field === 'HK') {
+      setAccount(account.account);
+    }
+
+    // Close dialog
+    dialogState.accountSelection.visible = false;
+  }
+
+  /**
    * Lifecycle: Setup event listeners
    */
   onMount(() => {
@@ -249,6 +300,7 @@
     on:submit={handleSubmit}
     on:reset={handleReset}
     on:pdfUpload={handlePdfUpload}
+    on:open-account-dialog={handleOpenAccountDialog}
   />
 
   <BookingFormValidation
@@ -263,6 +315,7 @@
     bind:dialogState
     {selectedBookCircle}
     {currentYear}
+    on:select={handleAccountSelect}
   />
 </div>
 

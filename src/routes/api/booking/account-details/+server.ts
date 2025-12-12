@@ -11,6 +11,8 @@ interface AccountDetails {
   japos: string | null;
   debit_credit: string;
   taxgroup: string | number | null;
+  Sammelkto: number | null;
+  OPVortragKto: number | null;
   source: 'skr04_accounts' | 'debtors' | 'creditors';
 }
 
@@ -56,12 +58,14 @@ export function GET({ url }: RequestEvent): Response {
         japos: row.japos,
         debit_credit: row.debit_credit,
         taxgroup: row.taxgroup,
+        Sammelkto: null,
+        OPVortragKto: null,
         source: 'skr04_accounts'
       });
     }
 
     stmt = db.prepare(`
-      SELECT account, name, category, OPBereich, OPArt
+      SELECT account, name, category, OPBereich, OPArt, Sammelkto, OPVortragKto
       FROM debtors
       WHERE account = ?
     `);
@@ -77,12 +81,14 @@ export function GET({ url }: RequestEvent): Response {
         japos: row.OPArt,
         debit_credit: 'S',
         taxgroup: null,
+        Sammelkto: row.Sammelkto,
+        OPVortragKto: row.OPVortragKto,
         source: 'debtors'
       });
     }
 
     stmt = db.prepare(`
-      SELECT account, name, category, OPBereich, OPArt
+      SELECT account, name, category, OPBereich, OPArt, Sammelkto, OPVortragKto
       FROM creditors
       WHERE account = ?
     `);
@@ -98,6 +104,8 @@ export function GET({ url }: RequestEvent): Response {
         japos: row.OPArt,
         debit_credit: 'H',
         taxgroup: null,
+        Sammelkto: row.Sammelkto,
+        OPVortragKto: row.OPVortragKto,
         source: 'creditors'
       });
     }

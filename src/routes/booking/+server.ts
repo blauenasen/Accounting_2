@@ -4,7 +4,8 @@
 import { json, type RequestEvent } from '@sveltejs/kit';
 import { validateBookingAccounts } from '$lib/server/booking/validation.js';
 import { insertJournalEntry, type JournalEntry, type InsertJournalOptions } from '$lib/server/invoice-to-journal.js';
-import { setInvoiceBooked, copyPdfFromInvoiceToJournal } from '$lib/server/index.js';
+import { setInvoiceBooked, copyPdfFromInvoiceToJournal, getDb } from '$lib/server/index.js';
+import { buildJournalPayload } from '$lib/server/booking/payloadBuilder.js';
 
 export async function GET(): Promise<Response> {
 	return json({ ok: true, data: [] });
@@ -12,25 +13,48 @@ export async function GET(): Promise<Response> {
 
 export async function POST({ request }: RequestEvent): Promise<Response> {
 	try {
-		const payload = (await request.json()) as Partial<JournalEntry> & {
-			ignoreDuplicate?: boolean;
-			IdNr?: number;
+		// Parse structured payload from +page.svelte
+		const { formData, bookCircle, accountDetails, contraAccountDetails, idNr, ignoreDuplicate } =
+			(await request.json()) as {
+				formData: any;
+				bookCircle: string | number;
+				accountDetails: any;
+				contraAccountDetails: any;
+				idNr?: number;
+				ignoreDuplicate?: boolean;
+			};
+
+		// Get DB connection
+		const db = getDb();
+
+		// Build complete journal entry (11 → 38 fields)
+		const context = {
+			bookCircle,
+			accountDetails,
+			contraAccountDetails,
+			idNr
 		};
 
-		validateBookingAccounts(payload);
+		const journalEntry = await buildJournalPayload(formData, context, db);
 
+		// Validate accounts (existing validation)
+		validateBookingAccounts(journalEntry);
+
+		// Insert options
 		const options: InsertJournalOptions = {
-			ignoreDuplicate: payload.ignoreDuplicate === true,
-			isUpdate: payload.IdNr != null && payload.IdNr !== undefined
+			ignoreDuplicate: ignoreDuplicate === true,
+			isUpdate: idNr != null && idNr !== undefined
 		};
 
-		const result = insertJournalEntry(payload as JournalEntry, options);
+		// Insert into database
+		const result = insertJournalEntry(journalEntry, options);
 
-		if (payload.id_invoice && typeof payload.id_invoice === 'number') {
-			setInvoiceBooked(payload.id_invoice, 1);
+		// Handle invoice link (existing logic)
+		if (journalEntry.id_invoice && typeof journalEntry.id_invoice === 'number') {
+			setInvoiceBooked(journalEntry.id_invoice, 1);
 
 			if (result.IdNr) {
-				copyPdfFromInvoiceToJournal(result.IdNr, payload.id_invoice);
+				copyPdfFromInvoiceToJournal(result.IdNr, journalEntry.id_invoice);
 			}
 		}
 

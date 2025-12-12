@@ -191,13 +191,84 @@
   }
 
   /**
-   * Focus management for Enter key navigation
+   * Helper function to focus a field by name
+   */
+  function focusField(fieldName: string): void {
+    const fieldMap: Record<string, HTMLInputElement | HTMLSelectElement | null> = {
+      'turnover': turnoverInput,
+      'contra': contraInput,
+      'reference': referenceInput,
+      'date': document.getElementById('date') as HTMLInputElement,
+      'account': accountInput,
+      'tax': taxInput,
+      'due': dueInput,
+      'disc': document.getElementById('disc') as HTMLInputElement,
+      'desc': descInput
+    };
+
+    const field = fieldMap[fieldName];
+    if (field) {
+      field.focus();
+      if ('select' in field && typeof field.select === 'function') {
+        field.select();
+      }
+    }
+  }
+
+  /**
+   * Field navigation order (for Shift+Plus/Minus)
+   */
+  const fieldOrder = ['input-turnover', 'input-contra-account', 'input-reference', 'date', 'account', 'tax', 'due', 'disc', 'desc'];
+
+  /**
+   * Navigate to previous/next field with Shift+Minus/Plus
+   */
+  function navigateField(direction: 'forward' | 'backward', currentFieldId: string): void {
+    const currentIndex = fieldOrder.indexOf(currentFieldId);
+    if (currentIndex === -1) return;
+
+    let targetIndex = currentIndex;
+    const step = direction === 'forward' ? 1 : -1;
+
+    // Find next non-disabled field
+    for (let i = 0; i < fieldOrder.length; i++) {
+      targetIndex = (targetIndex + step + fieldOrder.length) % fieldOrder.length;
+      const targetField = document.getElementById(fieldOrder[targetIndex]) as HTMLInputElement | HTMLSelectElement;
+
+      if (targetField && !targetField.disabled && !targetField.readOnly) {
+        targetField.focus();
+        if ('select' in targetField && typeof targetField.select === 'function') {
+          targetField.select();
+        }
+        break;
+      }
+    }
+  }
+
+  /**
+   * Focus management for Enter key navigation (fallback for fields without specific handlers)
    */
   function handleKeyDown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    const currentId = target.id;
+
+    // Shift+Minus: Navigate backward
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', currentId);
+      return;
+    }
+
+    // Shift+Plus: Navigate forward
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', currentId);
+      return;
+    }
+
     if (event.key === 'Enter') {
       event.preventDefault();
       const order = ['turnover', 'contra', 'reference', 'date', 'account', 'tax', 'due', 'disc', 'desc'];
-      const currentId = (event.target as HTMLElement).id;
       const currentIndex = order.indexOf(currentId);
       if (currentIndex >= 0) {
         const nextIndex = (currentIndex + 1) % order.length;
@@ -216,6 +287,32 @@
    * Handle turnover Enter/+ keys for SH toggle
    */
   function handleTurnoverKeyDown(event: KeyboardEvent): void {
+    // Shift+Minus: Navigate backward
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', 'input-turnover');
+      return;
+    }
+    // Shift+Plus: Navigate forward (check before normal Plus handling)
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', 'input-turnover');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusField('desc');
+      return;
+    }
+    if (event.key === '*') {
+      event.preventDefault();
+      focusField('date');
+      return;
+    }
+
+    // Enter und Plus
     if (event.key === 'Enter') {
       event.preventDefault();
       const currentValue = String(formData.turnover || '0').replace(/[^\d.,-]/g, '').replace(',', '.');
@@ -237,6 +334,40 @@
    * Handle contra account Enter key with validation
    */
   async function onContraKeyDown(event: KeyboardEvent): Promise<void> {
+    // Shift-Navigation
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', 'input-contra-account');
+      return;
+    }
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', 'input-contra-account');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusField('turnover');
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusField('desc');
+      return;
+    }
+    if (event.key === '*') {
+      event.preventDefault();
+      focusField('date');
+      return;
+    }
+    if (event.key === '+') {
+      event.preventDefault();
+      await handleSubmit(new Event('submit'));
+      return;
+    }
+
     if (event.key === 'Enter') {
       event.preventDefault();
 
@@ -256,41 +387,445 @@
 
       // Validate account is allowed for this book circle
       const accountNum = Number.parseInt(value, 10);
-      const isValid = await validateContraAccount(accountNum, formData.bookCircle);
+      const bookCircle = selectedBookCircle?.no;
+      const validation = await validateAccount(accountNum, bookCircle, 'CK');
 
-      if (!isValid) {
-        // Invalid account → open dialog
+      if (!validation.isValid) {
+        console.log('CK validation failed:', validation.reason);
+        // Invalid account → open dialog with pre-filled value
         await onOpenAccountDialog('CK');
         return;
       }
 
       // Valid account → move to next field
       referenceInput?.focus();
+      referenceInput?.select();
     }
   }
 
   /**
-   * Validate contra account against book circle rules
+   * Handle reference Enter key
    */
-  async function validateContraAccount(
+  function onReferenceKeyDown(event: KeyboardEvent): void {
+    // Shift-Navigation
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', 'input-reference');
+      return;
+    }
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', 'input-reference');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusField('turnover');
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusField('desc');
+      return;
+    }
+    if (event.key === '*') {
+      event.preventDefault();
+      focusField('date');
+      return;
+    }
+    if (event.key === '+') {
+      event.preventDefault();
+      handleSubmit(new Event('submit'));
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      // Move focus to Date field
+      focusField('date');
+    }
+  }
+
+  // Date segment tracking for Enter navigation (mm → dd → yyyy → HK)
+  let dateSegmentIndex = 0; // 0=month, 1=day, 2=year
+
+  /**
+   * Handle date Enter key with segment marking
+   */
+  function onDateKeyDown(event: KeyboardEvent): void {
+    // Shift-Navigation
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      dateSegmentIndex = 0;
+      navigateField('backward', 'date');
+      return;
+    }
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      dateSegmentIndex = 0;
+      navigateField('forward', 'date');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'Home') {
+      event.preventDefault();
+      dateSegmentIndex = 0; // Reset segment
+      focusField('turnover');
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      dateSegmentIndex = 0; // Reset segment
+      focusField('desc');
+      return;
+    }
+    if (event.key === '+') {
+      event.preventDefault();
+      dateSegmentIndex = 0; // Reset segment
+      handleSubmit(new Event('submit'));
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+
+      // Get the date input element
+      const dateInput = document.getElementById('date') as HTMLInputElement;
+      if (!dateInput) return;
+
+      // Date format: YYYY-MM-DD (value) but displayed as localized (DD.MM.YYYY in Germany)
+      // The browser's date input has spinbuttons for day, month, year
+      // We need to select the appropriate segment based on dateSegmentIndex
+
+      // Advance to next segment
+      dateSegmentIndex++;
+
+      if (dateSegmentIndex >= 3) {
+        // After 3 Enters (month, day, year), move to Account field
+        dateSegmentIndex = 0; // Reset for next time
+        focusField('account');
+      } else {
+        // Keep focus on date field for next segment
+        // The browser's native date input will handle segment focus automatically
+        // We just need to keep the field focused
+        dateInput.focus();
+      }
+    }
+  }
+
+  /**
+   * Handle tax Enter key
+   */
+  function onTaxKeyDown(event: KeyboardEvent): void {
+    // Shift-Navigation
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', 'tax');
+      return;
+    }
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', 'tax');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusField('turnover');
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusField('desc');
+      return;
+    }
+    if (event.key === '*') {
+      event.preventDefault();
+      focusField('date');
+      return;
+    }
+    if (event.key === '+') {
+      event.preventDefault();
+      handleSubmit(new Event('submit'));
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      // Move focus to Due Date field
+      focusField('due');
+    }
+  }
+
+  /**
+   * Handle due date Enter key
+   */
+  function onDueDateKeyDown(event: KeyboardEvent): void {
+    // Shift-Navigation
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', 'due');
+      return;
+    }
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', 'due');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusField('turnover');
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusField('desc');
+      return;
+    }
+    if (event.key === '*') {
+      event.preventDefault();
+      focusField('date');
+      return;
+    }
+    if (event.key === '+') {
+      event.preventDefault();
+      handleSubmit(new Event('submit'));
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      // Move focus to Disc field
+      focusField('disc');
+    }
+  }
+
+  /**
+   * Handle disc Enter key
+   */
+  function onDiscKeyDown(event: KeyboardEvent): void {
+    // Shift-Navigation
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', 'disc');
+      return;
+    }
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', 'disc');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusField('turnover');
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusField('desc');
+      return;
+    }
+    if (event.key === '*') {
+      event.preventDefault();
+      focusField('date');
+      return;
+    }
+    if (event.key === '+') {
+      event.preventDefault();
+      handleSubmit(new Event('submit'));
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      // Move focus to Description field
+      focusField('desc');
+    }
+  }
+
+  /**
+   * Handle description Enter key
+   */
+  function onDescKeyDown(event: KeyboardEvent): void {
+    // Shift-Navigation
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', 'desc');
+      return;
+    }
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', 'desc');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusField('turnover');
+      return;
+    }
+    if (event.key === '*') {
+      event.preventDefault();
+      focusField('date');
+      return;
+    }
+    if (event.key === '+') {
+      event.preventDefault();
+      handleSubmit(new Event('submit'));
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      // Cycle back to Turnover (or could submit form)
+      focusField('turnover');
+    }
+  }
+
+  /**
+   * Handle account (HK) Enter key with validation
+   */
+  async function onAccountKeyDown(event: KeyboardEvent): Promise<void> {
+    // Shift-Navigation
+    if (event.shiftKey && event.key === '-') {
+      event.preventDefault();
+      navigateField('backward', 'account');
+      return;
+    }
+    if (event.shiftKey && (event.key === '+' || event.key === '=')) {
+      event.preventDefault();
+      navigateField('forward', 'account');
+      return;
+    }
+
+    // Sondertasten
+    if (event.key === 'Home') {
+      event.preventDefault();
+      focusField('turnover');
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      focusField('desc');
+      return;
+    }
+    if (event.key === '*') {
+      event.preventDefault();
+      focusField('date');
+      return;
+    }
+    if (event.key === '+') {
+      event.preventDefault();
+      await handleSubmit(new Event('submit'));
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+
+      const value = formData.account?.toString().trim();
+
+      // Empty field → open dialog
+      if (!value || value === '') {
+        await onOpenAccountDialog('HK');
+        return;
+      }
+
+      // Non-numeric input → open dialog
+      if (!/^\d+$/.test(value)) {
+        await onOpenAccountDialog('HK');
+        return;
+      }
+
+      // Validate account is allowed for this book circle
+      const accountNum = Number.parseInt(value, 10);
+      const bookCircle = selectedBookCircle?.no;
+      const validation = await validateAccount(accountNum, bookCircle, 'HK');
+
+      if (!validation.isValid) {
+        console.log('HK validation failed:', validation.reason);
+        // Invalid account → open dialog with pre-filled value
+        await onOpenAccountDialog('HK');
+        return;
+      }
+
+      // Valid account → check if Tax field is locked
+      // If tax is locked/disabled, skip to description
+      if (taxLocked || taxInput?.disabled) {
+        descInput?.focus();
+        descInput?.select();
+      } else {
+        taxInput?.focus();
+      }
+    }
+  }
+
+  /**
+   * Validate account (CK or HK) against book circle rules
+   * Checks both: 1) Account exists in allowed list, 2) Account is in range
+   */
+  async function validateAccount(
     account: number,
-    bookCircle: number | null
-  ): Promise<boolean> {
-    if (!bookCircle) return false;
+    bookCircle: number | null | undefined,
+    side: 'CK' | 'HK'
+  ): Promise<{ isValid: boolean; reason?: string }> {
+    // Book Circle must be present
+    if (!bookCircle) {
+      return { isValid: false, reason: 'no_bookcircle' };
+    }
 
     try {
       const response = await fetch(
-        `/api/booking/allowed-accounts?bookCircle=${bookCircle}&side=CK`
+        `/api/booking/allowed-accounts?bookCircle=${bookCircle}&side=${side}`
       );
       const data = await response.json();
 
-      if (!data.ok) return false;
+      if (!data.ok) {
+        return { isValid: false, reason: 'api_error' };
+      }
 
       // Check if account exists in allowed accounts
-      return data.accounts.some((acc: any) => acc.account === account);
-    } catch {
-      return false;
+      const accountExists = data.accounts.some((acc: any) => acc.account === account);
+
+      if (!accountExists) {
+        return { isValid: false, reason: 'not_exists' };
+      }
+
+      // Check range (if provided by API)
+      if (data.meta?.range && data.meta.range.from != null && data.meta.range.to != null) {
+        const inRange = account >= data.meta.range.from && account <= data.meta.range.to;
+        if (!inRange) {
+          return { isValid: false, reason: 'not_in_range' };
+        }
+      }
+
+      // All checks passed
+      return { isValid: true };
+
+    } catch (error) {
+      console.error('Account validation error:', error);
+      return { isValid: false, reason: 'api_error' };
     }
+  }
+
+  /**
+   * Validate contra account (wrapper for backward compatibility)
+   */
+  async function validateContraAccount(
+    account: number,
+    bookCircle: number | null | undefined
+  ): Promise<boolean> {
+    const result = await validateAccount(account, bookCircle, 'CK');
+    return result.isValid;
   }
 
   /**
@@ -298,7 +833,8 @@
    */
   async function onOpenAccountDialog(field: 'CK' | 'HK'): Promise<void> {
     // Dispatch event to parent component to open dialog
-    dispatch('open-account-dialog', { field, bookCircle: formData.bookCircle });
+    const bookCircle = selectedBookCircle?.no || null;
+    dispatch('open-account-dialog', { field, bookCircle });
   }
 </script>
 
@@ -320,9 +856,9 @@
 
     <!-- Turnover -->
     <div class="form-field">
-      <label for="turnover">Turnover</label>
+      <label for="input-turnover">Turnover</label>
       <input
-        id="turnover"
+        id="input-turnover"
         type="text"
         bind:value={formData.turnover}
         bind:this={turnoverInput}
@@ -351,9 +887,9 @@
 
     <!-- Contra Account -->
     <div class="form-field">
-      <label for="contra">Contra Account</label>
+      <label for="input-contra-account">Contra Account</label>
       <input
-        id="contra"
+        id="input-contra-account"
         type="text"
         bind:value={formData.contra}
         bind:this={contraInput}
@@ -364,20 +900,20 @@
         class="text-center"
       />
       <label class="keep-toggle">
-        <input type="checkbox" bind:checked={keepFlags.contra} />
+        <input type="checkbox" bind:checked={keepFlags.contra} disabled />
         <span class="keep-label">Keep</span>
       </label>
     </div>
 
     <!-- Reference -->
     <div class="form-field">
-      <label for="reference">Reference</label>
+      <label for="input-reference">Reference</label>
       <input
-        id="reference"
+        id="input-reference"
         type="text"
         bind:value={formData.reference}
         bind:this={referenceInput}
-        on:keydown={handleKeyDown}
+        on:keydown={onReferenceKeyDown}
         disabled={formLocked}
         autocomplete="off"
       />
@@ -390,13 +926,15 @@
         id="date"
         type="date"
         bind:value={formData.date}
-        on:keydown={handleKeyDown}
+        on:keydown={onDateKeyDown}
+        on:focus={() => dateSegmentIndex = 0}
+        on:blur={() => dateSegmentIndex = 0}
         disabled={formLocked}
         autocomplete="off"
         class="text-center"
       />
       <label class="keep-toggle">
-        <input type="checkbox" bind:checked={keepFlags.date} />
+        <input type="checkbox" bind:checked={keepFlags.date} disabled />
         <span class="keep-label">Keep</span>
       </label>
     </div>
@@ -409,14 +947,14 @@
         type="text"
         bind:value={formData.account}
         bind:this={accountInput}
-        on:keydown={handleKeyDown}
+        on:keydown={onAccountKeyDown}
         disabled={formLocked}
         maxlength="5"
         autocomplete="off"
         class="text-center"
       />
       <label class="keep-toggle">
-        <input type="checkbox" bind:checked={keepFlags.account} />
+        <input type="checkbox" bind:checked={keepFlags.account} disabled />
         <span class="keep-label">Keep</span>
       </label>
     </div>
@@ -428,7 +966,7 @@
         id="tax"
         bind:value={formData.tax}
         bind:this={taxInput}
-        on:keydown={handleKeyDown}
+        on:keydown={onTaxKeyDown}
         disabled={formLocked}
         class="text-center"
       >
@@ -438,7 +976,7 @@
         {/each}
       </select>
       <label class="keep-toggle">
-        <input type="checkbox" bind:checked={keepFlags.tax} />
+        <input type="checkbox" bind:checked={keepFlags.tax} disabled />
         <span class="keep-label">Keep</span>
       </label>
     </div>
@@ -451,7 +989,7 @@
         type="date"
         bind:value={formData.due}
         bind:this={dueInput}
-        on:keydown={handleKeyDown}
+        on:keydown={onDueDateKeyDown}
         disabled={formLocked}
         readonly
         class="readonly-field text-center"
@@ -467,7 +1005,7 @@
         type="text"
         bind:value={formData.disc}
         on:blur={normalizeDisc}
-        on:keydown={handleKeyDown}
+        on:keydown={onDiscKeyDown}
         disabled={formLocked}
         autocomplete="off"
         class="text-right"
@@ -482,13 +1020,13 @@
         type="text"
         bind:value={formData.desc}
         bind:this={descInput}
-        on:keydown={handleKeyDown}
+        on:keydown={onDescKeyDown}
         disabled={formLocked}
         maxlength="41"
         autocomplete="off"
       />
       <label class="keep-toggle">
-        <input type="checkbox" bind:checked={keepFlags.desc} />
+        <input type="checkbox" bind:checked={keepFlags.desc} disabled />
         <span class="keep-label">Keep</span>
       </label>
     </div>

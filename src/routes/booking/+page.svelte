@@ -39,26 +39,49 @@
   // Selected entry for form
   let selectedEntry: any = null;
 
+  // Reference to BookingEntryForm component (for keyboard handlers)
+  let bookingFormRef: BookingEntryForm;
+
   // Load journal entries on mount
   onMount(async () => {
     console.log('onMount called - loading journal entries');
     // Initial load without month parameter - let API determine highest month
     await loadJournalEntries({ useDefaults: true });
 
-    // ESC key handler: Reset Book Circle
+    // ESC key handler: Clear form fields only (BC remains unchanged)
     const keyHandler = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !showBookCircleDialog) {
         event.preventDefault();
-        if (selectedBookCircle !== null) {
-          handleResetBookCircle();
+
+        // Use Case 3: Clear form fields (BC remains unchanged)
+        if (bookingFormRef?.clearForm) {
+          bookingFormRef.clearForm();
         }
       }
     };
     window.addEventListener('keydown', keyHandler);
 
+    // Use Case 4: F5 - Refresh table and clear fields
+    const f5Handler = async (event: KeyboardEvent) => {
+      if (event.key === 'F5') {
+        event.preventDefault();
+        console.log('F5 pressed - refreshing Primanota and clearing form');
+
+        // Refresh table
+        await loadJournalEntries();
+
+        // Clear form
+        if (bookingFormRef?.clearForm) {
+          bookingFormRef.clearForm();
+        }
+      }
+    };
+    window.addEventListener('keydown', f5Handler);
+
     // Cleanup
     return () => {
       window.removeEventListener('keydown', keyHandler);
+      window.removeEventListener('keydown', f5Handler);
     };
   });
 
@@ -193,9 +216,68 @@
     }
   }
 
-  function handleSave(event: CustomEvent) {
-    console.log('Save booking entry:', event.detail);
-    // TODO: Implement save functionality
+  async function handleSave(event: CustomEvent) {
+    // FIXED: event.detail contains fields directly, NOT in formData
+    const formData = event.detail;
+
+    try {
+      // Get BookCircle from store (format: "10 - Description" or "")
+      const bookCircleStr = $bookingStore.selectedBookCircle;
+      const bookCircle = bookCircleStr ? bookCircleStr.split(' - ')[0] : null;
+      console.log('Using bookCircle from store:', bookCircle);
+
+      if (!bookCircle || !bookCircleStr) {
+        const errorMsg = 'Bitte wählen Sie einen Buchungskreis aus';
+        console.error(errorMsg);
+        alert(errorMsg); // TODO: Replace with toast notification
+        return;
+      }
+
+      // Fetch account details (needed for JA fields in transformation)
+      const [accountDetails, contraAccountDetails] = await Promise.all([
+        fetch(`/api/booking/account-details?account=${formData.account}`).then((r) => r.json()),
+        fetch(`/api/booking/account-details?account=${formData.contraAccount}`).then((r) =>
+          r.json()
+        )
+      ]);
+
+      // Send structured payload to API
+      const payload = {
+        formData,
+        bookCircle,
+        accountDetails,
+        contraAccountDetails,
+        idNr: selectedEntry?.IdNr // For updates
+      };
+
+      const response = await fetch('/booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.ok) {
+        // Refresh journal table
+        await loadJournalEntries();
+
+        // Clear form
+        selectedEntry = null;
+
+        // Show success message
+        console.log('Booking saved successfully:', result);
+      } else {
+        console.error('Save failed:', result.error);
+        // TODO: Show error to user
+      }
+    } catch (error) {
+      console.error('API call failed:', error);
+      // TODO: Show error to user
+    }
   }
 
   function handleCancel() {
@@ -228,14 +310,31 @@
   }
 
   // Context menu event handlers
-  function handleFillForm(event: CustomEvent) {
-    const { formData, originalRow, bookCircle } = event.detail;
-    console.log('Fill form with data:', formData, 'from row:', originalRow);
-    selectedEntry = formData;
+  async function handleFillForm(event: CustomEvent) {
+    const { idNr } = event.detail;
 
-    // Auto-select Book Circle from the copied row
-    if (bookCircle) {
-      setBookCircleFromEntry(bookCircle);
+    if (!idNr) {
+      console.error('No IdNr provided for fillform');
+      return;
+    }
+
+    // Fetch full entry from database using IdNr
+    try {
+      const response = await fetch(`/api/booking/entry?idNr=${idNr}`);
+      const data = await response.json();
+
+      if (data.ok && data.entry) {
+        selectedEntry = data.entry;
+
+        // Auto-select Book Circle from entry
+        if (data.entry.BookCircle) {
+          setBookCircleFromEntry(data.entry.BookCircle);
+        }
+      } else {
+        console.error('Failed to load entry:', data.error);
+      }
+    } catch (error) {
+      console.error('Error loading entry:', error);
     }
   }
 
@@ -357,6 +456,7 @@
 
   <!-- Booking Entry Form (shown when entry is selected) -->
   <BookingEntryForm
+    bind:this={bookingFormRef}
     selectedEntry={selectedEntry}
     {selectedBookCircle}
     on:save={handleSave}

@@ -1,8 +1,8 @@
+# Accounting_2 Project - Development Guidelines
+
 # ARBEITSANWEISUNGEN FÜR CLAUDE
 
-**WICHTIG:** Arbeite nach bestem Gewissen und Industriestandards. VERMEIDE TECHNICAL-DEBT und denke dabei immer an Martin Fowler!
-
----
+**WICHTIG:** 
 
 ## GRUNDREGELN
 
@@ -15,413 +15,226 @@
 - Nur mit User-Bestätigung darf diese Regel überschritten werden
 - Bei mehr als 500 Zeilen → Refactoring erforderlich
 - Ampelsystem: >500 = rot, >300 = gelb, <=300 = grün
+- Wenn du neue Codezeilen für eine neue Funktion schreiben musst, dann prüfe zuvor die Codezeilenanzahl des bestehenden Modul. Wenn diese mehr als 300 Codezeilen besitzt, lagere diese neue Funktion aus. 
+- Wenn du Änderungen an bestehenden Codezeilen vornehmen willst, dann prüfe zuvor die Codezeilenanzahl des bestehenden Module. Wenn diese mehr als 500 Codezeilen besitzt, dann führe für diese bestehende, zu ändernde Funktion eine Refactoring aus und übertrage diese in ein neues Modul
 
-### Projektverzeichnis
-- C:\Users\ejuli\Desktop\Projekt\Accounting
+**WICHTIG:** Dieses Projekt arbeitet in zwei Verzeichnissen:
+Arbeite nach bestem Gewissen und Industriestandards. VERMEIDE TECHNICAL-DEBT und denke dabei immer an Martin Fowler!
+  - **Original-Projekt (Referenz):** `C:\Users\ejuli\Desktop\Projekt\Original`
+  - JavaScript-basiert, vollständig funktional
+  - Wird NUR als Referenz zum Nachschlagen verwendet
+  - NIEMALS hier Änderungen vornehmen
+  - Im Chat schreiben wir nur Deutsch
 
-### Framework & Versionen
-- **Svelte:** Version 4.x (NICHT Svelte 5!)
-- **SvelteKit:** Kompatibel mit Svelte 4
-- **Begründung:** Stabilität, ausgereifte Stores, bewährte Patterns
-
-### Arbeitsweise
-- Konzentriere dich auf die aktuelle Planumsetzung. Wenn dabei neue Aufgaben entstehen, notiere diese.
-- Resets zu einem vorherigen Commit benötigen eine Eindeutige Zustimmung vom Nutzer
-
-### Token-Management (KRITISCH!)
-- **Stoppe bei ca. 150.000 Token Contextgröße** (von 200.000 max.)
-- Erstelle Git-Commit des aktuellen Stands
-- Melde: "Session beendet bei 150k Token."
-- **User wechselt dann den Account** und nächster Claude übernimmt
+- **Neu-Projekt (Arbeitsverzeichnis):** `C:\Users\ejuli\Desktop\Projekt\Accounting_2`
+  - TypeScript-basiert, in Entwicklung
+  - Hier werden ALLE Implementierungen durchgeführt
+  - Alle neuen Implementierungen werden in neuen Modulen angelegt
 
 ---
 
-## TECHNISCHE IMPLEMENTIERUNGSHINWEISE
+## MANDATORY: Phase-Based Development Process
 
-### 1. State Management
-**Problem:** Mehrere Features teilen gemeinsame Zustände (Markierung, Auszifferung, Split-Gruppierung)
+**Du MUSST diesen Workflow IMMER einhalten. NIEMALS Phasen überspringen!**
 
-**Lösung:**
-- Svelte 4 Stores für globale Zustände verwenden
-- Separate Stores pro Feature-Bereich:
-  - `selectionStore.ts` - Mehrfachmarkierung in Tabellen
-  - `splitStore.ts` - Split-Buchungen (Aufteilung von Rechnungen)
-  - `matchingStore.ts` - Auszifferung (Open Items)
-- Store-Actions für komplexe Logik (Validierung, Berechnung)
+### PHASE 1: EXPLORATION (Read-Only)
 
-### 2. Validierung - Zentral
+**KEIN CODE SCHREIBEN in dieser Phase!**
 
-**Ansatz:**
-```typescript
-// lib/validation/splitValidation.ts
-import Decimal from 'decimal.js';
+1. **Original-Projekt analysieren** (falls Feature dort existiert):
+   ```
+   Read: C:\Users\ejuli\Desktop\Projekt\Accounting\[relevante-dateien]
+   ```
+   - Wie funktioniert das Feature im Original?
+   - Welche Event-Handler werden verwendet?
+   - Welche Datenquellen werden genutzt?
+   - Welche Edge Cases werden behandelt?
 
-interface Position {
-  amount: number;
-  description: string;
-}
+2. **Neu-Projekt analysieren**:
+   ```
+   Read: C:\Users\ejuli\Desktop\Projekt\Accounting_2\[relevante-dateien]
+   ```
+   - Welche TypeScript-Patterns werden bereits verwendet?
+   - Welche Komponenten existieren bereits?
+   - Welche Datenstrukturen sind vorhanden?
 
-interface ValidationError {
-  field: string;
-  message: string;
-}
+3. **Datenquellen identifizieren**:
+   - Database Schemas lesen (NIEMALS Werte annehmen!)
+   - Config Files prüfen
+   - Bestehende API-Calls analysieren
 
-interface ValidationResult {
-  valid: boolean;
-  errors: ValidationError[];
-}
-
-export function validateSplitInvoice(
-  positions: Position[],
-  total: number,
-  mode: 'gross' | 'net'
-): ValidationResult {
-  const errors: ValidationError[] = [];
-  const sum = positions.reduce((acc, p) => new Decimal(acc).plus(p.amount), new Decimal(0));
-  const diff = new Decimal(sum).minus(total).abs();
-
-  if (diff.greaterThan(0.01)) {
-    errors.push({ field: 'total', message: 'Sum mismatch' });
-  }
-
-  return { valid: errors.length === 0, errors };
-}
-```
-
-**Vorteile:**
-- Wiederverwendbar in UI und API
-- Testbar isoliert
-- Klare Fehler-Rückgaben
-- 500-Zeilen-Regel wird eingehalten
-
-### 3. Dialog-Komponenten - Shared Architecture
-
-**Basis-Komponenten:**
-```
-lib/components/shared/
-├── SplitDialogLayout.svelte       // 3-Bereiche-Layout
-├── DynamicRowsTable.svelte        // Max. 10 Zeilen, auto-neue-Zeile
-├── ValidationFooter.svelte        // Buttons + Info-Anzeige
-└── ToggleSwitch.svelte            // Brutto/Netto, Account/Contra, etc.
-```
-
-### 4. Brutto/Netto-Berechnung - Präzision
-
-**KRITISCH - Verwende decimal.js:**
-```typescript
-// FALSCH
-const brutto = netto * 1.07;
-
-// RICHTIG
-import Decimal from 'decimal.js';
-
-function calculateGross(net: number, taxRate: number = 1.07): number {
-  return new Decimal(net).times(taxRate).toDecimalPlaces(2).toNumber();
-}
-
-const brutto = calculateGross(netto);
-```
-
-### 5. API-Design - Konsistenz
-
-**Standard-Response:**
-```json
-{
-  "ok": true | false,
-  "data": { ... },
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Sum mismatch",
-    "details": { ... }
-  }
-}
-```
-
-**Error-Codes:**
-- `VALIDATION_ERROR` - Allgemeine Eingabefehler
-- `SPLIT_SUM_MISMATCH` - Split-Summe ≠ Gesamt-Rechnung
-- `ACCOUNT_NOT_FOUND` - Konto existiert nicht
-- `NOT_FOUND` - Ressource nicht gefunden
-- `ALREADY_MATCHED` - Bereits ausgeziffert
-- `UNAUTHORIZED` - Keine Berechtigung
-- `INTERNAL_ERROR` - Server-Fehler
-
-### 6. Datenbank-Transaktionen
-
-**Atomic Operations:**
-```typescript
-import { nanoid } from 'nanoid';
-
-interface Position {
-  account: number;
-  amount: number;
-  description: string;
-}
-
-interface SplitData {
-  positions: Position[];
-  total: number;
-}
-
-interface SuccessResult {
-  ok: true;
-  splitId: string;
-}
-
-interface ErrorResult {
-  ok: false;
-  error: Error;
-}
-
-type Result = SuccessResult | ErrorResult;
-
-async function createSplitInvoice(splitData: SplitData): Promise<Result> {
-  const transaction = await db.transaction();
-  try {
-    const splitId = nanoid();
-    for (const position of splitData.positions) {
-      await transaction.execute(`INSERT INTO journal (...) VALUES (...)`, [..., splitId]);
-    }
-    await transaction.commit();
-    return { ok: true, splitId };
-  } catch (error) {
-    await transaction.rollback();
-    return { ok: false, error: error as Error };
-  }
-}
-```
-
-### 7. Performance
-
-**Große Datensätze:**
-- Pagination: Max. 100 Zeilen pro Seite
-- Server-Side Filtering bevorzugen
-- DB-Indizes auf kritische Felder
-- Lazy Loading
-
-### 8. Testing
-
-**Coverage-Ziele (ACCOUNTING_2_PLAN.md):**
-- Booking-Logik: **100%**
-- Server/DB-Layer: **≥80%**
-- Komponenten: **≥80%**
-
-**Test-Stack:**
-- **Vitest:** Unit & Integration Tests
-- **Playwright:** E2E Tests (4 kritische Flows)
-- **In-Memory DB:** Für API-Tests
-
-**Pflicht pro Feature:**
-1. Unit Tests für Validierungen & Berechnungen
-2. Integration Tests für API-Endpoints
-3. E2E Test für kritischen User-Flow
-
-### 9. Error Handling
-
-**User-Friendly:**
-```typescript
-catch (error: unknown) {
-  if (error instanceof Error) {
-    console.error('Split validation failed:', error.message);
-  }
-  showMessage({
-    type: 'error',
-    text: 'Please check all positions have valid amounts'
-  });
-}
-```
-
-### 10. Incremental Development
-
-**4 Phasen pro Feature:**
-1. Static UI (Dummy-Daten)
-2. Client-Side Logic (fiktive Daten)
-3. API Integration
-4. Testing & Refinement
-
-### 11. TypeScript Best Practices
-
-**Type Safety:**
-```typescript
-// Interfaces für Datenstrukturen
-interface JournalEntry {
-  id: string;
-  date: string;
-  account: number;
-  amount: number;
-  splitGroupId?: string;
-}
-
-// Typisierte Funktionen
-function validateSplitInvoice(
-  positions: Position[],
-  total: number,
-  mode: 'gross' | 'net'
-): ValidationResult {
-  // ...
-}
-```
-
-**Regeln:**
-- **Keine `any`** - außer begründet mit Kommentar
-- **Interfaces** für alle Datenstrukturen
-- **Union Types** für enums (`'gross' | 'net'`)
+**STOPP HIER:** Zeige mir deine Erkenntnisse aus Phase 1, BEVOR du zu Phase 2 gehst!
 
 ---
 
-## BEST PRACTICES
+### PHASE 2: PLANNING
 
-### 1. Events für Kommunikation
+**KEIN CODE SCHREIBEN in dieser Phase!**
+
+Erstelle einen detaillierten Plan mit:
+
+1. **Datenquellen-Mapping**:
+   - Welche DB-Tabelle/Spalte liefert welche Daten?
+   - Keine Annahmen! Nur konkrete Schema-Referenzen.
+
+2. **Implementierungs-Schritte**:
+   - Welche Files müssen geändert werden?
+   - Welche TypeScript-Typen sind nötig?
+   - Welche Event-Handler sind erforderlich?
+
+3. **Verifikations-Strategie**:
+   - Wie wird die Implementierung getestet?
+   - Welche Edge Cases müssen abgedeckt werden?
+
+**STOPP HIER:** Zeige mir deinen Plan und warte auf Genehmigung, BEVOR du implementierst!
+
+---
+
+### PHASE 3: IMPLEMENTATION
+
+**NUR nach Genehmigung von Phase 2!**
+
+1. Implementiere exakt nach genehmigtem Plan
+2. KEINE hardcoded Werte
+3. KEINE Annahmen über Daten
+4. ALLE Werte aus identifizierten Quellen
+
+---
+
+## CRITICAL: Strict Behavioral Rules
+
+**Diese Regeln gelten IMMER und ÜBERALL:**
+
+### 1. NIEMALS Werte hardcoden
+```
+❌ FALSCH:
+const taxOptions = ["5%", "19%"];
+
+✅ RICHTIG:
+const taxOptions = await db.query("SELECT DISTINCT TaxGroup FROM skr04_accounts");
+```
+
+### 2. READ BEFORE WRITE
+- Lies IMMER existierende Implementierungen, bevor du Code schreibst
+- Prüfe IMMER Database Schemas vor DB-Zugriffen
+- Analysiere IMMER ähnliche Komponenten für Patterns
+
+### 3. NO ASSUMPTIONS
+- Wenn unklar → Frage stellen oder Code lesen
+- NIEMALS Lücken mit "sinnvollen" Annahmen füllen
+- Bei Unsicherheit: Original-Projekt konsultieren
+
+### 4. NO APOLOGIES
+- Fehler korrigieren ohne "Entschuldigung, ich..."
+- Fokus auf Lösung, nicht auf Rechtfertigung
+
+---
+
+## Phase Enforcement Examples
+
+### ❌ VIOLATION Example:
+```
+User: "Implementiere Doppelklick auf Tabellen-Zeile"
+Claude: [Schreibt sofort Code ohne Original zu lesen]
+→ FEHLER: Phase 1 übersprungen!
+```
+
+### ✅ CORRECT Example:
+```
+User: "Implementiere Doppelklick auf Tabellen-Zeile"
+
+Claude:
+"PHASE 1: EXPLORATION
+
+Ich lese jetzt:
+1. Original-Projekt: C:\Users\ejuli\Desktop\Projekt\Accounting\[table-files]
+2. Neu-Projekt: C:\Users\ejuli\Desktop\Projekt\Accounting_2\[table-files]
+
+[Liest Files...]
+
+Erkenntnisse:
+- Original verwendet 'ondblclick' Event
+- Original navigiert zu edit-mode mit row.id
+- Neu-Projekt hat bereits handleRowClick()
+- Neu-Projekt verwendet React Router für Navigation
+
+STOPP: Soll ich jetzt Phase 2 (Planning) beginnen?"
+```
+
+---
+
+## Tech Stack & Patterns
+
+**TypeScript/React Setup:**
+- React Router für Navigation
+- TypeScript für Type Safety
+- Event Handler: Standard React Patterns (onClick, onChange, etc.)
+
+**Datenbank:**
+- SQLite-basiert
+- Schema-Files prüfen vor DB-Zugriffen
+- NIEMALS SQL-Werte annehmen
+
+**Original-zu-Neu Konvertierung:**
+- JavaScript → TypeScript
+- Vanilla DOM → React Components
+- Direkte DB-Calls → API-Layer (falls vorhanden)
+
+## MCP Chrome DevTools - Spezielle Fälle
+
+### Date-Input-Felder und Native Browser-Controls
+
+**WICHTIG:** Browser-native Input-Felder wie `<input type="date">`, `<input type="time">`, oder `<input type="number">` haben Spinbuttons und UI-Elemente, die NICHT über `mcp__chrome-devtools__click` klickbar sind.
+
+**❌ FALSCH - führt zu Timeout:**
 ```javascript
-window.dispatchEvent(new CustomEvent('booking:...', { detail: {...} }));
+// Timeout nach 5000ms!
+mcp__chrome-devtools__click({ uid: "14_704" }) // Date Spinbutton
 ```
 
-### 2. Svelte 4 Reactivity & Lifecycle
-
-**Reactive Statements:**
+**✅ RICHTIG - verwende evaluate_script:**
 ```javascript
-$: displayRows = sortRows(filteredRows, sortState);
-$: totalAmount = rows.reduce((sum, r) => sum + r.amount, 0);
+mcp__chrome-devtools__evaluate_script({
+  function: `() => {
+    const dateInput = document.getElementById('date');
+    dateInput.value = '2025-02-15';
+    dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+    dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+    return { success: true, value: dateInput.value };
+  }`
+})
 ```
 
-**Lifecycle Hooks:**
-```javascript
-import { onMount, beforeUpdate, afterUpdate } from 'svelte';
+**Grund:** Date-Spinbuttons sind Teil der Browser-UI (Shadow DOM), nicht des zugänglichen DOM. Direkte Wert-Änderung via JavaScript ist der einzige zuverlässige Weg.
 
-onMount(() => {
-  // Nach initialem Rendering - z.B. Event Listeners
-});
+**Gilt auch für:**
+- `<input type="time">` - Time Picker
+- `<input type="number">` - Spinbuttons für Zahlen
+- `<input type="color">` - Color Picker
+- `<input type="file">` - File Upload Dialog (verwende `mcp__chrome-devtools__upload_file` stattdessen)
 
-beforeUpdate(() => {
-  // Vor jedem DOM Update
-});
-```
-
-### 3. Conditional Rendering
-```svelte
-{#if viewMode === 'primanota'}
-  <PrimanotaView />
-{:else if viewMode === 'account'}
-  <AccountView />
-{:else if viewMode === 'op'}
-  <OpView />
-{/if}
-```
-
-### 4. PropTypes Documentation (Svelte 4)
-
-**JavaScript mit JSDoc:**
-```svelte
-<script>
-  /** @type {JournalEntry[]} */
-  export let rows = [];
-
-  /** @type {'primanota'|'account'|'op'} */
-  export let viewMode = 'primanota';
-</script>
-```
-
-**TypeScript (bevorzugt):**
-```svelte
-<script lang="ts">
-  import type { JournalEntry } from '$lib/types';
-
-  export let rows: JournalEntry[] = [];
-  export let viewMode: 'primanota' | 'account' | 'op' = 'primanota';
-</script>
-```
-
-### 5. Svelte 4 Store Patterns
-
-**Custom Stores mit Actions:**
-```typescript
-// lib/stores/selectionStore.ts
-import { writable, type Writable } from 'svelte/store';
-
-interface SelectionStore {
-  subscribe: Writable<string[]>['subscribe'];
-  select: (id: string) => void;
-  deselect: (id: string) => void;
-  clear: () => void;
-}
-
-function createSelectionStore(): SelectionStore {
-  const { subscribe, set, update } = writable<string[]>([]);
-
-  return {
-    subscribe,
-    select: (id: string) => update(ids => [...ids, id]),
-    deselect: (id: string) => update(ids => ids.filter(i => i !== id)),
-    clear: () => set([]),
-  };
-}
-
-export const selection = createSelectionStore();
-```
-
-**In Komponenten nutzen:**
-```svelte
-<script lang="ts">
-  import { selection } from '$lib/stores/selectionStore';
-</script>
-
-<button on:click={() => selection.select(row.id)}>Select</button>
-{#if $selection.includes(row.id)}Selected{/if}
-```
+**Faustregel:** Wenn `click` auf ein Browser-natives Control mit Timeout fehlschlägt, verwende **immer** `evaluate_script` mit direkter DOM-Manipulation.
 
 ---
 
-## RISIKEN & MITIGATION
+## Workflow Checklist
 
-### Scope Creep
-- MVP zuerst, dann Erweiterungen
+**Bei JEDER Aufgabe diese Checklist durchgehen:**
 
-### Performance
-- Pagination ab Tag 1
-- Performance-Budget: Max. 200ms
+- [ ] **Phase 1 abgeschlossen?** Original-Projekt gelesen, Neu-Projekt analysiert, Datenquellen identifiziert
+- [ ] **Phase 1 Pause:** User über Erkenntnisse informiert und auf Genehmigung für Phase 2 gewartet
+- [ ] **Phase 2 abgeschlossen?** Plan erstellt mit konkreten Datenquellen-Referenzen
+- [ ] **Phase 2 Pause:** User Plan gezeigt und auf Genehmigung für Phase 3 gewartet
+- [ ] **Phase 3:** Implementierung startet NUR nach Genehmigung
+- [ ] **Keine hardcoded Werte:** Alle Daten aus identifizierten Quellen
+- [ ] **Keine Annahmen:** Bei Unklarheiten Original konsultiert oder User gefragt
 
-### Rundungsdifferenzen
-- decimal.js überall
-- Toleranz: immer auf den Cent genau!
+**Wenn auch nur EINE Checkbox fehlt: STOPP und hole sie nach!**
 
-### Transaktionen
-- ACID überall
-- Rollback bei Fehler
-
-### User versteht Features nicht
-- Tooltips
-- Klare Messages
-- Undo-Funktion
-
-### Svelte 5 Migration (Zukunft)
-- **Aktuell:** Svelte 4 (stabil)
-- **Risiko:** Svelte 5 Breaking Changes (Runes statt Stores)
-- **Mitigation:**
-  - Saubere Store-Architektur (einfacher migrierbar)
-  - Komponenten < 500 Zeilen (kleine Refactorings)
-  - TypeScript (Type-Safety bei Migration)
-
----
-
-## ERFOLGSMETRIKEN
-
-**Technisch:**
-- ✅ Alle Module < 500 Zeilen
-- ✅ Unit-Test Coverage ≥80%
-- ✅ API < 500ms
-- ✅ UI < 200ms
-
-**Funktional:**
-- ✅ Summen auf 2 Dezimalstellen genau
-- ✅ Brutto = Summe Positionen (±0.01€)
-- ✅ Auszifferung persistent
-
-**UX:**
-- ✅ Nutzbar ohne Anleitung
-- ✅ Verständliche Fehler (EN)
-- ✅ Keine Datenverluste
-
----
-
-**Stand:** 2025-11-15
-**Erstellt von:** Claude (Sonnet 4.5) + User
+## MCP Chrome DevTolls starten
+> Ich habe jetzt folgendes über Windows+R und cmd folgendes eingegeben:
+C:\>"C:\Program Files\Google\Chrome\Application\chrome.exe" ^
+Mehr?   --remote-debugging-port=9222 ^
+Mehr?   --user-data-dir="%TEMP%\chrome-debug" ^
+Mehr?   http://localhost:5173
+und es hat funktioniert

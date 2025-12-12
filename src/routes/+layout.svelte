@@ -15,6 +15,9 @@
   import '$lib/styles/components/dialogs.css';
   import '$lib/styles/components/dropdowns.css';
   import '$lib/styles/components/menu.css';
+
+  // SvelteKit layout data prop (suppress warning)
+  export let data: any = undefined;
 </script>
 
 <svelte:head>
