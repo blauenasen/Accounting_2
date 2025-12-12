@@ -4,6 +4,12 @@
   import { createEventDispatcher } from 'svelte';
   import type { InvoicePosition } from '$lib/types/ui.js';
   import { calculatePositionTotals, formatCurrency } from '$lib/services/invoice/positionCalculator.js';
+  import {
+    MAX_POSITIONS,
+    addPosition as addPositionService,
+    removePosition as removePositionService,
+    movePosition as movePositionService
+  } from '$lib/services/invoice/positionCrud.js';
 
   const dispatch = createEventDispatcher<{
     change: { positions: InvoicePosition[] };
@@ -15,32 +21,16 @@
   export let disabled = false;
   export let defaultGstRate = 7;
 
-  // Constants
-  const MAX_POSITIONS = 20;
-
   /**
    * Add new position
    */
   function addPosition(): void {
-    if (positions.length >= MAX_POSITIONS) {
-      alert(`Maximum ${MAX_POSITIONS} positions allowed`);
+    const result = addPositionService(positions, defaultGstRate);
+    if (!result.success) {
+      alert(result.error);
       return;
     }
-
-    const newPos: InvoicePosition = {
-      id: null,
-      id_invoice: null,
-      pos: positions.length + 1,
-      quantity: 1,
-      description: '',
-      unit_price: 0,
-      gst_rate: defaultGstRate,
-      subtotal: 0,
-      gst: 0,
-      total: 0
-    };
-
-    positions = [...positions, newPos];
+    positions = result.positions;
     dispatch('change', { positions });
   }
 
@@ -48,10 +38,7 @@
    * Remove position
    */
   function removePosition(index: number): void {
-    positions = positions.filter((_, i) => i !== index);
-    // Renumber positions
-    positions = positions.map((p, i) => ({ ...p, pos: i + 1 }));
-    recalculateAll();
+    positions = removePositionService(positions, index);
     dispatch('change', { positions });
   }
 
@@ -59,12 +46,7 @@
    * Move position up
    */
   function moveUp(index: number): void {
-    if (index === 0) return;
-    const temp = positions[index];
-    positions[index] = positions[index - 1];
-    positions[index - 1] = temp;
-    // Renumber
-    positions = positions.map((p, i) => ({ ...p, pos: i + 1 }));
+    positions = movePositionService(positions, index, 'up');
     dispatch('change', { positions });
   }
 
@@ -72,12 +54,7 @@
    * Move position down
    */
   function moveDown(index: number): void {
-    if (index === positions.length - 1) return;
-    const temp = positions[index];
-    positions[index] = positions[index + 1];
-    positions[index + 1] = temp;
-    // Renumber
-    positions = positions.map((p, i) => ({ ...p, pos: i + 1 }));
+    positions = movePositionService(positions, index, 'down');
     dispatch('change', { positions });
   }
 
