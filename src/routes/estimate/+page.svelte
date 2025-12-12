@@ -8,6 +8,9 @@
   import { tip } from '$lib/actions/tip.js';
   import { handleError } from '$lib/utils/errors';
 
+  // SvelteKit props (suppress warnings)
+  export let params: any = undefined;
+
   const FRAME_TOP = 155;
   const LEFT_WIDTH = 300;
   const FRAME_HEIGHT =700;

@@ -1,6 +1,8 @@
 // src/lib/logic/primanota/validation.ts
 // Validation logic for Primanota table
 
+import { hasValue } from '$lib/utils/stringNormalizer.js';
+
 /**
  * Booking row structure for validation
  */
@@ -30,8 +32,7 @@ export interface ValidationResult {
  * @returns True if row is storno
  */
 export function isRowStorno(row: BookingRow): boolean {
-  const gu = String(row?.GU || row?.gu || '').trim();
-  return gu !== '';
+  return hasValue(row?.GU || row?.gu);
 }
 
 /**
@@ -63,8 +64,7 @@ export function canDeleteRow(row: BookingRow): ValidationResult {
     return { canDelete: false, reason: 'Locked entries cannot be deleted' };
   }
 
-  const hasGU = Boolean(row?.GU && String(row.GU).trim() !== '');
-  if (hasGU) {
+  if (hasValue(row?.GU)) {
     return { canDelete: false, reason: 'Storno bookings cannot be deleted' };
   }
 

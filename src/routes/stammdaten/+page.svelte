@@ -4,6 +4,9 @@
   import { onMount } from 'svelte';
   import '$lib/all.css';
 
+  // SvelteKit props (suppress warnings)
+  export let params: any = undefined;
+
   interface Stammdaten {
     firma: string;
     adress1: string;

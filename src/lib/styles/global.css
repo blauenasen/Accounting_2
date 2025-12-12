@@ -12,6 +12,23 @@ body {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
   color: #989493;
+  margin: 0;
+}
+
+/* Content elements left spacing */
+p {
+  margin-left: 10px;
+}
+
+button {
+  margin-left: 10px;
+}
+
+/* Placeholder styles (from Original) */
+input::placeholder {
+  font-size: 9px;
+  color: #888888;
+  font-style: italic;
 }
 
 
@@ -35,7 +52,9 @@ h1 {
   color: black;
   background-color: #c8e78d;
   text-align: left;
-  margin: 13.4px 0px 5px 50px;
+  margin-left: 10px;
+  margin-bottom: 5px;
+  margin-top: 0px;
   padding: 0;
   display: block;
   width: auto;
@@ -48,6 +67,7 @@ h2 {
 
 h3 {
   color: #333333;
+  margin-left: 10px;
 }
 
 /* h4 also with green background (from Original) */
@@ -89,7 +109,20 @@ h4 {
    ACCESSIBILITY
    ================================================================== */
 
-/* Focus styles for keyboard navigation */
+/* Focus styles for keyboard navigation (from Original) */
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus,
+.dropdown-display:focus {
+  outline: none;
+  border-color: #ff0000 !important;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2);
+}
+
 *:focus-visible {
   outline: 2px solid #0066cc;
   outline-offset: 2px;

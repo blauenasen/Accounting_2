@@ -6,6 +6,7 @@
   import type { TableColumn } from './config/tableColumns.js';
   import { viewModeStore } from '$lib/stores/viewModeStore.js';
   import { selectionStore } from '$lib/stores/selectionStore.js';
+  import { hasValue } from '$lib/utils/stringNormalizer.js';
 
   const dispatch = createEventDispatcher<{
     'row-click': { index: number; originalEvent: MouseEvent };
@@ -23,7 +24,7 @@
   export let selectedCircle: number = 0;
 
   // Computed properties
-  $: isStorno = Boolean(row?.GU && row.GU.trim() !== '');
+  $: isStorno = hasValue(row?.GU);
   $: isLocked = Boolean(row?.Gesperrt);
   $: hasPdf = Boolean(row?.pdf_blob);
   $: isMatchingCircle = selectedCircle > 0 && row?.BookCircle === selectedCircle;

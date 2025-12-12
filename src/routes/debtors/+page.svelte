@@ -4,6 +4,9 @@
   import { onMount } from 'svelte';
   import '$lib/styles/pages/debtors.css';
 
+  // SvelteKit props (suppress warnings)
+  export let params: any = undefined;
+
   interface Debtor {
     account: number;
     salutation?: string;

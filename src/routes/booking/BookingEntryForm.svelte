@@ -9,12 +9,6 @@
   import { formatDateUS, parseUSDateToISO } from '$lib/utils/dateFormat';
   import { formatPercent } from '$lib/logic/primanota/formatting';
   import AccountSelectionDialog from '$lib/components/booking/dialogs/AccountSelectionDialog.svelte';
-  import {
-    getDefaultFormState,
-    getDefaultDisplayState,
-    clearFormFields as clearFields,
-    type FormFieldState
-  } from '$lib/utils/formFieldManager';
 
   const dispatch = createEventDispatcher();
 
@@ -23,22 +17,18 @@
   // Props for selected book circle (null when no selection)
   export let selectedBookCircle: { idcode: string; no: number; textcode: string } | null = null;
 
-  // Form fields - Storage variables (normal let, NO $:)
-  // Initialize with defaults from formFieldManager (single source of truth)
-  const initialState = getDefaultFormState();
-  const initialDisplay = getDefaultDisplayState();
-
-  let gu = initialState.gu;
-  let turnover = initialState.turnover;
-  let sh = initialState.sh;
-  let contraAccount = initialState.contraAccount;
-  let reference = initialState.reference;
-  let date = initialState.date;
-  let account = initialState.account;
-  let tax = initialState.tax;  // Fixed: empty string (was '0.00%')
-  let dueDate = initialState.dueDate;
-  let disc = initialState.disc;  // Fixed: empty string (was '')
-  let description = initialState.description;
+  // Form fields - Storage variables with default values
+  let gu = '';
+  let turnover = 0;
+  let sh = 'S';
+  let contraAccount = '';
+  let reference = '';
+  let date = '';
+  let account = '';
+  let tax = '';
+  let dueDate = '';
+  let disc = '';
+  let description = '';
 
   // Dialog state
   let dialogVisible = false;
@@ -63,9 +53,9 @@
   let keepDescription = false;
 
   // Display variables (normal let, NO $:)
-  let turnoverDisplay = initialDisplay.turnoverDisplay;
-  let dateDisplay = initialDisplay.dateDisplay;
-  let dueDateDisplay = initialDisplay.dueDateDisplay;
+  let turnoverDisplay = '';
+  let dateDisplay = '';
+  let dueDateDisplay = '';
 
   // Reactive: Compute whether fields should be disabled (turnover must be > 0)
   $: turnoverValue = parseInputToNumber(turnoverDisplay);
@@ -164,28 +154,43 @@
   }
 
   function clearFormFields() {
-    console.log('clearFormFields() called - using formFieldManager with keep-flags');
+    console.log('clearFormFields() called - applying keep-flag logic');
 
-    // Get cleared values with keep-flag support
-    const cleared = clearFields($bookingStore.keepFlags, $bookingStore.keepValues);
+    // Clear fields respecting keep flags from store
+    const keepFlags = $bookingStore.keepFlags || {};
+    const keepValues = $bookingStore.keepValues || {};
 
-    // Apply all cleared values
-    gu = cleared.gu;
-    turnover = cleared.turnover;
-    sh = cleared.sh;
-    contraAccount = cleared.contraAccount;
-    reference = cleared.reference;
-    date = cleared.date;
-    account = cleared.account;
-    tax = cleared.tax;  // Now consistent: empty string '' (not '?' or '0.00%')
-    dueDate = cleared.dueDate;
-    disc = cleared.disc;
-    description = cleared.description;
+    // GU and Turnover always reset
+    gu = '';
+    turnover = 0;
+    turnoverDisplay = '';
+    sh = 'S';
 
-    // Clear display variables
-    turnoverDisplay = cleared.turnoverDisplay;
-    dateDisplay = cleared.dateDisplay;
-    dueDateDisplay = cleared.dueDateDisplay;
+    // Contra Account - respect keep flag
+    contraAccount = keepFlags.contraAccount ? (keepValues.contraAccount || '') : '';
+
+    // Reference always resets
+    reference = '';
+
+    // Date - respect keep flag
+    date = keepFlags.date ? (keepValues.date || '') : '';
+    dateDisplay = keepFlags.date ? (keepValues.date || '') : '';
+
+    // Account - respect keep flag
+    account = keepFlags.account ? (keepValues.account || '') : '';
+
+    // Tax - respect keep flag
+    tax = keepFlags.tax ? (keepValues.tax || '') : '';
+
+    // Due Date always resets
+    dueDate = '';
+    dueDateDisplay = '';
+
+    // Disc always resets
+    disc = '';
+
+    // Description - respect keep flag
+    description = keepFlags.description ? (keepValues.description || '') : '';
 
     console.log('clearFormFields() completed - description is now:', description);
   }

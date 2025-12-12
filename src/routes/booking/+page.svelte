@@ -5,11 +5,14 @@
   import BookingHeader from './BookingHeader.svelte';
   import BookingControlBar from './BookingControlBar.svelte';
   import BookingBalanceFields from './BookingBalanceFields.svelte';
-  import PrimanotaTable from './PrimanotaTable.svelte';
+  import PrimanotaTableContainer from '$lib/components/primanota/PrimanotaTableContainer.svelte';
   import KontoansichtTable from './KontoansichtTable.svelte';
   import OPAnsichtTable from './OPAnsichtTable.svelte';
   import BookingEntryForm from './BookingEntryForm.svelte';
   import BookCircleSelectionDialog from '$lib/components/booking/dialogs/BookCircleSelectionDialog.svelte';
+
+  // SvelteKit props (suppress warnings)
+  export let params: any = undefined;
 
   // Status text
   $: statusText = `Month ${$bookingStore.selectedMonth === 'All' ? 'All' : $bookingStore.selectedMonth}: ${journalEntries.length} journal entries | Book Circle ${$bookingStore.selectedBookCircle}`;
@@ -427,15 +430,17 @@
 
   <!-- Primanota Table (Primanota view only) -->
   {#if $bookingStore.currentView === 'primanota'}
-    <PrimanotaTable
-      entries={journalEntries}
-      hideStornos={$bookingStore.hideStornos}
+    <PrimanotaTableContainer
+      rows={journalEntries}
       filtersActive={$bookingStore.filterActive}
+      selectedAccount={null}
+      maxHeight="calc(100vh - 300px)"
       on:rowselect={handleRowSelect}
       on:fillform={handleFillForm}
       on:deleteentry={handleDeleteEntry}
-      on:cancelentry={handleCancelEntry}
-      on:message={handleMessage} />
+      on:message={handleMessage}
+      on:reload={loadJournalEntries}
+      on:account-selected={() => {}} />
   {/if}
 
   <!-- Kontoansicht Table (Kontoansicht view only) -->

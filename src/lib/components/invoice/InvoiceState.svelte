@@ -75,7 +75,7 @@
    */
   export async function loadDebtors(): Promise<void> {
     try {
-      const response = await fetch('/invoice?mode=debtors');
+      const response = await fetch('/api/debtors');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       debtors = Array.isArray(data) ? data : [];
@@ -90,7 +90,7 @@
    */
   export async function loadInvoices(): Promise<void> {
     try {
-      const response = await fetch('/invoice');
+      const response = await fetch('/api/invoices');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       invoices = (Array.isArray(data) ? data : []).map((row: any) => ({
@@ -108,7 +108,7 @@
    */
   export async function loadEstimates(): Promise<void> {
     try {
-      const response = await fetch('/estimate');
+      const response = await fetch('/api/estimates');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       estimates = Array.isArray(data) ? data : [];

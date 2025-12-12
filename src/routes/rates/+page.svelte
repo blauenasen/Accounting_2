@@ -26,7 +26,7 @@
 
   async function ladeRates() {
     try {
-      const res = await fetch('/rates');
+      const res = await fetch('/api/rates');
       if (!res.ok) throw new Error('Error loading rates');
       rates = await res.json();
     } catch (err) {
@@ -65,7 +65,7 @@
         rate: parseFloat(rate)
       };
 
-      const res = await fetch('/rates', {
+      const res = await fetch('/api/rates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -90,7 +90,7 @@
     if (!confirm('Really delete this entry?')) return;
     try {
       const id = rates[selectedIndex].id_rate;
-      const res = await fetch(`/rates?id_rate=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/rates?id_rate=${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Deletion error');
       alert('Entry deleted!');
       await ladeRates();
