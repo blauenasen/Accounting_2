@@ -49,7 +49,7 @@
   // Derived state (readonly, computed from above)
   let transformedRows: JournalRow[] = [];
   let filteredRows: JournalRow[] = [];
-  let displayRows: JournalRow[] = [];
+  export let displayRows: JournalRow[] = []; // Exported to allow parent binding
   let valueOptions: Record<string, unknown[]> = {};
 
   /**

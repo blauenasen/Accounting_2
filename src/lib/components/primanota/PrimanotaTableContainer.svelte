@@ -23,6 +23,7 @@
   import { viewModeStore } from '$lib/stores/viewModeStore.js';
   import { selectionStore } from '$lib/stores/selectionStore.js';
   import { toastStore } from '$lib/utils/toast.js';
+  import { hasValue } from '$lib/utils/stringNormalizer.js';
 
   // Import configuration
   import { getColumnsForView, TABLE_CONSTANTS, TABLE_EVENTS } from './config/tableColumns.js';
@@ -121,11 +122,6 @@
 
   // Update columns when view mode changes
   $: columns = getColumnsForView(viewMode);
-
-  // Get display rows from state component
-  $: if (stateRef) {
-    displayRows = stateRef.getDisplayRows();
-  }
 
   // Selected entries for reconcile dialog
   $: selectedEntries = displayRows.filter(
@@ -433,7 +429,7 @@
     if (!row) return;
 
     // Check if row is storno or locked
-    const isStorno = Boolean(row?.GU && row.GU.trim() !== '');
+    const isStorno = hasValue(row?.GU);
     const isLocked = Boolean(row?.Gesperrt ?? false);
 
     if (isStorno) {
@@ -477,7 +473,7 @@
     const row = displayRows?.[rowIndex] ?? null;
     if (!row) return;
 
-    const isStorno = Boolean(row?.GU && row.GU.trim() !== '');
+    const isStorno = hasValue(row?.GU);
     if (isStorno) return;
 
     const SAFETY_MARGIN = 10;
@@ -540,7 +536,7 @@
     }
 
     const isLocked = Boolean(row?.Gesperrt ?? false);
-    const hasGU = Boolean(row?.GU && row.GU.trim() !== '');
+    const hasGU = hasValue(row?.GU);
     const hasPDF = Boolean(row?.pdf_blob);
     const hasInvoice = Boolean(row?.id_invoice);
 
@@ -749,6 +745,7 @@
     bind:filterState
     bind:sortState
     bind:filterVersion
+    bind:displayRows
     {rows}
     {viewMode}
     {selectedAccount}

@@ -73,15 +73,16 @@
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 </script>
 
-<!-- YEAR SELECT: X:18px, Y:115px, W:60px, H:30px -->
-<select
-  class="year-select"
-  value={selectedYear}
-  on:change={handleYearChange}>
-  {#each years as year}
-    <option value={year}>{year}</option>
-  {/each}
-</select>
+<div class="control-bar-container">
+  <!-- YEAR SELECT: X:18px, Y:115px, W:60px, H:30px -->
+  <select
+    class="year-select"
+    value={selectedYear}
+    on:change={handleYearChange}>
+    {#each years as year}
+      <option value={year}>{year}</option>
+    {/each}
+  </select>
 
 <!-- MONTH SELECT: X:86px, Y:115px, W:55px, H:30px -->
 <select
@@ -147,15 +148,25 @@
     on:change={toggleHideStornos} />
   <label for="hide-stornos">Hide Stornos</label>
 </div>
+</div>
 
 <style>
+  /* ==================================================================
+     CONTROL BAR CONTAINER
+     ================================================================== */
+  .control-bar-container {
+    position: relative;
+    height: 120px;
+    margin-left: 10px;
+  }
+
   /* ==================================================================
      YEAR/MONTH SELECTORS - Mess-Tabelle.md: CONTROL BAR
      ================================================================== */
 
   .year-select {
     position: absolute;
-    left: 10px;
+    left: 0px;
     top: 40px;
     width: 60px;
     height: 30px;
@@ -170,7 +181,7 @@
 
   .month-select {
     position: absolute;
-    left: 80px;
+    left: 70px;
     top: 40px;
     width: 55px;
     height: 30px;
@@ -189,7 +200,7 @@
 
   .book-circle-button {
     position: absolute;
-    left: 145px;
+    left: 135px;
     top: 40px;
     width: 150px;
     height: 30px;
@@ -211,7 +222,7 @@
 
   .selected-circle-display {
     position: absolute;
-    left: 300px;
+    left: 290px;
     top: 40px;
     width: 250px;
     height: 30px;
@@ -315,7 +326,7 @@
 
   .hide-stornos {
     position: absolute;
-    left: 10px;
+    left: 0px;
     display: flex;
     align-items: center;
     gap: 7px;
