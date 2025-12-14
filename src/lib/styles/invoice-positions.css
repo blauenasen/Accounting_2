@@ -4,7 +4,7 @@
   gap: 1rem;
   padding: 1.5rem;
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px outset rgb(0, 0, 0);
   border-radius: 8px;
 }
 

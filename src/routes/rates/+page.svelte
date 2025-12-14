@@ -3,6 +3,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import '$lib/styles/pages/rates.css';
+  import { parseRateValue } from '$lib/logic/rates/ratesValidation';
 
   // SvelteKit page props
   export let params: Record<string, string> = {};
@@ -18,11 +19,20 @@
   let rates: Rate[] = [];
   let selectedIndex: number | null = null;
   let saving = false;
+  let canSave = false;
 
   let service = '';
   let description = '';
   let qty = '1.00';
   let rate = '0.00' + ' $';
+
+  // Reactive validation for button state
+  $: {
+    const rateValue = parseRateValue(rate);
+    canSave = service.trim() !== '' &&
+              !isNaN(rateValue) &&
+              rateValue > 0;
+  }
 
   async function ladeRates() {
     try {
@@ -66,7 +76,7 @@
       };
 
       const res = await fetch('/api/rates', {
-        method: 'POST',
+        method: selectedIndex !== null ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -90,7 +100,11 @@
     if (!confirm('Really delete this entry?')) return;
     try {
       const id = rates[selectedIndex].id_rate;
-      const res = await fetch(`/api/rates?id_rate=${id}`, { method: 'DELETE' });
+      const res = await fetch('/api/rates', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_rate: id })
+      });
       if (!res.ok) throw new Error('Deletion error');
       alert('Entry deleted!');
       await ladeRates();
@@ -106,10 +120,10 @@
 </script>
 
 
-<h1 class="rates-header">RATES</h1>
+<h1 class="rates-header">Rates#</h1>
 
 <div class="rates-button-container">
-  <button style="background-color: #28a745; color: #fff; padding: 1px 6px;" on:click={speichern} disabled={saving}>
+  <button style="background-color: #28a745; color: #fff; padding: 1px 6px;" on:click={speichern} disabled={saving || !canSave}>
     {saving ? 'Save...' : (selectedIndex === null ? 'New' : 'Update')}
   </button>
   <button style="background-color: #dc3545; color: #fff; padding: 1px 6px;" on:click={loeschen}>Delete</button>

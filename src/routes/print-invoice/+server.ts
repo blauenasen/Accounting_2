@@ -1,15 +1,48 @@
-// File: src/routes/print-offer/+server.ts
-// Svelte 4 compatible version - 1:1 copy from Original with minimal adaptations
+// File: src/routes/print-invoice/+server.ts
 import puppeteer from 'puppeteer';
-import Offer from '$lib/components/offer.svelte';
-import type { RequestHandler } from './$types';
+import Invoice from '$lib/components/invoice.svelte';
+import type { RequestEvent } from '@sveltejs/kit';
+
+/* ---------- types ---------- */
+
+interface InvoiceData {
+  invoiceNumber: string;
+  invoiceDate: string;
+  sender: {
+    name: string;
+    line1: string;
+    line2: string;
+  };
+  receiver: {
+    name: string;
+    line1: string;
+    line2: string;
+    line3: string;
+    email: string;
+  };
+  positions: Array<{
+    pos: number;
+    service: string;
+    description: string;
+    tax: number;
+    qty: number;
+    rate: number;
+    amount: number;
+  }>;
+  subtotal: number;
+  gst: number;
+  total: number;
+  estimateNumber: string;
+}
 
 /* ---------- helpers ---------- */
 
-function fmtUS(dateLike: any): string {
+function fmtUS(dateLike: string | Date | null | undefined): string {
   if (!dateLike) return '';
-  // accept "MM/DD/YYYY" pass-through
-  if (/^\d{2}\.\d{2}\.\d{4}$/.test(dateLike)) return dateLike;
+  if (/^\d{2}\.\d{2}\.\d{4}$/.test(String(dateLike))) {
+    const [dd, mm, yyyy] = String(dateLike).split('.');
+    return `${mm}/${dd}/${yyyy}`;
+  }
   const d = new Date(dateLike);
   if (Number.isNaN(d.getTime())) return '';
   const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -30,19 +63,19 @@ async function safeJson(fetchFn: typeof fetch, url: string): Promise<any> {
 
 /* ---------- data assembly ---------- */
 
-async function buildOfferData(event: any) {
+async function buildInvoiceData(event: RequestEvent): Promise<InvoiceData> {
   const { url, fetch } = event;
   const q = url.searchParams;
 
-  const id_estimate = Number(q.get('id') ?? q.get('id_estimate') ?? 0) || 0;
+  const id_invoice = Number(q.get('id') ?? q.get('id_invoice') ?? 0) || 0;
   let year = (q.get('year') ?? '').toString();
   let num = (q.get('num') ?? '').toString();
   const dateParam = q.get('date') ?? '';
 
-  // Load estimate list to resolve header
-  const estimates = (await safeJson(fetch, '/api/estimates')) || [];
-  const header = Array.isArray(estimates)
-    ? estimates.find((r: any) => Number(r?.id_estimate) === id_estimate)
+  // Load invoice list to resolve header
+  const invoices = (await safeJson(fetch, '/api/invoices')) || [];
+  const header = Array.isArray(invoices)
+    ? invoices.find((r: any) => Number(r?.id_invoice) === id_invoice)
     : null;
 
   if (header) {
@@ -50,8 +83,8 @@ async function buildOfferData(event: any) {
     num ||= String(header.num ?? '');
   }
 
-  const offerNumber = `E-${year}-${num}`;
-  const offerDate = fmtUS(dateParam || header?.date || new Date());
+  const invoiceNumber = `I-${year}-${num}`;
+  const invoiceDate = fmtUS(dateParam || header?.date || new Date());
 
   // Debtor details
   let receiver = { name: '', adress1: '', adress2: '', adress3: '', email: '' };
@@ -75,7 +108,6 @@ async function buildOfferData(event: any) {
       };
     }
   }
-  // provide alternate keys for component input
   const receiverCompat = {
     name: receiver.name,
     line1: receiver.adress1,
@@ -84,7 +116,7 @@ async function buildOfferData(event: any) {
     email: receiver.email
   };
 
-  // Sender (from stammdaten if available)
+  // Sender
   let sender = { name: 'Apelts Painting', line1: '45 Chaparral St SE', line2: 'Calgary AB T2X 0J2' };
   const stammdaten = await safeJson(fetch, '/api/stammdaten');
   if (stammdaten) {
@@ -97,18 +129,14 @@ async function buildOfferData(event: any) {
     };
   }
 
-  // Calculate global tax percentage from stammdaten
-  const globalPct = Number(stammdaten?.tax ?? 0) || 0;
-
   // Lines
-  const rawLines = (await safeJson(fetch, `/api/estimates/${id_estimate}/lines`)) || [];
+  const rawLines = (await safeJson(fetch, `/api/invoices/${id_invoice}/lines`)) || [];
   const positions = (Array.isArray(rawLines) ? rawLines : [])
     .map((r: any, i: number) => {
       const qty = Number(r?.qty ?? r?.quantity ?? 0);
       const rate = Number(r?.rate ?? 0);
       const amount = Number(r?.amount ?? qty * rate);
-      const tax = globalPct;
-
+      const tax = Number(r?.tax ?? r?.gst ?? r?.gst_pct ?? 0);
       return {
         pos: Number(r?.pos ?? r?.position ?? i + 1),
         service: r?.service ?? r?.text1 ?? '',
@@ -119,29 +147,31 @@ async function buildOfferData(event: any) {
         amount
       };
     })
-    .sort((a: any, b: any) => (a.pos ?? 0) - (b.pos ?? 0));
+    .sort((a, b) => (a.pos ?? 0) - (b.pos ?? 0));
 
   // Totals
-  const subtotal = positions.reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
-  const gst = positions.reduce((s: number, r: any) => {
+  const subtotal = positions.reduce((s, r) => s + Number(r.amount || 0), 0);
+  const globalPct = Number(stammdaten?.gst ?? stammdaten?.gst_pct ?? 0) || 0;
+  const gst = positions.reduce((s, r) => {
     const pct = (r.tax != null ? Number(r.tax) : globalPct) || 0;
     return s + (Number(r.amount || 0) * pct) / 100;
   }, 0);
   const total = subtotal + gst;
 
   return {
-    offerNumber,
-    offerDate,
+    invoiceNumber,
+    invoiceDate,
     sender,
     receiver: receiverCompat,
     positions,
     subtotal,
     gst,
-    total
+    total,
+    estimateNumber: header?.estimateNr || ''
   };
 }
 
-/* ---------- HTML shell for Puppeteer setContent ---------- */
+/* ---------- HTML shell ---------- */
 
 function wrapHtml(origin: string, htmlBody: string): string {
   return `<!doctype html>
@@ -151,7 +181,7 @@ function wrapHtml(origin: string, htmlBody: string): string {
   <base href="${origin}/" />
   <link rel="stylesheet" href="/css/offer.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Offer</title>
+  <title>Invoice</title>
 </head>
 <body>
   ${htmlBody}
@@ -161,18 +191,17 @@ function wrapHtml(origin: string, htmlBody: string): string {
 
 /* ---------- endpoint ---------- */
 
-export const GET: RequestHandler = async (event) => {
+export async function GET(event: RequestEvent): Promise<Response> {
   const { url } = event;
 
-  // Build data
-  const data = await buildOfferData(event);
+  const data = await buildInvoiceData(event);
 
-  // SSR to string (Svelte 4 API)
-  const rendered = Offer.render({
+  const rendered = Invoice.render({
     sender: data.sender,
     receiver: data.receiver,
-    offerNumber: data.offerNumber,
-    offerDate: data.offerDate,
+    offerNumber: data.invoiceNumber,
+    offerDate: data.invoiceDate,
+    estimateNumber: data.estimateNumber,
     positions: data.positions,
     subtotal: data.subtotal,
     gst: data.gst,
@@ -180,16 +209,14 @@ export const GET: RequestHandler = async (event) => {
   });
   const html = rendered.html;
 
-  // Debug preview
   if ((url.searchParams.get('view') ?? '') === 'html') {
     return new Response(wrapHtml(url.origin, html), {
       headers: { 'content-type': 'text/html; charset=utf-8' }
     });
   }
 
-  // Launch headless Chrome
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: 'new',
     args: ['--no-sandbox', '--font-render-hinting=none']
   });
 
@@ -197,7 +224,6 @@ export const GET: RequestHandler = async (event) => {
     const page = await browser.newPage();
     await page.setContent(wrapHtml(url.origin, html), { waitUntil: 'networkidle0' });
 
-    // Minimal isolation (site chrome ausblenden – wir liefern nur Offer-Markup)
     await page.addStyleTag({
       content: `
         @page { size: A4; margin: 0 }
@@ -213,13 +239,13 @@ export const GET: RequestHandler = async (event) => {
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
-      margin: { top: '10mm', bottom: '20mm', left: '0mm', right: '0mm' }, // Top 10mm bleibt (Seite 1 unverändert)
+      margin: { top: '10mm', bottom: '20mm', left: '0mm', right: '0mm' },
       displayHeaderFooter: true,
       headerTemplate: '<div></div>',
       footerTemplate
     });
 
-    const filename = `${data.offerNumber} Date ${data.offerDate || fmtUS(new Date())}.pdf`;
+    const filename = `${data.invoiceNumber} Date ${data.invoiceDate || fmtUS(new Date())}.pdf`;
 
     return new Response(pdf, {
       headers: {
@@ -227,19 +253,7 @@ export const GET: RequestHandler = async (event) => {
         'content-disposition': `attachment; filename="${filename}"`
       }
     });
-  } catch (error) {
-    console.error('Print offer PDF generation error:', error);
-    return new Response(
-      JSON.stringify({
-        error: 'PDF generation failed',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
   } finally {
     await browser.close();
   }
-};
+}

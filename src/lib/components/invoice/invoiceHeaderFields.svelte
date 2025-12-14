@@ -95,7 +95,7 @@
 
 <!-- Debtor -->
 <label class="dropdown-wrap" bind:this={refDropdownWrap}
-  style="position:absolute; top:90px; left:265px;">
+  style="position:absolute; top:90px; left:255px;">
   <span style="display:block; padding-left:4px; margin-bottom:2px;">Debtor</span>
   <CustomDropdown id="account" items={debtors} bind:value={account} labelKey="name1" valueKey="account" placeholder="-- choose --"/>
 </label>

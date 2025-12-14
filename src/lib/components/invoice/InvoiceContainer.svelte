@@ -1,9 +1,10 @@
 <!-- src/lib/components/invoice/InvoiceContainer.svelte -->
 <!-- Invoice container with three-table layout matching Original -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher, onMount, tick } from 'svelte';
   import type { InvoiceData, InvoiceDialogState } from '$lib/types/ui.js';
   import { toastStore } from '$lib/utils/toast.js';
+  import { toISOAny, isoToUS, todayISO } from '$lib/logic/invoice/invoiceFormatting.js';
 
   // Sub-components
   import InvoiceState from './InvoiceState.svelte';
@@ -101,6 +102,7 @@
    */
   $: if (stateRef) {
     const flags = stateRef.getValidationFlags();
+    console.log('Validation flags:', flags, 'invoiceData:', { id_invoice: invoiceData.id_invoice, dirty: invoiceData.dirty, linesCount: invoiceData.linesCount });
     canSave = flags.canSave;
     canUpdate = flags.canUpdate;
     canSend = flags.canSend;
@@ -195,7 +197,14 @@
    * Handle print invoice
    */
   function handlePrint(): void {
-    toastStore.info('Print functionality will be implemented');
+    if (!canPrint) return;
+    const q = new URLSearchParams({
+      id: String(invoiceData.id_invoice ?? ''),
+      year: String(invoiceData.year ?? ''),
+      num: String(invoiceData.num ?? ''),
+      date: String(invoiceData.date ?? '')
+    }).toString();
+    window.open(`/print-invoice?${q}`, '_blank', 'noopener,noreferrer');
   }
 
   /**
@@ -241,14 +250,34 @@
 
   /**
    * Handle invoice selection from left table
+   * Pattern copied from estimate/+page.svelte:256-282
    */
-  function handleInvoiceSelect(event: CustomEvent): void {
-    const { index, id_invoice } = event.detail;
+  async function handleInvoiceSelect(event: CustomEvent): Promise<void> {
+    const { index, id_invoice: idFromEvent } = event.detail;
+    if (typeof index !== 'number') return;
+
     selectedInvoiceIndex = index;
-    // TODO: Load selected invoice data
-    if (id_invoice && stateRef) {
-      toastStore.info(`Invoice ${id_invoice} selected`);
-    }
+    const row = invoices[index];
+    if (!row) return;
+
+    // Set all invoice data from row
+    invoiceData.id_invoice = row.id_invoice ?? idFromEvent ?? null;
+    invoiceData.year = String(row.year ?? '');
+    invoiceData.num = String(row.num ?? '');
+    invoiceData.dateISO = toISOAny(row.date) || todayISO();
+    invoiceData.date = isoToUS(invoiceData.dateISO);
+    invoiceData.account = row.account ?? null;
+    invoiceData.estimateNr1 = (row?.estimateNr ?? '').toString();
+    invoiceData.blocked = !!(row.blocked);
+    invoiceData.booked = !!(row.booked);
+
+    // Reset dirty flags
+    invoiceData.headerDirty = false;
+    invoiceData.linesDirty = false;
+
+    statusMsg = `Selected I-${invoiceData.year}-${invoiceData.num}`;
+
+    await tick();
   }
 
   /**
@@ -343,12 +372,10 @@
     booked={invoiceData.booked}
     {loading}
     {saving}
-    showLetter={false}
     on:save={handleSave}
     on:loadOld={() => {}}
     on:new={handleReset}
     on:refresh={() => window.location.reload()}
-    on:toggleLetter={() => {}}
     on:print={handlePrint}
     on:delete={handleDelete}
     on:send={handleSend}

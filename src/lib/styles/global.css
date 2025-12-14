@@ -51,11 +51,12 @@ h1 {
   font-size: var(--font-size-header);
   color: black;
   background-color: #c8e78d;
+  font-size: 22px;
   text-align: left;
   margin-left: 10px;
-  margin-bottom: 5px;
+  margin-bottom: 0px;
   margin-top: 0px;
-  padding: 0;
+  padding: 0px;
   display: block;
   width: auto;
   line-height: normal; /* Override global line-height:1.2 to match Original */

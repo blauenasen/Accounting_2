@@ -86,7 +86,7 @@
   line-height: 1.2;
   cursor: pointer;
   outline: none;
-  border: 2px outset rgb(0, 0, 0);
+  border: 1px outset rgb(0, 0, 0);
   border-radius: 6px;
   box-sizing: border-box;
 }

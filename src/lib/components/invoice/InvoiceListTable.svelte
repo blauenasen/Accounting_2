@@ -30,11 +30,13 @@
   }
 
   function selectRow(index: number): void {
+    console.log('InvoiceListTable selectRow called - index:', index);
     selectedIndex = index;
     if (clickTimer) clearTimeout(clickTimer);
     clickTimer = setTimeout(async () => {
       const row = items?.[index];
       const id = getId(row);
+      console.log('InvoiceListTable dispatching select - index:', index, 'id_invoice:', id, 'row:', row);
       dispatch('select', { index, id_invoice: Number.isFinite(id) ? id : null });
       if (Number.isFinite(id)) {
         await refreshLockForId(id);
@@ -55,6 +57,7 @@
   });
 
   $: if (items) {
+    console.log('InvoiceListTable items changed - count:', items.length, 'items:', items);
     hydrateFromItems(items);
   }
 
