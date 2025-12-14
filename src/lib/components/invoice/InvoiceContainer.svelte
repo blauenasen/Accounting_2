@@ -296,17 +296,26 @@
     if (!id_estimate || !positionsRef || !invoiceData.id_invoice) return;
 
     try {
-      // TODO: Fetch estimate positions and copy to invoice
-      const res = await fetch(`/estimate-db?id_estimate=${encodeURIComponent(id_estimate)}`, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`/estimate-db -> ${res.status}`);
+      // Fetch estimate positions from RESTful API
+      const res = await fetch(`/api/estimates/${encodeURIComponent(id_estimate)}/lines`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`/api/estimates/${id_estimate}/lines -> ${res.status}`);
 
       const payload = await res.json();
       const lines = (Array.isArray(payload) ? payload : Array.isArray(payload?.rows) ? payload.rows : [])
         .map(r => ({ id_rate: r?.id_rate ?? null, description: r?.description ?? '', qty: Number(r?.qty ?? 0) }))
         .filter(x => x.id_rate != null);
 
-      // TODO: Replace positions
-      toastStore.info(`Copied ${lines.length} line(s) from estimate (not saved)`);
+      // Replace positions in middle table
+      if (positionsRef?.replaceAllLines) {
+        await positionsRef.replaceAllLines(lines, { markDirty: true });
+      }
+
+      // Set estimateNr2 from selected estimate
+      const estimateRow = estimates.find((e: any) => Number(e?.id_estimate) === Number(id_estimate));
+      if (estimateRow) {
+        invoiceData.estimateNr2 = `E-${estimateRow.year}-${estimateRow.num}`;
+      }
+
       invoiceData.linesDirty = true;
     } catch (err) {
       console.error(err);
