@@ -111,7 +111,7 @@ export interface MatchingOptions {
 export interface TaxDetails {
   brutto: number;
   netto: number;
-  vStUSt: number;
+  VStUSt: number;
   nettoGes: number;
   taxRate: number;
   taxCode: string | null;
@@ -174,7 +174,7 @@ export interface BookingRow {
   SH?: string | null;
   Gesperrt?: number | null;
   NettoGes?: number | null;
-  vStUSt?: number | null;
+  VStUSt?: number | null;
   GU?: string | null;
   Balance?: number | null;
   pdf_blob?: Buffer | null;
@@ -315,7 +315,7 @@ export interface NewBookingEntry {
   bu?: number;
   sh?: string;
   nettoGes?: number;
-  vStUSt?: number;
+  VStUSt?: number;
   split_type?: string;
   split_group_id?: string;
   split_total?: number;

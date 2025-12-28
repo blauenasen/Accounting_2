@@ -8,9 +8,9 @@ export async function GET({ url }: RequestEvent): Promise<Response> {
   const bookCircleParam = url.searchParams.get('bookCircle');
 
   const result = fetchPrimanota({
-    year: yearParam,
-    month: monthParam,
-    bookCircle: bookCircleParam
+    year: yearParam ?? undefined,
+    month: monthParam ?? undefined,
+    bookCircle: bookCircleParam ?? undefined
   });
 
   return json(result, {

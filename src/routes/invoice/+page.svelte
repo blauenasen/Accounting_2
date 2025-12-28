@@ -17,7 +17,7 @@
 <style>
   .invoice-page {
     width: 100%;
-    min-height: 100vh;
+    min-height: 80vh;
     padding: 0;
     margin: 0;
   }

@@ -50,13 +50,13 @@
       if (!res.ok) throw new Error(`/api/rates -> ${res.status}`);
       const arr = arrFromPayload(await res.json());
       rates = arr.map((r: any) => ({
-        id_rate: r.id_rate ?? r.id ?? r.ID ?? '',
+        id_rate: Number(r.id_rate ?? r.id ?? r.ID ?? ''),
         service: r.service ?? r.name ?? '',
         description: r.description ?? r.desc ?? '',
         qty: toNum(r.qty ?? 0),
         rate: toNum(r.rate ?? r.price ?? 0),
         blocked: toNum(r.blocked ?? 0)
-      })).sort((a, b) => (a.id_rate ?? 0) - (b.id_rate ?? 0));
+      })).sort((a: any, b: any) => (a.id_rate ?? 0) - (b.id_rate ?? 0));
     } catch (e) {
       handleError(e, 'Leistungen laden');
       rates = [];

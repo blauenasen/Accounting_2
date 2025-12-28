@@ -1,3 +1,4 @@
+/* src/lib/styles/variables.css */
 /* ==================================================================
    ACCOUNTING_2 DESIGN SYSTEM - CSS CUSTOM PROPERTIES
    Extracted from: Accounting (Original Project)
@@ -55,7 +56,7 @@
   --margin-page-header: 50px;          /* Header from left edge */
   --margin-inputs: 52px;               /* Input container from left */
   --margin-button-group: 250px;        /* Button container from left */
-  --margin-table-left: 60px;           /* Table container from left edge */
+  --margin-table-left: 10px;           /* Table container from left edge */
   --margin-top-small: 20px;            /* Between sections */
 
   /* Padding */
@@ -79,9 +80,9 @@
   --table-width-creditors: 1140px;     /* Creditors table width */
 
   /* Table Positioning */
-  --table-top-rates: 225px;            /* Rates table top position */
-  --table-top-debtors: 265px;          /* Debtors table top position (more inputs) */
-  --table-top-creditors: 265px;        /* Creditors table top position */
+  --table-top-rates: 196px;            /* Rates table top position */
+  --table-top-debtors: 196px;          /* Debtors table top position (more inputs) */
+  --table-top-creditors: 196px;        /* Creditors table top position */
 
   /* Input Field Widths - Rates Page */
   --input-width-service: 273px;

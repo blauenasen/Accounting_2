@@ -3,6 +3,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, tick } from 'svelte';
   import type { InvoiceData, InvoiceDialogState } from '$lib/types/ui.js';
+  import type { InvoiceLine, InvoiceRecord, EstimateRecord } from '$lib/types/database.js';
   import { toastStore } from '$lib/utils/toast.js';
   import { toISOAny, isoToUS, todayISO } from '$lib/logic/invoice/invoiceFormatting.js';
 
@@ -17,6 +18,7 @@
   import InvoiceListTable from './InvoiceListTable.svelte';
   import InvoiceEstimatesTable from './InvoiceEstimatesTable.svelte';
   import InvoiceDialogs from './InvoiceDialogs.svelte';
+    import type { Debtor } from '$lib/server/db/debtors';
 
   const dispatch = createEventDispatcher();
 
@@ -51,12 +53,12 @@
     linesDirty: false,
     linesCount: 0
   };
-  let positions: unknown[] = [];
+  let positions: InvoiceLine[] = [];
   let totals = { subtotal: 0, gstSum: 0, gstPct: 0, total: 0 };
   let debtor = { account: null, name: '', salutation: '', adress1: '', adress2: '', adress3: '', email: '' };
-  let debtors: unknown[] = [];
-  let invoices: unknown[] = [];
-  let estimates: unknown[] = [];
+  let debtors: Debtor[] = [];
+  let invoices: InvoiceRecord[] = [];
+  let estimates: EstimateRecord[] = [];
   let loading = false;
   let saving = false;
   let statusMsg = '';
@@ -300,10 +302,10 @@
       const res = await fetch(`/api/estimates/${encodeURIComponent(id_estimate)}/lines`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`/api/estimates/${id_estimate}/lines -> ${res.status}`);
 
-      const payload = await res.json();
-      const lines = (Array.isArray(payload) ? payload : Array.isArray(payload?.rows) ? payload.rows : [])
-        .map(r => ({ id_rate: r?.id_rate ?? null, description: r?.description ?? '', qty: Number(r?.qty ?? 0) }))
-        .filter(x => x.id_rate != null);
+  const payload = await res.json();
+  const lines = ((Array.isArray(payload) ? payload : Array.isArray(payload?.rows) ? payload.rows : []) as any[])
+    .map((r: any) => ({ id_rate: r?.id_rate ?? null, description: r?.description ?? '', qty: Number(r?.qty ?? 0) }))
+    .filter((x: any) => x.id_rate != null);
 
       // Replace positions in middle table
       if (positionsRef?.replaceAllLines) {
@@ -459,7 +461,7 @@
   .page-wrap {
     position: relative;
     width: 100%;
-    min-height: 100vh;
+    min-height: 80vh;
     background: #f5f5f5;
   }
 </style>

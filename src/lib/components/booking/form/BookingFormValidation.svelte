@@ -112,7 +112,7 @@
       UE: ue,
       Brutto: brutto,
       NettoGes: taxCalc.nettoGes,
-      VStUSt: taxCalc.vStUSt,
+      VStUSt: taxCalc.VStUSt,
       Steuer: taxCalc.steuer,
 
       // Tax

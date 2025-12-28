@@ -226,7 +226,7 @@ export interface BookingFormData {
   // Calculated fields
   nettoGes: number | null;
   steuer: number | null;
-  vStUSt: number | null;
+  VStUSt: number | null;
   bu: number | null;
 }
 
@@ -247,7 +247,7 @@ export interface LegacyBookingFormData {
   bu?: number;
   sh?: string;
   nettoGes?: number;
-  vStUSt?: number;
+  VStUSt?: number;
 }
 
 /**

@@ -43,7 +43,7 @@
         id_invoice: null,
         nettoGes: null,
         steuer: null,
-        vStUSt: null,
+        VStUSt: null,
         bu: null
       });
     }

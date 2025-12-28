@@ -1,3 +1,4 @@
+/* src/lib/styles/pages/debtors.css */
 /* ==================================================================
    ACCOUNTING_2 - DEBTORS PAGE SPECIFIC STYLES
    Matches original Accounting debtors.css layout
@@ -15,8 +16,8 @@
    ================================================================== */
 
 .debtors-inputs {
-  margin-left: 52px;
-  margin-top: 20px;
+  margin-left: 10px;
+  margin-top: 29px;
   margin-bottom: 20px;
   display: flex;
   gap: var(--gap-form-fields);
@@ -71,15 +72,15 @@
    ================================================================== */
 
 .debtors-button-container {
-  margin-left: 250px;
-  margin-top: 20px;
+  margin-left: 13px;
+  margin-top: 6px;
   display: flex;
-  gap: 20px;
+  gap: 8px;
 }
 
 .debtors-button-container button {
   display: inline-block;
-  width: 150px;
+  width: 160px;
   height: 30px;
   padding: 6px 18px;
   font-weight: bold;
@@ -107,8 +108,8 @@
 
 .debtors-table-container {
   position: absolute;
-  top: 265px;
-  left: 60px;
+  top: 197px;
+  left: 10px;
   width: 1365px;
   height: 700px;
   overflow-y: auto;

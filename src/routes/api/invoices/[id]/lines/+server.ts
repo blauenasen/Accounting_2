@@ -3,20 +3,12 @@
 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { InvoiceLine } from '$lib/types/database.js';
 import db from '$lib/server/index.js';
 
 const toStr = (v: any): string => (v === null || v === undefined ? '' : String(v));
 const toInt = (v: any): number | null => (v === null || v === undefined || v === '' ? null : Number.parseInt(String(v), 10));
 const toFloat = (v: any): number | null => (v === null || v === undefined || v === '' ? null : Number.parseFloat(String(v)));
-
-interface InvoiceLine {
-  id_line?: number | null;
-  id_invoice: number;
-  id_rate: number | null;
-  description?: string;
-  qty?: number;
-  blocked?: number;
-}
 
 /**
  * GET /api/invoices/[id]/lines

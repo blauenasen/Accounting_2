@@ -8,7 +8,7 @@ import Decimal from 'decimal.js';
  */
 export interface TaxDetails {
   steuer: string;
-  vStUSt: number;
+  VStUSt: number;
   nettoGes: number;
   brutto?: number;
 }
@@ -46,7 +46,7 @@ export function formatTaxDisplay(value: unknown): string {
 export function calculateTaxDetails(brutto: number, bu: number | null, sh: string): TaxDetails {
   const result: TaxDetails = {
     steuer: '0.00%',
-    vStUSt: 0,
+    VStUSt: 0,
     nettoGes: brutto
   };
 
@@ -60,7 +60,7 @@ export function calculateTaxDetails(brutto: number, bu: number | null, sh: strin
   const netto = bruttoDecimal.minus(steuerBetrag);
 
   result.steuer = steuersatz.toFixed(2);
-  result.vStUSt = steuerBetrag.toDecimalPlaces(2).toNumber();
+  result.VStUSt = steuerBetrag.toDecimalPlaces(2).toNumber();
   result.nettoGes = netto.toDecimalPlaces(2).toNumber();
 
   return result;
@@ -77,7 +77,7 @@ export function calculateTaxDetails(brutto: number, bu: number | null, sh: strin
 export function calculateFromNetto(netto: number, bu: number | null, sh: string): TaxDetails {
   const result: TaxDetails = {
     steuer: '0.00%',
-    vStUSt: 0,
+    VStUSt: 0,
     nettoGes: netto,
     brutto: netto
   };
@@ -92,7 +92,7 @@ export function calculateFromNetto(netto: number, bu: number | null, sh: string)
   const bruttoValue = nettoDecimal.plus(steuerBetrag);
 
   result.steuer = steuersatz.toFixed(2);
-  result.vStUSt = steuerBetrag.toDecimalPlaces(2).toNumber();
+  result.VStUSt = steuerBetrag.toDecimalPlaces(2).toNumber();
   result.nettoGes = nettoDecimal.toDecimalPlaces(2).toNumber();
   result.brutto = bruttoValue.toDecimalPlaces(2).toNumber();
 

@@ -390,7 +390,7 @@
     <LeftTbl items={estimates} bind:selectedIndex on:select={onSelectFromList} />
   </div>
 
-  <div style="position:absolute; top:155px; left:323px; width:915px; height:700px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
+  <div style="position:absolute; top:145px; left:320px; width:915px; height:700px; box-sizing:border-box; overflow-y:auto; border:1px solid #ccc; background-color:#fff;">
     <MiddleTbl
       bind:this={midRef}
       selectedIdEstimate={id_estimate}

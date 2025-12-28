@@ -21,7 +21,7 @@ export interface JournalEntry {
   SH?: string | null;
   Gesperrt?: number | null;
   NettoGes?: number | null;
-  vStUSt?: number | null;
+  VStUSt?: number | null;
   GU?: string | null;
   ErfDatum?: string | null;
   VerantwUID?: string | null;
@@ -61,7 +61,7 @@ export interface NewJournalEntry {
   SH?: string | null;
   Gesperrt?: number | null;
   NettoGes?: number | null;
-  vStUSt?: number | null;
+  VStUSt?: number | null;
   GU?: string | null;
   VerantwUID?: string | null;
   id_invoice?: number | null;
@@ -75,19 +75,17 @@ export interface NewJournalEntry {
  */
 export interface InvoiceRecord {
   id_invoice: number;
-  invoiceNr?: string | null;
+  account: number;
+  art: string;
+  year: number;
+  num: number;
+  date: string;
+  booked: number;
+  invoiceNr: string;
   estimateNr?: string | null;
-  art?: string | null;
-  date?: string | null;
-  debtor_id?: number | null;
-  total?: number | null;
-  status?: string | null;
-  booked?: number | null;
-  blocked?: number | null;
+  blocked: number;
   pdf_blob?: Buffer | null;
   pdf_generated_at?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
 }
 
 /**
@@ -108,17 +106,15 @@ export interface NewInvoice {
 /**
  * Estimate record from database
  */
-export interface EstimateRecord {
-  id_estimate: number;
-  estimateNr?: string | null;
-  date?: string | null;
-  debtor_id?: number | null;
-  total?: number | null;
-  status?: string | null;
-  blocked?: number | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
+  export interface EstimateRecord {
+    id_estimate: number;      // PRIMARY KEY
+    year: number;             // NOT NULL
+    num: number;              // NOT NULL
+    date: string;             // NOT NULL
+    account: number;          // NOT NULL (war: debtor_id)
+    blocked: number;          // NOT NULL, DEFAULT 0
+    booked: number;           // NOT NULL, DEFAULT 0
+  }
 
 /**
  * Subset of estimate fields for creating new estimates
@@ -136,14 +132,16 @@ export interface NewEstimate {
  * SKR04 account from database
  */
 export interface AccountRecord {
-  accountNr: number;
-  name: string;
-  type?: string | null;
-  debit_credit?: string | null;
-  balance?: number | null;
-  ja_bereich?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  account: number;          // PRIMARY KEY (war: accountNr)
+  designation: string;      // NOT NULL
+  german: string;           // NOT NULL
+  name: string;             // NOT NULL
+  JABereich: string;        // NOT NULL (war: ja_bereich)
+  JAPos: string;            // NOT NULL
+  available: number;        // NOT NULL
+  filterNo: number;         // NOT NULL
+  TaxAcc: number;           // NOT NULL
+  blocked: number;          // NOT NULL
 }
 
 /**
@@ -160,18 +158,22 @@ export interface Account {
  * Debtor record from database
  */
 export interface DebtorRecord {
-  debtor_id: number;
-  name: string;
-  street?: string | null;
-  postal_code?: string | null;
-  city?: string | null;
-  country?: string | null;
+  account: number;          // PRIMARY KEY (war: debtor_id)
+  salutation?: string | null;
+  name: string;             // NOT NULL
+  adress1?: string | null;  // war: street
+  adress2?: string | null;  // war: postal_code
+  adress3?: string | null;  // war: city
   email?: string | null;
-  phone?: string | null;
-  vat_id?: string | null;
-  account_nr?: number | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  name1?: string | null;
+  OPBereich?: string | null;
+  OPArt?: string | null;
+  filterNo?: number | null;
+  category?: string | null;
+  info?: string | null;
+  blocked?: number | null;
+  Sammelkto?: number | null;
+  OPVortragKto?: number | null;
 }
 
 /**
@@ -193,18 +195,22 @@ export interface NewDebtor {
  * Creditor record from database
  */
 export interface CreditorRecord {
-  creditor_id: number;
-  name: string;
-  street?: string | null;
-  postal_code?: string | null;
-  city?: string | null;
-  country?: string | null;
+  account: number;          // PRIMARY KEY (war: creditor_id)
+  salutation?: string | null;
+  name: string;             // NOT NULL
+  adress1?: string | null;  // war: street
+  adress2?: string | null;  // war: postal_code
+  adress3?: string | null;  // war: city
   email?: string | null;
-  phone?: string | null;
-  vat_id?: string | null;
-  account_nr?: number | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  name1?: string | null;
+  OPBereich?: string | null;
+  OPArt?: string | null;
+  filterNo?: number | null;
+  category?: string | null;
+  info?: string | null;
+  blocked?: number | null;
+  Sammelkto?: number | null;
+  OPVortragKto?: number | null;
 }
 
 /**
@@ -242,49 +248,39 @@ export interface EmailAccountRecord {
 }
 
 /**
- * Tax rate record
- */
-export interface TaxRateRecord {
-  id: number;
-  name: string;
-  rate: number;
-  code?: string | null;
-  valid_from?: string | null;
-  valid_to?: string | null;
-  created_at?: string | null;
+ * TaxRecord 
+ * */
+export interface TaxRecord {
+  TaxNr?: number | null;    // PRIMARY KEY
+  from?: string | null;
+  to?: string | null;
 }
 
 /**
- * Company code configuration
+ * BookCircleRecord
  */
-export interface CompanyCodeRecord {
-  code: string;
-  name: string;
-  vat_id?: string | null;
-  tax_id?: string | null;
-  street?: string | null;
-  postal_code?: string | null;
-  city?: string | null;
-  country?: string | null;
-  phone?: string | null;
+export interface BookCircleRecord {
+  idcode: number;           // PRIMARY KEY (composite)
+  no: number;               // NOT NULL
+  textcode: string;         // NOT NULL
+  available: number;        // NOT NULL
+  account: number;          // PRIMARY KEY (composite)
+}
+
+/**
+ * CompanyMasterDataRecord
+ */
+export interface CompanyMasterDataRecord {
+  firma: string;            // PRIMARY KEY
+  adress1?: string | null;
+  adress2?: string | null;
   email?: string | null;
-  bank_name?: string | null;
-  iban?: string | null;
-  bic?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
-
-/**
- * Stammdaten (master data) record
- */
-export interface StammdatenRecord {
-  key: string;
-  value: string;
-  category?: string | null;
-  description?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  bcc?: string | null;
+  tax: number;              // NOT NULL
+  registration?: string | null;
+  owner?: string | null;
+  paydate?: number | null;
+  language: string;         // NOT NULL, DEFAULT 'EN'
 }
 
 /**
@@ -336,4 +332,16 @@ export interface SortParams {
 export interface TransactionContext {
   inTransaction: boolean;
   transactionId?: string;
+}
+
+/**
+ * Invoice line item from invoice_db table
+ */
+export interface InvoiceLine {
+  id_line?: number | null;
+  id_invoice: number;
+  id_rate: number | null;
+  description?: string;
+  qty?: number;
+  blocked?: number;
 }

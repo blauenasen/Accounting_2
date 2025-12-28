@@ -121,7 +121,7 @@ export interface JournalEntryDto {
   sh?: string | null;
   gesperrt?: boolean;
   nettoGes?: number | null;
-  vStUSt?: number | null;
+  VStUSt?: number | null;
   gu?: string | null;
   balance?: number | null;
   hasPdf?: boolean;
@@ -157,7 +157,7 @@ export interface CreateBookingRequest {
   bu?: number;
   sh?: string;
   nettoGes?: number;
-  vStUSt?: number;
+  VStUSt?: number;
 }
 
 /**

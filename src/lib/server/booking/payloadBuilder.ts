@@ -11,24 +11,24 @@ function calculateTaxDetails(brutto: number, bu: number, sh: string) {
   const bruttoAbs = Math.abs(brutto);
   let nettoGes = 0;
   let steuer = 0;
-  let vStUSt = 0;
+  let VStUSt = 0;
 
   if (bu > 0) {
     // Tax applicable
     nettoGes = bruttoAbs / (1 + bu / 100);
     steuer = bruttoAbs - nettoGes;
-    vStUSt = sh === 'S' ? steuer : -steuer;
+    VStUSt = sh === 'S' ? steuer : -steuer;
   } else {
     // No tax
     nettoGes = bruttoAbs;
     steuer = 0;
-    vStUSt = 0;
+    VStUSt = 0;
   }
 
   return {
     nettoGes: Number(nettoGes.toFixed(2)),
     steuer: Number(steuer.toFixed(2)),
-    vStUSt: Number(vStUSt.toFixed(2))
+    VStUSt: Number(VStUSt.toFixed(2))
   };
 }
 
@@ -136,15 +136,15 @@ export async function buildJournalPayload(
     Brutto: brutto,
     NettoGes: taxCalc.nettoGes,
     Steuer: taxCalc.steuer,
-    VStUSt: taxCalc.vStUSt,
+    VStUSt: taxCalc.VStUSt,
 
     // S/H split amounts
     SBrutto: formData.sh === 'S' ? brutto : null,
     HBrutto: formData.sh === 'H' ? brutto : null,
     SNetto: formData.sh === 'S' ? taxCalc.nettoGes : null,
     HNetto: formData.sh === 'H' ? taxCalc.nettoGes : null,
-    SVSTUSt: formData.sh === 'S' && bu > 0 ? taxCalc.vStUSt : null,
-    HVSTUSt: formData.sh === 'H' && bu > 0 ? taxCalc.vStUSt : null,
+    SVSTUSt: formData.sh === 'S' && bu > 0 ? taxCalc.VStUSt : null,
+    HVSTUSt: formData.sh === 'H' && bu > 0 ? taxCalc.VStUSt : null,
 
     // Debit/Credit indicators
     SH: formData.sh || 'S',
