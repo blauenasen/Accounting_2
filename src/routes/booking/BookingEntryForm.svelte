@@ -16,6 +16,8 @@
   export let selectedEntry: any = null;
   // Props for selected book circle (null when no selection)
   export let selectedBookCircle: { idcode: string; no: number; textcode: string } | null = null;
+  // Flag to prevent clearing fields when loading entry programmatically
+  export let isLoadingEntry: boolean = false;
 
   // Form fields - Storage variables with default values
   let gu = '';
@@ -138,7 +140,8 @@
     // Check if Book Circle actually changed
     const bcChanged = previousBookCircle?.no !== bc?.no;
 
-    if (bcChanged && previousBookCircle !== null) {
+    // Clear fields only if BC changed AND we're NOT loading an entry
+    if (bcChanged && previousBookCircle !== null && !isLoadingEntry) {
       // Clear all fields when BC changes (but not on initial load)
       console.log('BC changed from', previousBookCircle?.no, 'to', bc?.no, '- clearing fields');
       clearFormFields();
@@ -220,19 +223,14 @@
       if (data.ok && Array.isArray(data.accounts)) {
         allowedAccountsForHK = data.accounts;
 
-        // If only one account allowed, set it and make field readonly
+        // If only one account allowed, set it (but keep field editable)
         // ONLY if account field is currently empty (was just cleared)
         if (data.accounts.length === 1 && !selectedEntry && account === '') {
           console.log('Setting HK to single allowed account:', data.accounts[0].account);
           account = String(data.accounts[0].account);
-          isAccountReadonly = true;
-        } else if (data.accounts.length === 1) {
-          console.log('Single account but HK already has value, making readonly');
-          isAccountReadonly = true;
-        } else {
-          console.log('Multiple accounts allowed, HK is editable');
-          isAccountReadonly = false;
         }
+        // Always keep account field editable
+        isAccountReadonly = false;
       }
     } catch (error) {
       console.error('Failed to load allowed accounts for HK:', error);
@@ -1224,11 +1222,21 @@
       <label class="field-label" for="input-date">Date</label>
       <input
         id="input-date"
-        type="date"
-        bind:value={date}
+        type="text"
+        bind:value={dateDisplay}
+        placeholder="MM/DD/YYYY"
+        inputmode="numeric"
+        pattern="\d{2}/\d{2}/\d{4}"
         on:keydown={handleDateKeyDown}
         on:focus={handleDateFocus}
-        on:blur={handleDateBlurReset}
+        on:blur={(e) => {
+          handleDateBlurReset();
+          const iso = parseUSDateToISO(dateDisplay);
+          if (iso) {
+            date = iso;
+            dateDisplay = formatDateUS(iso);
+          }
+        }}
         disabled={isFieldsDisabled}
         autocomplete="off"
         class="field-input"
@@ -1251,7 +1259,7 @@
         bind:value={account}
         on:keydown={handleAccountKeyDown}
         on:dblclick={handleAccountDblClick}
-        disabled={isFieldsDisabled}
+        disabled={!selectedBookCircle}
         readonly={isAccountReadonly}
         autocomplete="off"
         class="field-input"
@@ -1309,9 +1317,19 @@
       <label class="field-label" for="input-due-date">Due Date</label>
       <input
         id="input-due-date"
-        type="date"
-        bind:value={dueDate}
+        type="text"
+        bind:value={dueDateDisplay}
+        placeholder="MM/DD/YYYY"
+        inputmode="numeric"
+        pattern="\d{2}/\d{2}/\d{4}"
         on:keydown={handleDueDateKeyDown}
+        on:blur={(e) => {
+          const iso = parseUSDateToISO(dueDateDisplay);
+          if (iso) {
+            dueDate = iso;
+            dueDateDisplay = formatDateUS(iso);
+          }
+        }}
         disabled={isFieldsDisabled}
         autocomplete="off"
         class="field-input"
@@ -1410,7 +1428,7 @@
   .booking-form-container {
     position: absolute;
     left: 0px;
-    top: 940px; /* Below table (253px + 600px max-height + margin) */
+    top: 1060px; /* Below table (253px + 600px max-height + margin) */
     width: 1650px;
     height: 80px;
   }
@@ -1573,7 +1591,7 @@
   .account-info-container {
     position: absolute;
     left: 10px;
-    top: 1025px; /* Below form (880px + 80px + margin) */
+    top: 1145px; /* Below form (880px + 80px + margin) */
     width: 900px;
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;

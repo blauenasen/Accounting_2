@@ -8,7 +8,7 @@
     DebtorInfo
   } from '$lib/types/ui.js';
   import { toastStore } from '$lib/utils/toast.js';
-  import { todayISO } from '$lib/logic/invoice/invoiceFormatting.js';
+  import { todayISO, isoToUS } from '$lib/logic/invoice/invoiceFormatting.js';
   import {
     calculateInvoiceTotals,
     recalculatePositions
@@ -166,7 +166,7 @@
       id_invoice: null,
       year: new Date().getFullYear().toString(),
       num: '',
-      date: todayISO(),
+      date: isoToUS(todayISO()),
       dateISO: todayISO(),
       account: null,
       estimateNr1: '',

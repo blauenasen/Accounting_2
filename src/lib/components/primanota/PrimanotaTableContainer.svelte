@@ -353,7 +353,7 @@
    * Handle keyboard shortcuts
    */
   function handleKeydown(event: KeyboardEvent): void {
-    if ($viewModeStore.mode === 'account') {
+    if ($viewModeStore.mode === 'account' || $viewModeStore.mode === 'primanota') {
       if (event.ctrlKey && event.key === 'a') {
         event.preventDefault();
         selectionStore.selectAll(displayRows);
@@ -383,8 +383,8 @@
     const row = displayRows[rowIndex];
     if (!row) return;
 
-    // Multi-selection for Account View and OP View
-    if ((viewMode === 'account' || viewMode === 'op') && event) {
+    // Multi-selection for Account View, OP View and Primanota View
+    if ((viewMode === 'account' || viewMode === 'op' || viewMode === 'primanota') && event) {
       const rowId = row?.IdNr || null;
       if (rowId) {
         if (event.ctrlKey) {

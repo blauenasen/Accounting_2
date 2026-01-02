@@ -11,7 +11,8 @@ export interface BookingState {
   selectedYear: number;
   selectedMonth: number | 'All';
   selectedBookCircle: string;
-  selectedAccount: string;
+  selectedAccountKontoansicht: string;
+  selectedAccountOp: string;
   hideStornos: boolean;
   filterActive: boolean;
   opFilter: 'open' | 'balanced' | 'all';
@@ -39,7 +40,8 @@ function createBookingStore() {
     selectedYear: new Date().getFullYear(),
     selectedMonth: 'All',
     selectedBookCircle: '',
-    selectedAccount: '',
+    selectedAccountKontoansicht: '',
+    selectedAccountOp: '',
     hideStornos: false,
     filterActive: false,
     opFilter: 'open',
@@ -72,8 +74,12 @@ function createBookingStore() {
       update(state => ({ ...state, selectedBookCircle: circle }));
     },
 
-    setAccount: (account: string) => {
-      update(state => ({ ...state, selectedAccount: account }));
+    setAccountKontoansicht: (account: string) => {
+      update(state => ({ ...state, selectedAccountKontoansicht: account }));
+    },
+
+    setAccountOp: (account: string) => {
+      update(state => ({ ...state, selectedAccountOp: account }));
     },
 
     toggleHideStornos: () => {
@@ -115,7 +121,8 @@ function createBookingStore() {
         selectedYear: new Date().getFullYear(),
         selectedMonth: 'All',
         selectedBookCircle: '',
-        selectedAccount: '',
+        selectedAccountKontoansicht: '',
+        selectedAccountOp: '',
         hideStornos: false,
         filterActive: false,
         opFilter: 'open',

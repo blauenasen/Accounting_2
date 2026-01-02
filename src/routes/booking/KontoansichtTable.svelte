@@ -3,6 +3,8 @@
 <!-- Measurements from Mess-Tabelle.md: KONTOANSICHT -->
 
 <script lang="ts">
+  import { formatDateUS } from '$lib/utils/dateFormat';
+
   // Define JournalEntry type for Kontoansicht
   interface KontoansichtEntry {
     id: number;
@@ -23,11 +25,15 @@
 
   export let entries: KontoansichtEntry[] = [];
   export let hideStornos = false;
+  export let maxHeight: string = '900px';
 
   // Filter entries based on hideStornos flag
-  // Stornos are identified by w column containing '❌'
+  // Stornos are identified by GU column having a value (GU > 0 or non-empty)
   $: filteredEntries = hideStornos
-    ? entries.filter(entry => entry.w !== '❌')
+    ? entries.filter(entry => {
+        const gu = String(entry?.gu || entry?.GU || '').trim();
+        return gu === '';
+      })
     : entries;
 
   // Sorting state
@@ -45,16 +51,20 @@
   }
 
   // Format numbers to 2 decimal places
-  function formatCurrency(value: number | undefined): string {
-    if (value === undefined || value === null) {
+  function formatCurrency(value: number | string | undefined): string {
+    if (value === undefined || value === null || value === '') {
       return '0.00';
     }
-    return value.toFixed(2);
+    const num = typeof value === 'number' ? value : parseFloat(String(value));
+    if (isNaN(num)) {
+      return '0.00';
+    }
+    return num.toFixed(2);
   }
 </script>
 
 <!-- TABLE CONTAINER: Y:215.5px (Kontoansicht - after balance fields) -->
-<div class="kontoansicht-table-container">
+<div class="kontoansicht-table-container" style="height: {maxHeight};">
   <table class="kontoansicht-table">
     <thead>
       <tr>
@@ -139,20 +149,20 @@
       {:else}
         {#each filteredEntries as entry}
           <tr>
-            <td class="cell-id">{entry.id}</td>
-            <td class="cell-pdf">{entry.pdf || ''}</td>
-            <td class="cell-w">{entry.w || ''}</td>
-            <td class="cell-no">{entry.no}</td>
-            <td class="cell-date">{entry.date}</td>
-            <td class="cell-gu">{entry.gu}</td>
-            <td class="cell-bu">{entry.bu}</td>
-            <td class="cell-contra">{entry.contraAccount}</td>
-            <td class="cell-doc">{entry.docNumber}</td>
-            <td class="cell-tax">{formatCurrency(entry.taxRate)}</td>
-            <td class="cell-soll">{formatCurrency(entry.sumSoll)}</td>
-            <td class="cell-haben">{formatCurrency(entry.sumHaben)}</td>
-            <td class="cell-balance">{formatCurrency(entry.balance)}</td>
-            <td class="cell-text">{entry.bookingText}</td>
+            <td class="cell-id">{entry.IdNr || entry.id}</td>
+            <td class="cell-pdf">{entry.PDF || entry.pdf || ''}</td>
+            <td class="cell-w">{entry.Warnung || entry.w || ''}</td>
+            <td class="cell-no">{entry.LfdNr || entry.no}</td>
+            <td class="cell-date">{formatDateUS(entry.Datum || entry.date)}</td>
+            <td class="cell-gu">{entry.GU || entry.gu || ''}</td>
+            <td class="cell-bu">{entry.BU || entry.bu || ''}</td>
+            <td class="cell-contra">{entry.ContraAccDynamic || entry.contraAccount}</td>
+            <td class="cell-doc">{entry.BelNr || entry.docNumber}</td>
+            <td class="cell-tax">{formatCurrency(entry.Steuer || entry.taxRate)}</td>
+            <td class="cell-soll">{formatCurrency(entry.SumSoll || entry.sumSoll)}</td>
+            <td class="cell-haben">{formatCurrency(entry.SumHaben || entry.sumHaben)}</td>
+            <td class="cell-balance">{formatCurrency(entry.Balance || entry.balance)}</td>
+            <td class="cell-text">{entry.Buchungstext || entry.BText || entry.bookingText}</td>
           </tr>
         {/each}
       {/if}
@@ -167,10 +177,6 @@
      ================================================================== */
 
   .kontoansicht-table-container {
-    position: absolute;
-    left: 20px;
-    top: 215.5px;
-    width: 1584px;
     overflow-y: auto;
     overflow-x: hidden;
   }

@@ -28,19 +28,8 @@
   $: isLocked = Boolean(row?.Gesperrt);
   $: hasPdf = Boolean(row?.pdf_blob);
   $: isMatchingCircle = selectedCircle > 0 && row?.BookCircle === selectedCircle;
-  $: isSelected = row?.IdNr && $selectionStore.selectedIds.has(row.IdNr);
-
-  /**
-   * Handle cell double-click for account selection
-   */
-  function handleCellDblClick(event: MouseEvent, column: TableColumn): void {
-    // Only allow CK (GegKto) field editing via double-click
-    if (column.key === 'GegKto') {
-      event.stopPropagation();
-      dispatch('account-field-dblclick', { field: 'CK', row });
-    }
-    // Account (Kto/HK) field is NOT editable per requirements
-  }
+  // Multi-selection for Primanota View
+  $: isSelected = $viewModeStore.mode === 'primanota' && row?.IdNr ? $selectionStore.selectedIds.has(row.IdNr) : false;
 
   /**
    * Handle row click
@@ -93,10 +82,11 @@
     if (column.format === 'date') {
       const dateStr = String(value);
       if (!dateStr) return '';
-      // Assume format YYYY-MM-DD, convert to DD.MM.YYYY
+      // Convert YYYY-MM-DD to MM/DD/YYYY
       const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
       if (match) {
-        return `${match[3]}.${match[2]}.${match[1]}`;
+        const [, yyyy, mm, dd] = match;
+        return `${mm}/${dd}/${yyyy}`;
       }
       return dateStr;
     }
@@ -104,7 +94,7 @@
     if (column.format === 'percent') {
       const num = Number.parseFloat(String(value));
       if (Number.isNaN(num)) return String(value);
-      return `${num.toFixed(2)}%`;
+      return `${(num * 100).toFixed(2)}%`;
     }
 
     return String(value);
@@ -128,10 +118,6 @@
       classes.push('has-pdf');
     }
 
-    if (column.key === 'GegKto') {
-      classes.push('editable-cell');
-    }
-
     return classes.join(' ');
   }
 </script>
@@ -142,7 +128,7 @@
   class:locked={isLocked}
   class:highlighted
   class:matching-circle={isMatchingCircle}
-  class:selected={isSelected}
+  class:multi-selected={isSelected}
   on:click={handleRowClick}
   on:dblclick={handleRowDblClick}
   on:contextmenu={handleContextMenu}
@@ -152,7 +138,6 @@
   {#each columns as column (column.key)}
     <td
       class={getCellClass(column)}
-      on:dblclick={(e) => handleCellDblClick(e, column)}
       role="gridcell"
     >
       {#if column.key === 'BL'}
@@ -185,8 +170,9 @@
     transition: background-color 0.1s ease;
   }
 
-  .primanota-row:hover {
-    background-color: #f0f8ff;
+  .primanota-row:hover td {
+    background-color: #98ecb7 !important;
+    cursor: pointer;
   }
 
   .primanota-row.highlighted {
@@ -208,8 +194,17 @@
     background-color: #e8f5e9;
   }
 
-  .primanota-row.selected {
-    background-color: #bbdefb !important;
+  /* Multi-selection - blue background with white text */
+  .primanota-row.multi-selected td,
+  .primanota-row:nth-child(even).multi-selected td {
+    background-color: #1976d2 !important;
+    color: white !important;
+  }
+
+  .primanota-row.multi-selected:hover td,
+  .primanota-row:nth-child(even).multi-selected:hover td {
+    background-color: #1565c0 !important;
+    color: white !important;
   }
 
   td {
@@ -220,6 +215,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     border-right: 1px solid #e0e0e0;
+    user-select: none;
   }
 
   td:last-child {
@@ -237,14 +233,6 @@
   .sh-haben {
     color: #dc2626;
     font-weight: bold;
-  }
-
-  .editable-cell {
-    cursor: pointer;
-  }
-
-  .editable-cell:hover {
-    background-color: #e3f2fd;
   }
 
   .has-pdf {

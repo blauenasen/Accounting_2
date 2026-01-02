@@ -37,33 +37,54 @@ export async function GET({ url }: RequestEvent): Promise<Response> {
   try {
     const db = getDb();
 
-    const query = `
-      SELECT
-        SUM(
-          CASE
-            WHEN Kto = ? THEN
-              CASE
-                WHEN SH = 'S' THEN UE
-                WHEN SH = 'H' THEN -UE
-                ELSE 0
-              END
-            WHEN GegKto = ? THEN
-              CASE
-                WHEN SH = 'S' THEN -UE
-                WHEN SH = 'H' THEN UE
-                ELSE 0
-              END
-            ELSE 0
-          END
-        ) as balanceOpen
-      FROM journal
-      WHERE Monat = 1
-        AND Tag = 1
-        AND Jahr = ?
-        AND (Kto = ? OR GegKto = ?)
+    // 1. Lade Saldenvortrag-Konten
+    const ledgersQuery = `
+      SELECT account
+      FROM ledgers
+      WHERE JAPos = 'Saldenvortrag'
     `;
 
-    const row = db.prepare(query).get(account, account, year, account, account) as any;
+    const saldenvortragAccounts = db.prepare(ledgersQuery)
+      .all()
+      .map((row: any) => row.account);
+
+    // 2. Erstelle dynamische IN-Clause
+    const placeholders = saldenvortragAccounts.map(() => '?').join(',');
+
+    // 3. Query: Account kann in BEIDEN Positionen vorkommen
+    const query = `
+      SELECT SUM(
+        CASE
+          WHEN Kto = ? THEN
+            CASE
+              WHEN SH = 'S' THEN UE
+              WHEN SH = 'H' THEN -UE
+              ELSE 0
+            END
+          WHEN GegKto = ? THEN
+            CASE
+              WHEN SH = 'S' THEN -UE
+              WHEN SH = 'H' THEN UE
+              ELSE 0
+            END
+          ELSE 0
+        END
+      ) as balanceOpen
+      FROM journal
+      WHERE (Kto = ? OR GegKto = ?)
+        AND (Kto IN (${placeholders}) OR GegKto IN (${placeholders}))
+    `;
+
+    const params = [
+      account,
+      account,
+      account,
+      account,
+      ...saldenvortragAccounts,
+      ...saldenvortragAccounts
+    ];
+
+    const row = db.prepare(query).get(...params) as any;
     const balanceOpen = row?.balanceOpen ?? 0;
 
     return json<BalanceOpenResponse>({

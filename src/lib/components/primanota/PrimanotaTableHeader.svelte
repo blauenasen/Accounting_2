@@ -66,6 +66,7 @@
     min-width: 0;
     font-weight: 600;
     white-space: nowrap;
+    text-align: center;
   }
 
   .sort-button {

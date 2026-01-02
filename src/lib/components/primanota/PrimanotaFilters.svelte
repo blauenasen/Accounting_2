@@ -49,7 +49,7 @@
           <select
             class="filter-mode"
             aria-label={`Filter mode ${column.label}`}
-            value={filterState[column.key].mode}
+            value={filterState[column.key]?.mode || ''}
             on:change={(event) => handleModeChange(column, event.currentTarget.value)}
           >
             {#each MODE_OPTIONS[column.type] ?? [] as modeValue}
@@ -61,9 +61,9 @@
             list={getFilterListId(column.key)}
             aria-label={`Filter value ${column.label}`}
             placeholder={VALUE_PLACEHOLDER}
-            value={filterState[column.key].inputValue}
+            value={filterState[column.key]?.inputValue || ''}
             on:input={(event) => handleValueInput(column, event.currentTarget.value)}
-            disabled={shouldDisableValueInput(filterState[column.key].mode)}
+            disabled={shouldDisableValueInput(filterState[column.key]?.mode || '')}
             style={`width:${column.width}px;`}
           />
           <datalist id={getFilterListId(column.key)}>

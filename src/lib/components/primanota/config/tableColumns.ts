@@ -30,7 +30,7 @@ export const PRIMANOTA_COLUMN_WIDTHS = {
   Datum: 100,
   Kto: 90,
   Buchungstext: 340,
-  HK: 60,
+  BookCircle: 60,
   Steuer: 90
 } as const;
 
@@ -91,7 +91,7 @@ export const primanotaColumns: TableColumn[] = [
   { key: 'Datum', label: 'Date', width: PRIMANOTA_COLUMN_WIDTHS.Datum, format: 'date', align: 'center', type: 'text' },
   { key: 'Kto', label: 'Account', width: PRIMANOTA_COLUMN_WIDTHS.Kto, align: 'right', type: 'number' },
   { key: 'Buchungstext', label: 'Booking Text', width: PRIMANOTA_COLUMN_WIDTHS.Buchungstext, align: 'left', type: 'text' },
-  { key: 'HK', label: 'BC', width: PRIMANOTA_COLUMN_WIDTHS.HK, align: 'center', type: 'text' },
+  { key: 'BookCircle', label: 'BC', width: PRIMANOTA_COLUMN_WIDTHS.BookCircle, align: 'center', type: 'number' },
   { key: 'Steuer', label: 'TaxRate', width: PRIMANOTA_COLUMN_WIDTHS.Steuer, format: 'percent', align: 'right', type: 'number' }
 ];
 
@@ -106,11 +106,11 @@ export const accountColumns: TableColumn[] = [
   { key: 'Datum', label: 'Date', width: ACCOUNT_COLUMN_WIDTHS.Datum, format: 'date', align: 'center', type: 'text' },
   { key: 'GU', label: 'GU', width: ACCOUNT_COLUMN_WIDTHS.GU, align: 'center', type: 'text' },
   { key: 'BU', label: 'BU', width: ACCOUNT_COLUMN_WIDTHS.BU, align: 'center', type: 'text' },
-  { key: 'ContraAccDynamic', label: 'Contra Acc', width: ACCOUNT_COLUMN_WIDTHS.ContraAccDynamic, align: 'right', type: 'number' },
+  { key: 'GegKto', label: 'Contra Acc', width: ACCOUNT_COLUMN_WIDTHS.ContraAccDynamic, align: 'right', type: 'number' },
   { key: 'BelNr', label: 'Doc Number', width: ACCOUNT_COLUMN_WIDTHS.BelNr, align: 'left', type: 'text' },
   { key: 'Steuer', label: 'TaxRate', width: ACCOUNT_COLUMN_WIDTHS.Steuer, format: 'percent', align: 'right', type: 'number' },
-  { key: 'SumSoll', label: 'Sum Soll', width: ACCOUNT_COLUMN_WIDTHS.SumSoll, format: 'money', align: 'right', type: 'text' },
-  { key: 'SumHaben', label: 'Sum Haben', width: ACCOUNT_COLUMN_WIDTHS.SumHaben, format: 'money', align: 'right', type: 'text' },
+  { key: 'SumSoll', label: 'debit', width: ACCOUNT_COLUMN_WIDTHS.SumSoll, format: 'money', align: 'right', type: 'text' },
+  { key: 'SumHaben', label: 'credit', width: ACCOUNT_COLUMN_WIDTHS.SumHaben, format: 'money', align: 'right', type: 'text' },
   { key: 'Balance', label: 'Balance', width: ACCOUNT_COLUMN_WIDTHS.Balance, format: 'money', align: 'right', type: 'text' },
   { key: 'Buchungstext', label: 'Booking Text', width: ACCOUNT_COLUMN_WIDTHS.Buchungstext, align: 'left', type: 'text' }
 ];

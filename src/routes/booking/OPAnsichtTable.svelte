@@ -3,6 +3,8 @@
 <!-- Measurements from Mess-Tabelle.md: OP-ANSICHT -->
 
 <script lang="ts">
+  import { formatDateUS } from '$lib/utils/dateFormat';
+
   // Define OPEntry type for OP-Ansicht
   interface OPEntry {
     id: number;
@@ -23,11 +25,15 @@
 
   export let entries: OPEntry[] = [];
   export let hideStornos = false;
+  export let maxHeight: string = '900px';
 
   // Filter entries based on hideStornos flag
-  // Stornos are identified by w column containing '❌'
+  // Stornos are identified by GU column having a value (GU > 0 or non-empty)
   $: filteredEntries = hideStornos
-    ? entries.filter(entry => entry.w !== '❌')
+    ? entries.filter(entry => {
+        const gu = String(entry?.gu || entry?.GU || '').trim();
+        return gu === '';
+      })
     : entries;
 
   // Sorting state
@@ -45,16 +51,20 @@
   }
 
   // Format currency to 2 decimal places
-  function formatCurrency(value: number | undefined): string {
-    if (value === undefined || value === null) {
+  function formatCurrency(value: number | string | undefined): string {
+    if (value === undefined || value === null || value === '') {
       return '0.00';
     }
-    return value.toFixed(2);
+    const num = typeof value === 'number' ? value : parseFloat(String(value));
+    if (isNaN(num)) {
+      return '0.00';
+    }
+    return num.toFixed(2);
   }
 </script>
 
 <!-- TABLE CONTAINER: Y:257px (OP-Ansicht - after balance fields) -->
-<div class="op-table-container">
+<div class="op-table-container" style="height: {maxHeight};">
   <table class="op-table">
     <thead>
       <tr>
@@ -139,20 +149,20 @@
       {:else}
         {#each filteredEntries as entry}
           <tr>
-            <td class="cell-id">{entry.id}</td>
-            <td class="cell-pdf">{entry.pdf || ''}</td>
-            <td class="cell-w">{entry.w || ''}</td>
-            <td class="cell-x">{entry.x || ''}</td>
-            <td class="cell-t">{entry.t || ''}</td>
-            <td class="cell-gu">{entry.gu}</td>
-            <td class="cell-doc">{entry.docNumber}</td>
-            <td class="cell-date">{entry.date}</td>
-            <td class="cell-due-date">{entry.dueDate}</td>
-            <td class="cell-text">{entry.bookingText}</td>
-            <td class="cell-price">{formatCurrency(entry.grossPrice)}</td>
-            <td class="cell-contra">{entry.contraAccount}</td>
-            <td class="cell-bunr">{entry.buNr}</td>
-            <td class="cell-bookc">{entry.bookC}</td>
+            <td class="cell-id">{entry.IdNr || entry.id}</td>
+            <td class="cell-pdf">{entry.PDF || entry.pdf || ''}</td>
+            <td class="cell-w">{entry.Warnung || entry.w || ''}</td>
+            <td class="cell-x">{entry.X || entry.x || ''}</td>
+            <td class="cell-t">{entry.T || entry.t || ''}</td>
+            <td class="cell-gu">{entry.GU || entry.gu || ''}</td>
+            <td class="cell-doc">{entry.BelNr || entry.docNumber}</td>
+            <td class="cell-date">{formatDateUS(entry.Datum || entry.date)}</td>
+            <td class="cell-due-date">{formatDateUS(entry.Faelligkeit || entry.dueDate)}</td>
+            <td class="cell-text">{entry.Buchungstext || entry.BText || entry.bookingText}</td>
+            <td class="cell-price">{formatCurrency(entry.Brutto || entry.grossPrice)}</td>
+            <td class="cell-contra">{entry.ContraAccDynamic || entry.contraAccount}</td>
+            <td class="cell-bunr">{entry.BU || entry.buNr || ''}</td>
+            <td class="cell-bookc">{entry.BookCircle || entry.bookC || ''}</td>
           </tr>
         {/each}
       {/if}
@@ -167,10 +177,6 @@
      ================================================================== */
 
   .op-table-container {
-    position: absolute;
-    left: 18px;
-    top: 257px;
-    width: 1580px;
     overflow-y: auto;
     overflow-x: hidden;
     background-color: rgb(255, 255, 255);
